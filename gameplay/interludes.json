@@ -1,0 +1,55 @@
+{
+  "prologue": {
+    "pages": [
+      "一封信写了很久",
+      "是因为有些话，见面时反而说不出来"
+    ],
+    "image": "bg_sh_street.png"
+  },
+  "shanghai": {
+    "image": "w2/shanghai/bund_night_coda.png",
+    "pages": [
+      "一辆同款的车",
+      "两个同频的人"
+    ]
+  },
+  "chengdu": {
+    "pages": [
+      "平淡不是没故事",
+      "是把日子过成两个人都能喘气的样子"
+    ],
+    "image": "w2/common/chapter_end_call.png"
+  },
+  "call": {
+    "pages": [
+      "有人愿意听你说话",
+      "就已经是开始心动了"
+    ]
+  },
+  "shizuoka": {
+    "pages": [
+      "家人不是一个身份",
+      "是终于敢把以后说出口"
+    ],
+    "image": "round1/scenes/registry.png"
+  },
+  "hainan": {
+    "pages": [
+      "烟火只亮一瞬",
+      "但我们站在同一片光里"
+    ],
+    "image": "w2/hainan/bg_wenchang_memory_r2.png"
+  },
+  "hongkong": {
+    "pages": [
+      "去一个新的城市",
+      "身边还是那个同款的人"
+    ]
+  },
+  "finale": {
+    "pages": [
+      "请帖寄出去",
+      "是把我们这一段，托付给来的人"
+    ]
+  }
+}

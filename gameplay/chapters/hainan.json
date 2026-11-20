@@ -1,0 +1,325 @@
+{
+  "chapterId": "hainan",
+  "titleId": "G-10",
+  "steps": [
+    {
+      "id": "wanning",
+      "type": "scene",
+      "sceneId": "hainan",
+      "speaker": "system",
+      "actorMode": "none",
+      "actorSlot": null,
+      "background": "scene",
+      "visibleActors": [],
+      "scene": {
+        "goalRewardId": "wax",
+        "personHeight": 120,
+        "badge": "G-02",
+        "bg": "round1/rework1107/wanning_stall.png",
+        "sky": "#86cfe8",
+        "ground": "#e8d6a8",
+        "horizon": 250,
+        "decor": [
+          {
+            "r": [
+              0,
+              250,
+              360,
+              36
+            ],
+            "c": "#4fb3c8"
+          }
+        ],
+        "walkArea": [
+          [
+            20,
+            418
+          ],
+          [
+            340,
+            418
+          ],
+          [
+            340,
+            610
+          ],
+          [
+            20,
+            610
+          ]
+        ],
+        "start": [
+          85,
+          590
+        ],
+        "hotspots": [
+          {
+            "id": "stall",
+            "at": [
+              180,
+              430
+            ],
+            "snap": [
+              180,
+              432
+            ],
+            "face": 1,
+            "icon": "pick"
+          }
+        ],
+        "beats": [
+          {
+            "card": "G-10",
+            "duration": 2.0
+          },
+          {
+            "narrate": "A5-0"
+          },
+          {
+            "narrate": "A5-1a"
+          },
+          {
+            "narrate": "A5-1b"
+          },
+          {
+            "goal": {
+              "目标": "带回火漆",
+              "任务": "走到套圈摊，拖动瞄准，再松手抛圈。"
+            }
+          },
+          {
+            "go": "stall",
+            "hint": "A5-P1"
+          },
+          {
+            "game": "ringtoss",
+            "pegs": [
+              [
+                250,
+                190
+              ],
+              [
+                278,
+                205
+              ],
+              [
+                310,
+                188
+              ],
+              [
+                318,
+                220
+              ],
+              [
+                270,
+                225
+              ]
+            ]
+          },
+          {
+            "card": "A5-T1",
+            "duration": 1.6
+          },
+          {
+            "personHeight": 112,
+            "bg": "w2/hainan/bg_wenchang_memory_r2.png",
+            "bgFit": true,
+            "scaleProfile": "beach_memory",
+            "atmosphere": "coast",
+            "badge": "",
+            "decor": [],
+            "place": [
+              151,
+              565
+            ],
+            "pose": "back",
+            "actors": [],
+            "hotspots": [
+              {
+                "id": "shore",
+                "at": [
+                  200,
+                  565
+                ],
+                "icon": "sit",
+                "face": 1,
+                "pose": "back",
+                "snap": [
+                  200,
+                  565
+                ],
+                "companionSnap": [
+                  236,
+                  555
+                ]
+              }
+            ],
+            "companion": "toretto",
+            "walkArea": [
+              [
+                94,
+                506
+              ],
+              [
+                236,
+                506
+              ],
+              [
+                271,
+                572
+              ],
+              [
+                263,
+                610
+              ],
+              [
+                85,
+                610
+              ],
+              [
+                79,
+                562
+              ]
+            ],
+            "walkers": [
+              {
+                "a": [
+                  315,
+                  1240
+                ],
+                "b": [
+                  315,
+                  1240
+                ],
+                "speed": 0,
+                "scale": 0.95,
+                "npc": "d10_talk_b",
+                "face": -1,
+                "chatBank": "wenchang",
+                "chatSide": 1,
+                "chatOffset": -2.3,
+                "chatPair": true,
+                "sourceAnchored": true,
+                "sourceDepthScale": true,
+                "avoidPlayer": false,
+                "heightM": 1.52
+              }
+            ]
+          },
+          {
+            "go": "shore",
+            "hint": "R1-COAST-WALK"
+          },
+          {
+            "narrate": "A5-2"
+          },
+          {
+            "say": "A5-3a",
+            "who": "toretto"
+          },
+          {
+            "say": "A5-3b",
+            "who": "ayu"
+          },
+          {
+            "game": "fireworks",
+            "count": 3
+          },
+          {
+            "pose": "",
+            "atmosphere": ""
+          },
+          {
+            "material": "wax"
+          }
+        ],
+        "companion": "toretto",
+        "walkers": [
+          {
+            "a": [
+              53,
+              448
+            ],
+            "b": [
+              53,
+              448
+            ],
+            "speed": 0,
+            "scale": 0.95,
+            "npc": "d9_talk_a",
+            "face": 1,
+            "chatBank": "wanning",
+            "chatSide": 0,
+            "chatOffset": -0.0,
+            "chatPair": true
+          },
+          {
+            "a": [
+              108,
+              451
+            ],
+            "b": [
+              108,
+              451
+            ],
+            "speed": 0,
+            "scale": 0.95,
+            "npc": "d9_talk_b",
+            "face": -1,
+            "chatBank": "wanning",
+            "chatSide": 1,
+            "chatOffset": -2.3,
+            "chatPair": true
+          },
+          {
+            "a": [
+              263,
+              458
+            ],
+            "b": [
+              314,
+              465
+            ],
+            "speed": 18,
+            "scale": 0.95,
+            "npc": "d9_01",
+            "phase": 0.24,
+            "pause": 2.1
+          },
+          {
+            "a": [
+              41,
+              540
+            ],
+            "b": [
+              107,
+              543
+            ],
+            "speed": 18,
+            "scale": 0.95,
+            "npc": "d9_02",
+            "phase": 0.3,
+            "pause": 2.1
+          },
+          {
+            "a": [
+              309,
+              434
+            ],
+            "b": [
+              260,
+              442
+            ],
+            "speed": 19,
+            "scale": 0.95,
+            "npc": "d9_03",
+            "phase": 0.05,
+            "pause": 2.35
+          }
+        ],
+        "atmosphere": "pool",
+        "scaleProfile": "beach"
+      }
+    }
+  ]
+}

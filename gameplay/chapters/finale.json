@@ -1,0 +1,44 @@
+{
+  "chapterId": "finale",
+  "titleId": "G-12",
+  "steps": [
+    {
+      "id": "finale",
+      "type": "scene",
+      "sceneId": "finale",
+      "speaker": "system",
+      "actorMode": "none",
+      "actorSlot": null,
+      "background": "scene",
+      "visibleActors": [],
+      "scene": {
+        "bg": "round1/desk_r4/writing.png",
+        "fill": "#3a1414",
+        "hideAyu": true,
+        "beats": [
+          {
+            "card": "G-12",
+            "duration": 2.0
+          },
+          {
+            "hideAyu": true
+          },
+          {
+            "game": "finale"
+          }
+        ]
+      }
+    },
+    {
+      "id": "next",
+      "type": "terminal",
+      "sceneId": "finale_end",
+      "speaker": "system",
+      "actorMode": "none",
+      "actorSlot": null,
+      "background": "phone",
+      "visibleActors": [],
+      "copyId": "W-NEXT"
+    }
+  ]
+}

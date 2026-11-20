@@ -1,0 +1,132 @@
+extends RefCounted
+## 窗前的微信回忆：背景里的人拿着手机，消息轻叠在空出的地面。
+## 不再盖全屏手机，也不重复绘制背景里已出现的 Toretto。
+const Bubble := preload("res://hongyuan/ui/phone_shell.gd")
+const CHAT_BOTTOM := 604.0
+const CHAT_TOUCH := Rect2(12, 426, 336, 206)
+var r
+var lines: Array = []
+var li := 0
+var phase := "chat"
+var t := 0.0
+var reveal := 0.0
+# Previous-message offset, retained under the existing checkpoint key.
+var chat_scroll := 0.0
+var dragging := false
+var last_y := 0.0
+## 统一的微信对话样式：自己发的消息靠右、绿色。窗前是 Toretto 的手机，群聊是阿鱼的手机。
+var own_who := "toretto"
+
+func start(runner, beat: Dictionary) -> void:
+	r = runner
+	lines = beat.get("lines", [])
+	r.play("pop")
+
+func process(dt: float) -> bool:
+	t += dt
+	if phase == "chat" and t > _typing_delay():
+		reveal = minf(reveal + dt * 34.0, _current_text().length())
+	return phase == "done"
+
+func _current_text() -> String:
+	return r.t_(str(lines[li].say)) if li < lines.size() else ""
+
+func _typing_delay() -> float:
+	return 0.55 if li < lines.size() and lines[li].who == "ayu" else 0.2
+
+func _title(ci) -> String:
+	return ci.t_("G-WINDOW-CHAT")
+
+func y_for(row: Dictionary) -> float:
+	var latest: bool = int(row.index) == li
+	var entering := (1.0 - clampf(t / 0.22, 0, 1)) if latest else 0.0
+	return float(row.y) + entering * 6
+
+## 「阿晓邀请 Toretto 加入了群聊」这类系统提示：居中的小灰条，没有气泡。
+func _draw_system(ci, row: Dictionary, y: float) -> void:
+	var text: String = str(row.text)
+	var w := clampf(ci.FONT.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 12).x + 20, 100, 320)
+	var rect := Rect2(180.0 - w * 0.5, y + 14, w, 20)
+	Bubble._round_box(ci, rect, Color(0.25, 0.28, 0.27, 0.62), 10)
+	ci.draw_string(ci.FONT, rect.position + Vector2(0, 14), text, HORIZONTAL_ALIGNMENT_CENTER, w, 12, Color("#f6f5ed"))
+
+func _chat_top() -> float:
+	var viewport: Rect2 = r.view_rect
+	return clampf(viewport.position.y + viewport.size.y * 2.0 / 3.0, 427.0, 468.0)
+
+func _rows() -> Array:
+	var rows: Array = []
+	if lines.is_empty(): return rows
+	var end := clampi(li - roundi(chat_scroll), 0, lines.size() - 1)
+	var total := 0.0
+	for i in range(maxi(0, end - 1), end + 1):
+		var message: String = r.t_(str(lines[i].say))
+		var width := clampf(r.FONT.get_string_size(message, HORIZONTAL_ALIGNMENT_LEFT, -1, 15).x + 28, 96, 292)
+		var height: float = maxf(38, r.FONT.get_multiline_string_size(r.StoryCaption.wrap_text(message,width-28,15), HORIZONTAL_ALIGNMENT_LEFT, width - 28, 15).y + 18)
+		rows.append({"index": i, "who": str(lines[i].who), "text": message, "width": width, "height": height})
+		total += height + 19
+	var body_top := _chat_top() + 26.0
+	if total > CHAT_BOTTOM - body_top and rows.size() > 1:
+		total -= float(rows.pop_front().height) + 19.0
+	var y := maxf(body_top, CHAT_BOTTOM - total)
+	for row: Dictionary in rows:
+		row.y = y
+		y += float(row.height) + 19
+	return rows
+
+func input(kind: String, pos: Vector2) -> void:
+	if phase != "chat": return
+	if kind == "down":
+		dragging = CHAT_TOUCH.has_point(pos)
+		last_y = pos.y
+	elif kind == "move" and dragging:
+		# Pull down to older messages, push up to the latest pair. A drag never sends.
+		if absf(pos.y - last_y) >= 28:
+			chat_scroll = clampf(chat_scroll + signf(pos.y - last_y), 0, li)
+			last_y = pos.y
+	elif kind == "up": dragging = false
+	elif kind == "tap" and t >= 0.12:
+		if chat_scroll > 0:
+			chat_scroll = 0
+			return
+		if reveal < _current_text().length():
+			reveal = _current_text().length()
+			t = maxf(t, _typing_delay())
+			return
+		li += 1
+		t = 0.0
+		reveal = 0.0
+		if li >= lines.size(): phase = "done"
+		else: r.play("blip")
+
+func draw(ci) -> void:
+	# No dimmer: the window, his hands and gifts stay fully visible above the chat.
+	var title := _title(ci)
+	var title_w := clampf(ci.FONT.get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, 12).x + 44, 136, 300)
+	var title_at := Vector2(180.0 - title_w * 0.5, _chat_top())
+	Bubble._round_box(ci, Rect2(title_at, Vector2(title_w, 21)), Color(1, 1, 1, 0.77), 10)
+	ci.draw_circle(title_at + Vector2(13, 10), 5, Color("#66a977"))
+	ci.draw_circle(title_at + Vector2(18, 13), 3.5, Color("#8fbe96"))
+	ci.draw_string(ci.FONT, title_at + Vector2(28, 15), title, HORIZONTAL_ALIGNMENT_LEFT, title_w - 32, 12, Color("#46554b"))
+	for row: Dictionary in _rows():
+		var own: bool = row.who == own_who
+		if row.who == "system":
+			_draw_system(ci, row, y_for(row))
+			continue
+		var latest: bool = int(row.index) == li
+		var entering := (1.0 - clampf(t / 0.22, 0, 1)) if latest else 0.0
+		var y: float = float(row.y) + entering * 6
+		var x: float = 342 - float(row.width) if own else 18
+		var rect := Rect2(x, y + 15, float(row.width), float(row.height))
+		ci.draw_string(ci.FONT, Vector2(x + 4, y + 11), ci.NAMES[row.who], HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - 6, 11, Color(0.13, 0.18, 0.15, 0.6))
+		ci.draw_string(ci.FONT, Vector2(x + 3, y + 10), ci.NAMES[row.who], HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - 6, 11, Color("#f6f5ed"))
+		Bubble._round_box(ci, rect, Color(0.78, 0.92, 0.70, 0.96) if own else Color(1, 1, 1, 0.95), 8)
+		if latest and t < _typing_delay() and reveal == 0:
+			for i in range(3):
+				ci.draw_circle(rect.position + Vector2(18 + i * 10, 20 + sin(t * 10 - i) * 2), 2.3, Color("#79927b"))
+		else:
+			var shown: String = str(row.text).substr(0, int(reveal)) if latest else str(row.text)
+			ci.draw_multiline_string(ci.FONT, rect.position + Vector2(14, 22), ci.StoryCaption.wrap_text(shown,rect.size.x-28,15), HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - 28, 15, -1, ci.INK)
+	var hint: String = ci.t_("G-WINDOW-HISTORY" if chat_scroll > 0 else "G-WINDOW-NEXT")
+	Bubble._round_box(ci, Rect2(88, 608, 184, 22), Color(0.12, 0.08, 0.06, 0.76), 8)
+	ci.text_at(Vector2(89, 623), hint, 11, Color("#f6f5ed"), 182)

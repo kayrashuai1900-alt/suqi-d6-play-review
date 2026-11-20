@@ -1,0 +1,309 @@
+(() => {
+    "use strict";
+    const canvas = document.getElementById("canvas");
+    const getContext = canvas.getContext.bind(canvas);
+    // Keep the displayed frame readable only in this local review session.
+    canvas.getContext = (name, options) => getContext(name, name.startsWith("webgl")
+        ? { ...options, preserveDrawingBuffer: true }
+        : options);
+
+    const style = document.createElement("style");
+    style.textContent = `
+        #suqi-review { position: fixed; z-index: 200; top: max(12px, env(safe-area-inset-top));
+          left: max(12px, env(safe-area-inset-left)); width: max-content; max-width: calc(100vw - 24px);
+          color: #fff6e6; font: 14px/1.45 system-ui, sans-serif; text-align: left; touch-action: manipulation; }
+        #suqi-review button, #suqi-review select, #suqi-note button { font: inherit; border-radius: 7px;
+          border: 1px solid #bca182; padding: 8px 10px; color: #fff6e6; background: #352822; cursor: pointer; }
+        #suqi-review button[aria-pressed="true"], #suqi-note button[type="submit"] { background: #85424a; }
+        #suqi-review button:disabled, #suqi-review select:disabled { opacity: .55; cursor: default; }
+        #suqi-review header { display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+          border-radius: 9px; padding: 6px; background: #211916f5; box-shadow: 0 2px 12px #120b08bb; }
+        #suqi-review section { margin-top: 6px; max-height: min(55vh, 400px); overflow: auto;
+          background: #261d19; border: 1px solid #9f8064; border-radius: 9px; padding: 12px; touch-action: pan-y; }
+        #suqi-review label { display: grid; gap: 3px; margin-bottom: 7px; }
+        #suqi-review select { max-width: min(310px, calc(100vw - 55px)); min-width: 214px; }
+        #suqi-review output { display: block; max-width: min(300px, calc(100vw - 50px)); }
+        #review-next-status:not(:empty) { background: #211916; padding: 5px 9px; border-radius: 6px; margin-top: 4px; }
+        #suqi-review li { margin: 6px 0; overflow-wrap: anywhere; }
+        #suqi-review a { color: #ffddb2; }
+        #suqi-mark-layer { position: fixed; inset: 0; z-index: 199; cursor: crosshair; touch-action: none; }
+        #suqi-pin { display: grid; place-items: center; position: fixed; z-index: 201; pointer-events: none;
+          width: 26px; height: 26px; transform: translate(-50%, -50%); color: #3e171f; background: #ffd4a5;
+          border-radius: 50%; border: 2px solid #6f333b; font: bold 18px system-ui; }
+        #suqi-note { position: fixed; inset: auto 0 max(12px, env(safe-area-inset-bottom)); margin-inline: auto;
+          width: min(365px, calc(100vw - 42px)); color: #fff6e6; background: #2c211c; border: 1px solid #cfad88;
+          border-radius: 10px; padding: 13px; font: 15px/1.45 system-ui, sans-serif; touch-action: auto; }
+        #suqi-note h2 { font-size: 17px; margin: 0 0 6px; }
+        #suqi-note p { margin: 0 0 8px; color: #e5ccb4; }
+        #suqi-note textarea { width: 100%; box-sizing: border-box; resize: vertical; min-height: 74px;
+          padding: 9px; color: #251a17; background: #fff4e6; border-radius: 6px; font: inherit; touch-action: auto; }
+        #suqi-note footer { display: flex; gap: 8px; justify-content: end; margin-top: 5px; }
+        #suqi-note::backdrop { background: #170c0929; }
+        #suqi-review [hidden], #suqi-mark-layer[hidden], #suqi-pin[hidden] { display: none; }
+    `;
+    document.head.append(style);
+
+    const toolbar = document.createElement("aside");
+    toolbar.id = "suqi-review";
+    toolbar.setAttribute("aria-label", "走查模式");
+    toolbar.innerHTML = `
+      <header>
+        <button type="button" id="review-mark" aria-pressed="false">点画面记问题</button>
+        <button type="button" id="review-next" disabled>下一步</button>
+        <button type="button" id="review-scenes" aria-expanded="false">定位场景</button>
+        <button type="button" id="review-notes" aria-expanded="false">已记录</button>
+      </header>
+      <output id="review-next-status" aria-live="polite"></output>
+      <section id="review-panel" hidden>
+        <label>场景<select id="review-scene"></select></label>
+        <label>要看的环节<select id="review-entry"></select></label>
+        <button type="button" id="review-jump" disabled>前往</button>
+        <output id="review-status" aria-live="polite">场景准备中…</output>
+      </section>
+      <section id="review-inbox" hidden><output aria-live="polite"></output><ol></ol></section>`;
+    const layer = document.createElement("div");
+    layer.id = "suqi-mark-layer";
+    layer.hidden = true;
+    const pin = document.createElement("div");
+    pin.id = "suqi-pin";
+    pin.textContent = "+";
+    pin.hidden = true;
+    const dialog = document.createElement("dialog");
+    dialog.id = "suqi-note";
+    dialog.innerHTML = `<form>
+        <h2>记录这个位置的问题</h2>
+        <p id="review-location"></p>
+        <textarea aria-label="问题备注" placeholder="这里有什么问题？" required maxlength="2000" enterkeyhint="done"></textarea>
+        <p role="status" id="review-save-status"></p>
+        <footer><button type="button">取消</button><button type="submit">保存备注</button></footer>
+      </form>`;
+    document.body.append(layer, toolbar, pin, dialog);
+
+    const byId = id => document.getElementById(id);
+    const mark = byId("review-mark");
+    const scenes = byId("review-scenes");
+    const notes = byId("review-notes");
+    const panel = byId("review-panel");
+    const inbox = byId("review-inbox");
+    const scene = byId("review-scene");
+    const entry = byId("review-entry");
+    const go = byId("review-jump");
+    const status = byId("review-status");
+    const locationText = byId("review-location");
+    const saveStatus = byId("review-save-status");
+    const textarea = dialog.querySelector("textarea");
+    const save = dialog.querySelector("button[type=submit]");
+    const version = document.querySelector('meta[name="review-build"]')?.content || location.pathname.split("/").filter(Boolean).pop() || "D6";
+    const issueUrl = document.querySelector('meta[name="review-issues"]')?.content;
+    if (issueUrl) {
+        notes.hidden = true;
+        save.textContent = "去 GitHub 确认";
+        const source = document.createElement("a");
+        source.href = "gameplay-source.zip";
+        source.textContent = "玩法源码";
+        toolbar.querySelector("header").append(source);
+    }
+    let player;
+    let catalog = [];
+    let context = {};
+    let draft;
+    let armed = false;
+
+    const command = request => player?.(JSON.stringify(request));
+    const fillEntries = () => {
+        const options = catalog.find(item => item.id === scene.value)?.entries || [];
+        entry.replaceChildren(...options.map(item => new Option(item.label, item.beat)));
+    };
+    window.suqiReview = {
+        attachPlayer(callback, serialized) {
+            player = callback;
+            byId("review-next").disabled = false;
+            catalog = JSON.parse(serialized);
+            scene.replaceChildren(...catalog.map(item => new Option(item.label && item.label !== item.chapter
+                ? `${item.chapter} · ${item.label}` : `${item.chapter} · ${item.id}`, item.id)));
+            fillEntries();
+            go.disabled = catalog.length === 0;
+            status.textContent = "";
+        },
+        detachPlayer(callback) {
+            if (player === callback) {
+                player = undefined;
+                byId("review-next").disabled = true;
+                go.disabled = true;
+                status.textContent = "当前已离开爱情篇。刷新此走查页可回到开场。";
+            }
+        },
+        receiveContext(serialized) { context = JSON.parse(serialized); },
+        nextNotice(message) {
+            const notice = byId("review-next-status");
+            notice.textContent = message;
+            clearTimeout(this.noticeTimer);
+            this.noticeTimer = setTimeout(() => { notice.textContent = ""; }, 3000);
+        },
+        jumpDone(ok, message) {
+            go.disabled = false;
+            status.textContent = ok ? "" : message || "请用游戏里的加载按钮继续。";
+            if (ok) setPanel(panel, scenes, false);
+            canvas.focus({ preventScroll: true });
+        },
+    };
+    function setPanel(element, toggle, open) {
+        element.hidden = !open;
+        toggle.setAttribute("aria-expanded", String(open));
+    }
+
+    function arm(value) {
+        armed = value;
+        layer.hidden = !value;
+        mark.setAttribute("aria-pressed", String(value));
+        mark.textContent = value ? "取消标注（已暂停）" : "点画面记问题";
+        if (value) {
+            setPanel(panel, scenes, false);
+            setPanel(inbox, notes, false);
+            context = {};
+            command({ action: "freeze" });
+        } else {
+            command({ action: "play" });
+        }
+    }
+    function endNote() {
+        draft = undefined;
+        pin.hidden = true;
+        arm(false);
+        canvas.focus({ preventScroll: true });
+    }
+
+    mark.addEventListener("click", () => arm(!armed));
+    byId("review-next").addEventListener("click", () => {
+        if (armed) arm(false);
+        setPanel(panel, scenes, false);
+        setPanel(inbox, notes, false);
+        if (player) command({ action: "next" });
+        else window.suqiReview.nextNotice("场景准备中，请稍等。");
+        canvas.focus({ preventScroll: true });
+    });
+    scenes.addEventListener("click", () => {
+        if (armed) arm(false);
+        setPanel(inbox, notes, false);
+        setPanel(panel, scenes, panel.hidden);
+    });
+    scene.addEventListener("change", fillEntries);
+    function jump(step, beat) {
+        go.disabled = true;
+        status.textContent = "正在前往…";
+        command({ action: "jump", step, beat });
+    }
+    go.addEventListener("click", () => jump(scene.value, Number(entry.value)));
+    async function refreshNotes(show) {
+        try {
+            const response = await fetch("/_review/notes", { cache: "no-store" });
+            if (!response.ok) throw new Error();
+            const records = await response.json();
+            notes.textContent = `已记录 ${records.length}`;
+            if (!show) return;
+            inbox.querySelector("output").textContent = records.length ? "最近记录" : "还没有记录";
+            const rows = records.map(record => {
+                const li = document.createElement("li");
+                const link = document.createElement("a");
+                link.href = record.screenshot;
+                link.target = "_blank";
+                link.rel = "noopener";
+                link.textContent = "截图";
+                li.append(`${record.chapter || "游戏画面"} · ${record.text} `, link);
+                if (player && catalog.some(item => item.id === record.step)) {
+                    const reopen = document.createElement("button");
+                    reopen.type = "button";
+                    reopen.textContent = "回到该环节";
+                    reopen.addEventListener("click", () => {
+                        const item = catalog.find(value => value.id === record.step);
+                        scene.value = item.id;
+                        fillEntries();
+                        if (item.entries.some(value => value.beat === Number(record.beat))) entry.value = record.beat;
+                        setPanel(inbox, notes, false);
+                        setPanel(panel, scenes, true);
+                        jump(record.step, Math.max(0, Number(record.beat)));
+                    });
+                    li.append(" ", reopen);
+                }
+                return li;
+            });
+            inbox.querySelector("ol").replaceChildren(...rows);
+        } catch {
+            if (show) inbox.querySelector("output").textContent = "暂时读不到本机记录，请稍后再试。";
+        }
+    }
+
+    notes.addEventListener("click", () => {
+        if (armed) arm(false);
+        setPanel(panel, scenes, false);
+        setPanel(inbox, notes, inbox.hidden);
+        if (!inbox.hidden) refreshNotes(true);
+    });
+    if (!issueUrl) refreshNotes(false);
+    layer.addEventListener("click", event => {
+        const bounds = canvas.getBoundingClientRect();
+        const x = (event.clientX - bounds.left) / bounds.width;
+        const y = (event.clientY - bounds.top) / bounds.height;
+        if (!armed || !(x >= 0 && x <= 1 && y >= 0 && y <= 1)) return;
+        // Resize only the evidence. The actual game canvas remains untouched.
+        const screenshot = document.createElement("canvas");
+        const ratio = Math.min(1, 1000 / Math.max(canvas.width, canvas.height));
+        screenshot.width = Math.round(canvas.width * ratio);
+        screenshot.height = Math.round(canvas.height * ratio);
+        const graphics = screenshot.getContext("2d");
+        graphics.drawImage(canvas, 0, 0, screenshot.width, screenshot.height);
+        const px = x * screenshot.width, py = y * screenshot.height;
+        graphics.strokeStyle = "#ffe1a8";
+        graphics.lineWidth = 3;
+        graphics.beginPath();
+        graphics.arc(px, py, 11, 0, 2 * Math.PI);
+        graphics.stroke();
+        draft = { id: crypto.randomUUID(), version, ...context, x, y, image: screenshot.toDataURL("image/jpeg", .88) };
+        pin.style.left = `${event.clientX}px`;
+        pin.style.top = `${event.clientY}px`;
+        pin.hidden = false;
+        textarea.value = "";
+        saveStatus.textContent = "";
+        locationText.textContent = issueUrl ? "公开反馈：将带上当前环节、位置和你的意见，不自动上传截图。下一页确认提交。" : `${context.chapter || "游戏画面"} · 将附上截图与点击位置`;
+        dialog.showModal();
+        textarea.focus();
+    });
+    dialog.querySelector("button[type=button]").addEventListener("click", () => dialog.close());
+    dialog.addEventListener("close", endNote);
+    document.addEventListener("keydown", event => {
+        if (event.key === "Escape" && armed && !dialog.open) arm(false);
+    });
+    dialog.querySelector("form").addEventListener("submit", async event => {
+        event.preventDefault();
+        if (!draft || !textarea.value.trim()) return;
+        if (issueUrl) {
+            const destination = new URL(issueUrl);
+            destination.searchParams.set("title", `[试玩] ${draft.chapter || draft.step || "游戏画面"} · ${textarea.value.trim().slice(0, 36)}`);
+            destination.searchParams.set("body", `${textarea.value.trim()}\n\n版本：${version}\n场景：${draft.step || "开场"} / beat ${draft.beat ?? "-"} / ${draft.mode || "-"} / ${draft.phase || "-"}\n点击位置：${Math.round(draft.x*100)}%, ${Math.round(draft.y*100)}%`);
+            const link = document.createElement("a");
+            link.href = destination.href;
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            link.textContent = "打开 GitHub 反馈草稿";
+            saveStatus.replaceChildren(link);
+            link.click();
+            return;
+        }
+        save.disabled = true;
+        saveStatus.textContent = "正在保存到本机…";
+        try {
+            const response = await fetch("/_review/notes", {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ ...draft, text: textarea.value }),
+            });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error);
+            dialog.close();
+            refreshNotes(false);
+        } catch (error) {
+            saveStatus.textContent = error.message || "保存失败，备注还在，可以重试。";
+        } finally {
+            save.disabled = false;
+        }
+    });
+})();

@@ -1,0 +1,531 @@
+{
+  "bg_sh_street.png": {
+    "standing": [
+      {
+        "npc": "d1_05",
+        "at": [
+          75,
+          850
+        ],
+        "sourceAnchored": true,
+        "sourceDepthScale": true,
+        "heightM": 1.69,
+        "face": -1
+      },
+      {
+        "npc": "d1_06",
+        "at": [
+          490,
+          960
+        ],
+        "sourceAnchored": true,
+        "sourceDepthScale": true,
+        "heightM": 1.59,
+        "face": 1
+      }
+    ],
+    "talk": {
+      "d1_talk_b": [
+        "姑娘，在找那辆紫车？",
+        "阿鱼：看见了，江边独这一抹紫。"
+      ],
+      "d1_01": [
+        "你也在等塔尖亮灯？",
+        "阿鱼：嗯，想拍下它刚亮的那一刻。"
+      ]
+    }
+  },
+  "round1/rework1107/shanghai_parking.png": {
+    "standing": [],
+    "talk": {
+      "d2_talk_a": [
+        "找车？看看右边那抹紫。",
+        "阿鱼：咦，怎么有两抹？"
+      ],
+      "d2_talk_b": [
+        "风大，钥匙可收好了？",
+        "阿鱼：揣好啦，别让江风先开走。"
+      ]
+    }
+  },
+  "w2/chengdu/wolong_entrance.png": {
+    "standing": [
+      {
+        "npc": "d3_01",
+        "at": [
+          236,
+          594
+        ],
+        "sourceAnchored": true,
+        "sourceDepthScale": true,
+        "heightM": 1.7,
+        "face": 1
+      },
+      {
+        "npc": "d3_04",
+        "at": [
+          269,
+          614
+        ],
+        "sourceAnchored": true,
+        "sourceDepthScale": true,
+        "heightM": 1.51,
+        "face": -1
+      },
+      {
+        "npc": "d3_05",
+        "at": [
+          403,
+          656
+        ],
+        "sourceAnchored": true,
+        "sourceDepthScale": true,
+        "heightM": 1.62,
+        "face": -1
+      }
+    ],
+    "walkers": [
+      {
+        "a": [
+          180,
+          815
+        ],
+        "b": [
+          226,
+          594
+        ],
+        "speed": 70,
+        "sourceAnchored": true,
+        "sourceDepthScale": true,
+        "heightM": 1.65,
+        "once": true,
+        "avoidPlayer": false,
+        "guest": "03"
+      },
+      {
+        "a": [
+          263,
+          805
+        ],
+        "b": [
+          265,
+          612
+        ],
+        "speed": 62,
+        "sourceAnchored": true,
+        "sourceDepthScale": true,
+        "heightM": 1.65,
+        "once": true,
+        "startDelay": 4.0,
+        "avoidPlayer": false,
+        "guest": "07"
+      },
+      {
+        "a": [
+          326,
+          590
+        ],
+        "b": [
+          385,
+          1160
+        ],
+        "speed": 76,
+        "sourceAnchored": true,
+        "sourceDepthScale": true,
+        "heightM": 1.65,
+        "once": true,
+        "startDelay": 2.4,
+        "avoidPlayer": false,
+        "guest": "10"
+      }
+    ]
+  },
+  "round1/scenes/panda_garden.png": {
+    "standing": [
+      {
+        "npc": "d3_06",
+        "at": [
+          104,
+          176
+        ],
+        "heightM": 1.68,
+        "face": 1
+      },
+      {
+        "npc": "d3_02",
+        "at": [
+          279,
+          186
+        ],
+        "heightM": 1.69,
+        "face": -1
+      }
+    ]
+  },
+  "round1/rework1107/shizuoka_pier_v2.png": {
+    "standing": [
+      {
+        "npc": "d5_04",
+        "at": [
+          329,
+          444
+        ],
+        "heightM": 1.68,
+        "face": -1
+      },
+      {
+        "npc": "d5_05",
+        "at": [
+          33,
+          431
+        ],
+        "heightM": 1.62,
+        "face": 1
+      }
+    ],
+    "talk": {
+      "d5_01": [
+        "钓位在栈桥边，浮漂看得清。",
+        "阿鱼：我轻点走，别吓跑客人。"
+      ],
+      "d5_talk_a": [
+        "猜猜哪艘船去酒店？",
+        "阿鱼：背着龟壳的那艘，一眼认得。"
+      ]
+    }
+  },
+  "round1/rework1107/turtle_boarding.png": {
+    "standing": [
+      {
+        "npc": "d6_05",
+        "at": [
+          69,
+          440
+        ],
+        "heightM": 1.59,
+        "face": 1
+      },
+      {
+        "npc": "d6_06",
+        "at": [
+          256,
+          417
+        ],
+        "heightM": 1.65,
+        "face": -1
+      }
+    ],
+    "talk": {
+      "d6_talk_b": [
+        "慢慢上船，手可以扶在这儿。",
+        "阿鱼：握住了，等它靠稳我再迈。"
+      ],
+      "d6_02": [
+        "想看海就挑个窗边座。",
+        "阿鱼：好，给他也留一个。"
+      ]
+    }
+  },
+  "round1/scenes/cabin.png": {
+    "standing": [],
+    "talk": {
+      "d6_talk_a": [
+        "海风把晚霞都吹进船舱了。",
+        "阿鱼：难怪窗边这排座位这么抢手。"
+      ],
+      "d6_talk_b": [
+        "坐稳啦，船慢慢开出去啦。",
+        "阿鱼：我看着码头一点点变小了。"
+      ]
+    }
+  },
+  "round1/rework1107/wanning_stall.png": {
+    "standing": [
+      {
+        "npc": "d9_04",
+        "at": [
+          135,
+          232
+        ],
+        "heightM": 1.72,
+        "face": -1
+      },
+      {
+        "npc": "d9_05",
+        "at": [
+          68,
+          237
+        ],
+        "heightM": 1.56,
+        "face": 1
+      },
+      {
+        "npc": "d9_06",
+        "at": [
+          331,
+          226
+        ],
+        "heightM": 1.26,
+        "face": -1,
+        "tint": "#e1f8fd",
+        "wade": 0.5
+      }
+    ],
+    "talk": {
+      "d9_talk_b": [
+        "昨晚这阵风，套圈差点套到我。",
+        "阿鱼：那我先瞄准，您别动。"
+      ],
+      "d9_03": [
+        "借过，刚出锅的菜来喽。",
+        "阿鱼：我收好圈，给您的托盘让条路。"
+      ]
+    }
+  },
+  "w2/hainan/bg_wenchang_memory_r2.png": {
+    "standing": [],
+    "talk": {
+      "d10_02": [
+        "想看烟花？沙地这头视野好。",
+        "阿鱼：那我们站这儿等天黑。"
+      ],
+      "d10_talk_b": [
+        "听，大家忽然都安静了。",
+        "阿鱼：我也听见了，快要开场了吧。"
+      ],
+      "d10_04": [
+        "看右边，第一束会从那里升起。",
+        "阿鱼：那我先收起手机，用眼睛看。"
+      ]
+    },
+    "singlePass": true
+  },
+  "w2/hongkong/bg_departure_pvg.png": {
+    "standing": [
+      {
+        "npc": "d11_04",
+        "at": [
+          182,
+          428
+        ],
+        "heightM": 1.63,
+        "face": 1
+      },
+      {
+        "npc": "d11_05",
+        "at": [
+          216,
+          472
+        ],
+        "heightM": 1.72,
+        "face": -1
+      },
+      {
+        "npc": "d11_06",
+        "at": [
+          147,
+          519
+        ],
+        "heightM": 1.61,
+        "face": 1
+      }
+    ],
+    "talk": {
+      "d11_05": [
+        "排这条安检线，托盘在前面。",
+        "阿鱼：谢谢，我把证件先拿出来。"
+      ],
+      "d11_talk_b": [
+        "行李都上带了？别落下外套。",
+        "阿鱼：还真在手上，多谢提醒。"
+      ]
+    }
+  },
+  "w2/hongkong/arrivals_sunset.png": {
+    "talk": {
+      "hk_asha": [
+        "Is this your bag?",
+        "Ayu: Still waiting for mine."
+      ],
+      "hk_sam": [
+        "Need the exit? Follow Arrivals.",
+        "Ayu: Got it. Thank you!"
+      ],
+      "d12_02": [
+        "搵人接機？望吓嗰邊啲牌。",
+        "阿鱼：看见了，谢谢你！"
+      ]
+    }
+  },
+  "w2/hongkong/park_toys_r2.png": {
+    "standing": [
+      {
+        "npc": "d14toys_03",
+        "at": [
+          86,
+          385
+        ],
+        "heightM": 1.6,
+        "face": 1
+      },
+      {
+        "npc": "d14toys_05",
+        "at": [
+          290,
+          462
+        ],
+        "heightM": 1.57,
+        "face": -1
+      }
+    ],
+    "talk": {
+      "d14toys_talk_a": [
+        "数到几块积木了？",
+        "阿鱼：数到这里，已经数乱啦。"
+      ],
+      "d14toys_01": [
+        "那个大球，你能托得住吗？",
+        "阿鱼：镜头里可以，借个位！"
+      ]
+    }
+  },
+  "w2/hongkong/park_garden_r2.png": {
+    "standing": [
+      {
+        "npc": "d14garden_03",
+        "at": [
+          78,
+          419
+        ],
+        "heightM": 1.7,
+        "face": 1
+      },
+      {
+        "npc": "d14garden_05",
+        "at": [
+          271,
+          464
+        ],
+        "heightM": 1.59,
+        "face": -1
+      }
+    ],
+    "talk": {
+      "d14garden_talk_b": [
+        "等人呀？花坛这边有阴凉。",
+        "阿鱼：嗯，我站这儿他一眼就看得见。"
+      ],
+      "d14garden_02": [
+        "听见木马的音乐了吗？",
+        "阿鱼：听见了，绕过花坛就到了吧。"
+      ]
+    }
+  },
+  "w2/hongkong/park_castle_r2.png": {
+    "standing": [
+      {
+        "npc": "d14castle_03",
+        "at": [
+          55,
+          414
+        ],
+        "heightM": 1.61,
+        "face": 1
+      },
+      {
+        "npc": "d14castle_05",
+        "at": [
+          308,
+          483
+        ],
+        "heightM": 1.66,
+        "face": -1
+      }
+    ],
+    "talk": {
+      "d14castle_talk_b": [
+        "想把尖塔也拍进去？往后半步。",
+        "阿鱼：刚好，我们两个都在里面。"
+      ],
+      "d14castle_02": [
+        "照片拍好啦？要不要检查闭眼？",
+        "阿鱼：我看看，他又笑眯眼了。"
+      ]
+    }
+  },
+  "round1/scenes/university.png": {
+    "standing": [
+      {
+        "npc": "d15_03",
+        "at": [
+          88,
+          404
+        ],
+        "heightM": 1.61,
+        "face": 1
+      },
+      {
+        "npc": "d15_04",
+        "at": [
+          270,
+          406
+        ],
+        "heightM": 1.74,
+        "face": -1
+      },
+      {
+        "npc": "d15_05",
+        "at": [
+          295,
+          455
+        ],
+        "heightM": 1.67,
+        "face": -1
+      }
+    ],
+    "talk": {
+      "d15_talk_b": [
+        "在校门口合影？台阶下正好。",
+        "阿鱼：谢谢，想把今天的校门也留下。"
+      ],
+      "d15_02": [
+        "风把头发吹乱了，要再来一张？",
+        "阿鱼：就这一张，风也一起入镜了。"
+      ]
+    },
+    "singlePass": true
+  },
+  "round1/scenes/hk_street.png": {
+    "standing": [
+      {
+        "npc": "d13_04",
+        "at": [
+          68,
+          445
+        ],
+        "heightM": 1.68,
+        "face": 1
+      },
+      {
+        "npc": "d13_05",
+        "at": [
+          297,
+          464
+        ],
+        "heightM": 1.67,
+        "face": -1
+      }
+    ],
+    "talk": {
+      "d13_talk_a": [
+        "想影招牌？企开半步啦。",
+        "阿鱼：真的，整排字都入镜了。"
+      ],
+      "d13_02": [
+        "等巴士過咗先影啦。",
+        "阿鱼：好，咱们站在人行道上。"
+      ]
+    },
+    "singlePass": true
+  }
+}

@@ -1,0 +1,2638 @@
+{
+  "chapterId": "shanghai",
+  "titleId": "G-06",
+  "steps": [
+    {
+      "id": "perspective",
+      "type": "scene",
+      "sceneId": "shanghai_street",
+      "speaker": "system",
+      "actorMode": "none",
+      "actorSlot": null,
+      "background": "scene",
+      "visibleActors": [],
+      "titleId": "G-02",
+      "scene": {
+        "bg": "bg_sh_street.png",
+        "scaleProfile": "shanghai_street",
+        "personHeight": 105,
+        "start": [
+          100,
+          380
+        ],
+        "walkArea": [
+          [
+            20,
+            318
+          ],
+          [
+            340,
+            318
+          ],
+          [
+            340,
+            610
+          ],
+          [
+            20,
+            610
+          ]
+        ],
+        "walkers": [
+          {
+            "a": [
+              220,
+              660
+            ],
+            "b": [
+              220,
+              660
+            ],
+            "speed": 0,
+            "scale": 0.95,
+            "npc": "d1_talk_a",
+            "face": 1,
+            "chatBank": "shanghai_street",
+            "chatSide": 0,
+            "chatOffset": -0.0,
+            "chatPair": true,
+            "sourceAnchored": true,
+            "sourceDepthScale": true,
+            "avoidPlayer": false
+          },
+          {
+            "a": [
+              280,
+              660
+            ],
+            "b": [
+              280,
+              660
+            ],
+            "speed": 0,
+            "scale": 0.95,
+            "npc": "d1_talk_b",
+            "face": -1,
+            "chatBank": "shanghai_street",
+            "chatSide": 1,
+            "chatOffset": -2.3,
+            "chatPair": true,
+            "sourceAnchored": true,
+            "sourceDepthScale": true,
+            "avoidPlayer": false
+          },
+          {
+            "a": [
+              135,
+              760
+            ],
+            "b": [
+              135,
+              760
+            ],
+            "speed": 0,
+            "scale": 0.95,
+            "npc": "d1_01",
+            "sourceAnchored": true,
+            "sourceDepthScale": true,
+            "avoidPlayer": false
+          },
+          {
+            "a": [
+              400,
+              740
+            ],
+            "b": [
+              400,
+              740
+            ],
+            "speed": 0,
+            "scale": 0.95,
+            "npc": "d1_02",
+            "sourceAnchored": true,
+            "sourceDepthScale": true,
+            "avoidPlayer": false
+          },
+          {
+            "a": [
+              280,
+              880
+            ],
+            "b": [
+              280,
+              880
+            ],
+            "speed": 0,
+            "scale": 0.95,
+            "npc": "d1_03",
+            "sourceAnchored": true,
+            "sourceDepthScale": true,
+            "avoidPlayer": false
+          },
+          {
+            "a": [
+              72,
+              1016
+            ],
+            "b": [
+              456,
+              1008
+            ],
+            "speed": 74,
+            "npc": "d1_04",
+            "sourceAnchored": true,
+            "sourceDepthScale": true,
+            "avoidPlayer": false,
+            "heightM": 1.52,
+            "phase": 0.16,
+            "pause": 2.6
+          }
+        ],
+        "badge": "G-02",
+        "atmosphere": "street",
+        "actors": [
+          {
+            "id": "g42",
+            "tex": "car_street.png",
+            "at": [
+              264,
+              300
+            ]
+          }
+        ],
+        "beats": [
+          {
+            "card": "G-06",
+            "duration": 1.6
+          }
+        ]
+      }
+    },
+    {
+      "id": "street_intro",
+      "type": "scene",
+      "sceneId": "shanghai_street",
+      "speaker": "narrator",
+      "actorMode": "none",
+      "actorSlot": null,
+      "background": "scene",
+      "visibleActors": [],
+      "scene": {
+        "bg": "bg_sh_street.png",
+        "scaleProfile": "shanghai_street",
+        "personHeight": 105,
+        "start": [
+          100,
+          380
+        ],
+        "walkArea": [
+          [
+            20,
+            318
+          ],
+          [
+            340,
+            318
+          ],
+          [
+            340,
+            610
+          ],
+          [
+            20,
+            610
+          ]
+        ],
+        "walkers": [
+          {
+            "a": [
+              220,
+              660
+            ],
+            "b": [
+              220,
+              660
+            ],
+            "speed": 0,
+            "scale": 0.95,
+            "npc": "d1_talk_a",
+            "face": 1,
+            "chatBank": "shanghai_street",
+            "chatSide": 0,
+            "chatOffset": -0.0,
+            "chatPair": true,
+            "sourceAnchored": true,
+            "sourceDepthScale": true,
+            "avoidPlayer": false
+          },
+          {
+            "a": [
+              280,
+              660
+            ],
+            "b": [
+              280,
+              660
+            ],
+            "speed": 0,
+            "scale": 0.95,
+            "npc": "d1_talk_b",
+            "face": -1,
+            "chatBank": "shanghai_street",
+            "chatSide": 1,
+            "chatOffset": -2.3,
+            "chatPair": true,
+            "sourceAnchored": true,
+            "sourceDepthScale": true,
+            "avoidPlayer": false
+          },
+          {
+            "a": [
+              135,
+              760
+            ],
+            "b": [
+              135,
+              760
+            ],
+            "speed": 0,
+            "scale": 0.95,
+            "npc": "d1_01",
+            "sourceAnchored": true,
+            "sourceDepthScale": true,
+            "avoidPlayer": false
+          },
+          {
+            "a": [
+              400,
+              740
+            ],
+            "b": [
+              400,
+              740
+            ],
+            "speed": 0,
+            "scale": 0.95,
+            "npc": "d1_02",
+            "sourceAnchored": true,
+            "sourceDepthScale": true,
+            "avoidPlayer": false
+          },
+          {
+            "a": [
+              280,
+              880
+            ],
+            "b": [
+              280,
+              880
+            ],
+            "speed": 0,
+            "scale": 0.95,
+            "npc": "d1_03",
+            "sourceAnchored": true,
+            "sourceDepthScale": true,
+            "avoidPlayer": false
+          },
+          {
+            "a": [
+              72,
+              1016
+            ],
+            "b": [
+              456,
+              1008
+            ],
+            "speed": 74,
+            "npc": "d1_04",
+            "sourceAnchored": true,
+            "sourceDepthScale": true,
+            "avoidPlayer": false,
+            "heightM": 1.52,
+            "phase": 0.16,
+            "pause": 2.6
+          }
+        ],
+        "badge": "G-02",
+        "atmosphere": "street",
+        "actors": [
+          {
+            "id": "g42",
+            "tex": "car_street.png",
+            "at": [
+              264,
+              300
+            ]
+          }
+        ],
+        "beats": [
+          {
+            "narrate": "A1-1a"
+          }
+        ]
+      }
+    },
+    {
+      "id": "board_car",
+      "type": "scene",
+      "sceneId": "shanghai_street",
+      "speaker": "system",
+      "actorMode": "none",
+      "actorSlot": null,
+      "background": "scene",
+      "visibleActors": [],
+      "scene": {
+        "bg": "bg_sh_street.png",
+        "scaleProfile": "shanghai_street",
+        "personHeight": 105,
+        "start": [
+          100,
+          380
+        ],
+        "walkArea": [
+          [
+            20,
+            318
+          ],
+          [
+            340,
+            318
+          ],
+          [
+            340,
+            610
+          ],
+          [
+            20,
+            610
+          ]
+        ],
+        "walkers": [
+          {
+            "a": [
+              220,
+              660
+            ],
+            "b": [
+              220,
+              660
+            ],
+            "speed": 0,
+            "scale": 0.95,
+            "npc": "d1_talk_a",
+            "face": 1,
+            "chatBank": "shanghai_street",
+            "chatSide": 0,
+            "chatOffset": -0.0,
+            "chatPair": true,
+            "sourceAnchored": true,
+            "sourceDepthScale": true,
+            "avoidPlayer": false
+          },
+          {
+            "a": [
+              280,
+              660
+            ],
+            "b": [
+              280,
+              660
+            ],
+            "speed": 0,
+            "scale": 0.95,
+            "npc": "d1_talk_b",
+            "face": -1,
+            "chatBank": "shanghai_street",
+            "chatSide": 1,
+            "chatOffset": -2.3,
+            "chatPair": true,
+            "sourceAnchored": true,
+            "sourceDepthScale": true,
+            "avoidPlayer": false
+          },
+          {
+            "a": [
+              135,
+              760
+            ],
+            "b": [
+              135,
+              760
+            ],
+            "speed": 0,
+            "scale": 0.95,
+            "npc": "d1_01",
+            "sourceAnchored": true,
+            "sourceDepthScale": true,
+            "avoidPlayer": false
+          },
+          {
+            "a": [
+              400,
+              740
+            ],
+            "b": [
+              400,
+              740
+            ],
+            "speed": 0,
+            "scale": 0.95,
+            "npc": "d1_02",
+            "sourceAnchored": true,
+            "sourceDepthScale": true,
+            "avoidPlayer": false
+          },
+          {
+            "a": [
+              280,
+              880
+            ],
+            "b": [
+              280,
+              880
+            ],
+            "speed": 0,
+            "scale": 0.95,
+            "npc": "d1_03",
+            "sourceAnchored": true,
+            "sourceDepthScale": true,
+            "avoidPlayer": false
+          },
+          {
+            "a": [
+              72,
+              1016
+            ],
+            "b": [
+              456,
+              1008
+            ],
+            "speed": 74,
+            "npc": "d1_04",
+            "sourceAnchored": true,
+            "sourceDepthScale": true,
+            "avoidPlayer": false,
+            "heightM": 1.52,
+            "phase": 0.16,
+            "pause": 2.6
+          }
+        ],
+        "badge": "G-02",
+        "atmosphere": "street",
+        "actors": [
+          {
+            "id": "g42",
+            "tex": "car_street.png",
+            "at": [
+              264,
+              300
+            ]
+          }
+        ],
+        "hotspots": [
+          {
+            "id": "car",
+            "at": [
+              247,
+              328
+            ],
+            "icon": "pick"
+          }
+        ],
+        "beats": [
+          {
+            "go": "car",
+            "hint": "A1-P1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "drive",
+      "type": "scene",
+      "sceneId": "shanghai_road",
+      "speaker": "system",
+      "actorMode": "none",
+      "actorSlot": null,
+      "background": "scene",
+      "visibleActors": [],
+      "scene": {
+        "goalRewardId": "pen",
+        "hideAyu": true,
+        "fill": "#6f8f4e",
+        "beats": [
+          {
+            "goal": {
+              "目标": "带回钢笔",
+              "任务": "左右滑动换道，驶向东方明珠。右侧金框车位靠近时，按住屏幕刹车。"
+            }
+          },
+          {
+            "game": "drive"
+          }
+        ],
+        "bg": "round1/scenes/shanghai_drive.png"
+      }
+    },
+    {
+      "id": "parked",
+      "type": "scene",
+      "sceneId": "shanghai_parking",
+      "speaker": "narrator",
+      "actorMode": "none",
+      "actorSlot": null,
+      "background": "scene",
+      "visibleActors": [],
+      "scene": {
+        "bg": "round1/rework1107/shanghai_parking.png",
+        "scaleProfile": "shanghai_parking",
+        "personHeight": 105,
+        "start": [
+          144,
+          518
+        ],
+        "walkArea": [
+          [
+            24,
+            467
+          ],
+          [
+            332,
+            467
+          ],
+          [
+            328,
+            610
+          ],
+          [
+            28,
+            610
+          ]
+        ],
+        "walkers": [
+          {
+            "a": [
+              68,
+              285
+            ],
+            "b": [
+              68,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_01",
+            "face": 1,
+            "heightM": 1.57
+          },
+          {
+            "a": [
+              127,
+              285
+            ],
+            "b": [
+              127,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_02",
+            "face": -1,
+            "heightM": 1.67
+          },
+          {
+            "a": [
+              204,
+              285
+            ],
+            "b": [
+              204,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_talk_a",
+            "face": 1,
+            "heightM": 1.59
+          },
+          {
+            "a": [
+              303,
+              285
+            ],
+            "b": [
+              303,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_talk_b",
+            "face": -1,
+            "heightM": 1.67
+          },
+          {
+            "a": [
+              52,
+              526
+            ],
+            "b": [
+              52,
+              526
+            ],
+            "speed": 0,
+            "npc": "d2_talk_a",
+            "face": 1,
+            "heightM": 1.59
+          },
+          {
+            "a": [
+              95,
+              527
+            ],
+            "b": [
+              95,
+              527
+            ],
+            "speed": 0,
+            "npc": "d2_talk_b",
+            "face": -1,
+            "heightM": 1.67
+          }
+        ],
+        "badge": "G-02",
+        "atmosphere": "",
+        "actors": [
+          {
+            "id": "g42",
+            "tex": "round1/vehicles/g42_front_r2.png",
+            "at": [
+              109,
+              368
+            ],
+            "plate": 0
+          },
+          {
+            "id": "axiao_car",
+            "tex": "round1/vehicles/g42_front_r2.png",
+            "at": [
+              250,
+              368
+            ],
+            "plate": 1
+          }
+        ],
+        "beats": [
+          {
+            "narrate": "A1-1b"
+          }
+        ]
+      }
+    },
+    {
+      "id": "other_car",
+      "type": "scene",
+      "sceneId": "shanghai_parking",
+      "speaker": "narrator",
+      "actorMode": "none",
+      "actorSlot": null,
+      "background": "scene",
+      "visibleActors": [],
+      "scene": {
+        "bg": "round1/rework1107/shanghai_parking.png",
+        "scaleProfile": "shanghai_parking",
+        "personHeight": 105,
+        "start": [
+          144,
+          518
+        ],
+        "walkArea": [
+          [
+            24,
+            467
+          ],
+          [
+            332,
+            467
+          ],
+          [
+            328,
+            610
+          ],
+          [
+            28,
+            610
+          ]
+        ],
+        "walkers": [
+          {
+            "a": [
+              68,
+              285
+            ],
+            "b": [
+              68,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_01",
+            "face": 1,
+            "heightM": 1.57
+          },
+          {
+            "a": [
+              127,
+              285
+            ],
+            "b": [
+              127,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_02",
+            "face": -1,
+            "heightM": 1.67
+          },
+          {
+            "a": [
+              204,
+              285
+            ],
+            "b": [
+              204,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_talk_a",
+            "face": 1,
+            "heightM": 1.59
+          },
+          {
+            "a": [
+              303,
+              285
+            ],
+            "b": [
+              303,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_talk_b",
+            "face": -1,
+            "heightM": 1.67
+          },
+          {
+            "a": [
+              52,
+              526
+            ],
+            "b": [
+              52,
+              526
+            ],
+            "speed": 0,
+            "npc": "d2_talk_a",
+            "face": 1,
+            "heightM": 1.59
+          },
+          {
+            "a": [
+              95,
+              527
+            ],
+            "b": [
+              95,
+              527
+            ],
+            "speed": 0,
+            "npc": "d2_talk_b",
+            "face": -1,
+            "heightM": 1.67
+          }
+        ],
+        "badge": "G-02",
+        "atmosphere": "",
+        "actors": [
+          {
+            "id": "g42",
+            "tex": "round1/vehicles/g42_front_r2.png",
+            "at": [
+              109,
+              368
+            ],
+            "plate": 0
+          },
+          {
+            "id": "axiao_car",
+            "tex": "round1/vehicles/g42_front_r2.png",
+            "at": [
+              250,
+              368
+            ],
+            "plate": 1,
+            "doorTime": 1.4
+          },
+          {
+            "id": "axiao",
+            "tex": "axiao_idle.png",
+            "at": [
+              230,
+              515
+            ],
+            "appearAfter": 0.4,
+            "moveFrom": [
+              307,
+              373
+            ],
+            "moveTime": 1.52,
+            "walkFrames": "axiao_walk_side_%d.png",
+            "flip": true
+          }
+        ],
+        "beats": [
+          {
+            "narrate": "A1-1c",
+            "minSeconds": 2.1
+          }
+        ]
+      }
+    },
+    {
+      "id": "approach_axiao",
+      "type": "scene",
+      "sceneId": "shanghai_parking",
+      "speaker": "system",
+      "actorMode": "none",
+      "actorSlot": null,
+      "background": "scene",
+      "visibleActors": [],
+      "scene": {
+        "bg": "round1/rework1107/shanghai_parking.png",
+        "scaleProfile": "shanghai_parking",
+        "personHeight": 105,
+        "start": [
+          144,
+          518
+        ],
+        "walkArea": [
+          [
+            24,
+            467
+          ],
+          [
+            332,
+            467
+          ],
+          [
+            328,
+            610
+          ],
+          [
+            28,
+            610
+          ]
+        ],
+        "walkers": [
+          {
+            "a": [
+              68,
+              285
+            ],
+            "b": [
+              68,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_01",
+            "face": 1,
+            "heightM": 1.57
+          },
+          {
+            "a": [
+              127,
+              285
+            ],
+            "b": [
+              127,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_02",
+            "face": -1,
+            "heightM": 1.67
+          },
+          {
+            "a": [
+              204,
+              285
+            ],
+            "b": [
+              204,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_talk_a",
+            "face": 1,
+            "heightM": 1.59
+          },
+          {
+            "a": [
+              303,
+              285
+            ],
+            "b": [
+              303,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_talk_b",
+            "face": -1,
+            "heightM": 1.67
+          },
+          {
+            "a": [
+              52,
+              526
+            ],
+            "b": [
+              52,
+              526
+            ],
+            "speed": 0,
+            "npc": "d2_talk_a",
+            "face": 1,
+            "heightM": 1.59
+          },
+          {
+            "a": [
+              95,
+              527
+            ],
+            "b": [
+              95,
+              527
+            ],
+            "speed": 0,
+            "npc": "d2_talk_b",
+            "face": -1,
+            "heightM": 1.67
+          }
+        ],
+        "badge": "G-02",
+        "atmosphere": "",
+        "actors": [
+          {
+            "id": "g42",
+            "tex": "round1/vehicles/g42_front_r2.png",
+            "at": [
+              109,
+              368
+            ],
+            "plate": 0
+          },
+          {
+            "id": "axiao_car",
+            "tex": "round1/vehicles/g42_front_r2.png",
+            "at": [
+              250,
+              368
+            ],
+            "plate": 1
+          },
+          {
+            "id": "axiao",
+            "tex": "axiao_idle.png",
+            "at": [
+              230,
+              515
+            ]
+          }
+        ],
+        "hotspots": [
+          {
+            "id": "axiao",
+            "at": [
+              193,
+              515
+            ],
+            "icon": "talk"
+          }
+        ],
+        "beats": [
+          {
+            "go": "axiao",
+            "hint": "A1-P3"
+          }
+        ]
+      }
+    },
+    {
+      "id": "line_1",
+      "type": "scene",
+      "sceneId": "shanghai_parking",
+      "speaker": "axiao",
+      "actorMode": "none",
+      "actorSlot": null,
+      "background": "scene",
+      "visibleActors": [],
+      "scene": {
+        "bg": "round1/rework1107/shanghai_parking.png",
+        "scaleProfile": "shanghai_parking",
+        "personHeight": 105,
+        "start": [
+          187,
+          515
+        ],
+        "walkArea": [
+          [
+            24,
+            467
+          ],
+          [
+            332,
+            467
+          ],
+          [
+            328,
+            610
+          ],
+          [
+            28,
+            610
+          ]
+        ],
+        "walkers": [
+          {
+            "a": [
+              68,
+              285
+            ],
+            "b": [
+              68,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_01",
+            "face": 1,
+            "heightM": 1.57
+          },
+          {
+            "a": [
+              127,
+              285
+            ],
+            "b": [
+              127,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_02",
+            "face": -1,
+            "heightM": 1.67
+          },
+          {
+            "a": [
+              204,
+              285
+            ],
+            "b": [
+              204,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_talk_a",
+            "face": 1,
+            "heightM": 1.59
+          },
+          {
+            "a": [
+              303,
+              285
+            ],
+            "b": [
+              303,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_talk_b",
+            "face": -1,
+            "heightM": 1.67
+          },
+          {
+            "a": [
+              52,
+              526
+            ],
+            "b": [
+              52,
+              526
+            ],
+            "speed": 0,
+            "npc": "d2_talk_a",
+            "face": 1,
+            "heightM": 1.59
+          },
+          {
+            "a": [
+              95,
+              527
+            ],
+            "b": [
+              95,
+              527
+            ],
+            "speed": 0,
+            "npc": "d2_talk_b",
+            "face": -1,
+            "heightM": 1.67
+          }
+        ],
+        "badge": "G-02",
+        "atmosphere": "",
+        "actors": [
+          {
+            "id": "g42",
+            "tex": "round1/vehicles/g42_front_r2.png",
+            "at": [
+              109,
+              368
+            ],
+            "plate": 0
+          },
+          {
+            "id": "axiao_car",
+            "tex": "round1/vehicles/g42_front_r2.png",
+            "at": [
+              250,
+              368
+            ],
+            "plate": 1
+          },
+          {
+            "id": "axiao",
+            "tex": "axiao_idle.png",
+            "at": [
+              230,
+              515
+            ]
+          }
+        ],
+        "beats": [
+          {
+            "say": "A1-2a",
+            "who": "axiao"
+          }
+        ]
+      }
+    },
+    {
+      "id": "line_2",
+      "continueShot": true,
+      "type": "scene",
+      "sceneId": "shanghai_parking",
+      "speaker": "ayu",
+      "actorMode": "none",
+      "actorSlot": null,
+      "background": "scene",
+      "visibleActors": [],
+      "scene": {
+        "bg": "round1/rework1107/shanghai_parking.png",
+        "scaleProfile": "shanghai_parking",
+        "personHeight": 105,
+        "start": [
+          187,
+          515
+        ],
+        "walkArea": [
+          [
+            24,
+            467
+          ],
+          [
+            332,
+            467
+          ],
+          [
+            328,
+            610
+          ],
+          [
+            28,
+            610
+          ]
+        ],
+        "walkers": [
+          {
+            "a": [
+              68,
+              285
+            ],
+            "b": [
+              68,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_01",
+            "face": 1,
+            "heightM": 1.57
+          },
+          {
+            "a": [
+              127,
+              285
+            ],
+            "b": [
+              127,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_02",
+            "face": -1,
+            "heightM": 1.67
+          },
+          {
+            "a": [
+              204,
+              285
+            ],
+            "b": [
+              204,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_talk_a",
+            "face": 1,
+            "heightM": 1.59
+          },
+          {
+            "a": [
+              303,
+              285
+            ],
+            "b": [
+              303,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_talk_b",
+            "face": -1,
+            "heightM": 1.67
+          },
+          {
+            "a": [
+              52,
+              526
+            ],
+            "b": [
+              52,
+              526
+            ],
+            "speed": 0,
+            "npc": "d2_talk_a",
+            "face": 1,
+            "heightM": 1.59
+          },
+          {
+            "a": [
+              95,
+              527
+            ],
+            "b": [
+              95,
+              527
+            ],
+            "speed": 0,
+            "npc": "d2_talk_b",
+            "face": -1,
+            "heightM": 1.67
+          }
+        ],
+        "badge": "G-02",
+        "atmosphere": "",
+        "actors": [
+          {
+            "id": "g42",
+            "tex": "round1/vehicles/g42_front_r2.png",
+            "at": [
+              109,
+              368
+            ],
+            "plate": 0
+          },
+          {
+            "id": "axiao_car",
+            "tex": "round1/vehicles/g42_front_r2.png",
+            "at": [
+              250,
+              368
+            ],
+            "plate": 1
+          },
+          {
+            "id": "axiao",
+            "tex": "axiao_idle.png",
+            "at": [
+              230,
+              515
+            ]
+          }
+        ],
+        "beats": [
+          {
+            "say": "A1-2b",
+            "who": "ayu"
+          }
+        ]
+      }
+    },
+    {
+      "id": "line_3",
+      "continueShot": true,
+      "type": "scene",
+      "sceneId": "shanghai_parking",
+      "speaker": "axiao",
+      "actorMode": "none",
+      "actorSlot": null,
+      "background": "scene",
+      "visibleActors": [],
+      "scene": {
+        "bg": "round1/rework1107/shanghai_parking.png",
+        "scaleProfile": "shanghai_parking",
+        "personHeight": 105,
+        "start": [
+          187,
+          515
+        ],
+        "walkArea": [
+          [
+            24,
+            467
+          ],
+          [
+            332,
+            467
+          ],
+          [
+            328,
+            610
+          ],
+          [
+            28,
+            610
+          ]
+        ],
+        "walkers": [
+          {
+            "a": [
+              68,
+              285
+            ],
+            "b": [
+              68,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_01",
+            "face": 1,
+            "heightM": 1.57
+          },
+          {
+            "a": [
+              127,
+              285
+            ],
+            "b": [
+              127,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_02",
+            "face": -1,
+            "heightM": 1.67
+          },
+          {
+            "a": [
+              204,
+              285
+            ],
+            "b": [
+              204,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_talk_a",
+            "face": 1,
+            "heightM": 1.59
+          },
+          {
+            "a": [
+              303,
+              285
+            ],
+            "b": [
+              303,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_talk_b",
+            "face": -1,
+            "heightM": 1.67
+          },
+          {
+            "a": [
+              52,
+              526
+            ],
+            "b": [
+              52,
+              526
+            ],
+            "speed": 0,
+            "npc": "d2_talk_a",
+            "face": 1,
+            "heightM": 1.59
+          },
+          {
+            "a": [
+              95,
+              527
+            ],
+            "b": [
+              95,
+              527
+            ],
+            "speed": 0,
+            "npc": "d2_talk_b",
+            "face": -1,
+            "heightM": 1.67
+          }
+        ],
+        "badge": "G-02",
+        "atmosphere": "",
+        "actors": [
+          {
+            "id": "g42",
+            "tex": "round1/vehicles/g42_front_r2.png",
+            "at": [
+              109,
+              368
+            ],
+            "plate": 0
+          },
+          {
+            "id": "axiao_car",
+            "tex": "round1/vehicles/g42_front_r2.png",
+            "at": [
+              250,
+              368
+            ],
+            "plate": 1
+          },
+          {
+            "id": "axiao",
+            "tex": "axiao_idle.png",
+            "at": [
+              230,
+              515
+            ]
+          }
+        ],
+        "beats": [
+          {
+            "say": "A1-2c",
+            "who": "axiao"
+          }
+        ]
+      }
+    },
+    {
+      "id": "line_4",
+      "continueShot": true,
+      "type": "scene",
+      "sceneId": "shanghai_parking",
+      "speaker": "ayu",
+      "actorMode": "none",
+      "actorSlot": null,
+      "background": "scene",
+      "visibleActors": [],
+      "scene": {
+        "bg": "round1/rework1107/shanghai_parking.png",
+        "scaleProfile": "shanghai_parking",
+        "personHeight": 105,
+        "start": [
+          187,
+          515
+        ],
+        "walkArea": [
+          [
+            24,
+            467
+          ],
+          [
+            332,
+            467
+          ],
+          [
+            328,
+            610
+          ],
+          [
+            28,
+            610
+          ]
+        ],
+        "walkers": [
+          {
+            "a": [
+              68,
+              285
+            ],
+            "b": [
+              68,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_01",
+            "face": 1,
+            "heightM": 1.57
+          },
+          {
+            "a": [
+              127,
+              285
+            ],
+            "b": [
+              127,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_02",
+            "face": -1,
+            "heightM": 1.67
+          },
+          {
+            "a": [
+              204,
+              285
+            ],
+            "b": [
+              204,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_talk_a",
+            "face": 1,
+            "heightM": 1.59
+          },
+          {
+            "a": [
+              303,
+              285
+            ],
+            "b": [
+              303,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_talk_b",
+            "face": -1,
+            "heightM": 1.67
+          },
+          {
+            "a": [
+              52,
+              526
+            ],
+            "b": [
+              52,
+              526
+            ],
+            "speed": 0,
+            "npc": "d2_talk_a",
+            "face": 1,
+            "heightM": 1.59
+          },
+          {
+            "a": [
+              95,
+              527
+            ],
+            "b": [
+              95,
+              527
+            ],
+            "speed": 0,
+            "npc": "d2_talk_b",
+            "face": -1,
+            "heightM": 1.67
+          }
+        ],
+        "badge": "G-02",
+        "atmosphere": "",
+        "actors": [
+          {
+            "id": "g42",
+            "tex": "round1/vehicles/g42_front_r2.png",
+            "at": [
+              109,
+              368
+            ],
+            "plate": 0
+          },
+          {
+            "id": "axiao_car",
+            "tex": "round1/vehicles/g42_front_r2.png",
+            "at": [
+              250,
+              368
+            ],
+            "plate": 1
+          },
+          {
+            "id": "axiao",
+            "tex": "axiao_idle.png",
+            "at": [
+              230,
+              515
+            ]
+          }
+        ],
+        "beats": [
+          {
+            "say": "A1-2d",
+            "who": "ayu"
+          }
+        ]
+      }
+    },
+    {
+      "id": "line_5",
+      "continueShot": true,
+      "type": "scene",
+      "sceneId": "shanghai_parking",
+      "speaker": "axiao",
+      "actorMode": "none",
+      "actorSlot": null,
+      "background": "scene",
+      "visibleActors": [],
+      "scene": {
+        "bg": "round1/rework1107/shanghai_parking.png",
+        "scaleProfile": "shanghai_parking",
+        "personHeight": 105,
+        "start": [
+          187,
+          515
+        ],
+        "walkArea": [
+          [
+            24,
+            467
+          ],
+          [
+            332,
+            467
+          ],
+          [
+            328,
+            610
+          ],
+          [
+            28,
+            610
+          ]
+        ],
+        "walkers": [
+          {
+            "a": [
+              68,
+              285
+            ],
+            "b": [
+              68,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_01",
+            "face": 1,
+            "heightM": 1.57
+          },
+          {
+            "a": [
+              127,
+              285
+            ],
+            "b": [
+              127,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_02",
+            "face": -1,
+            "heightM": 1.67
+          },
+          {
+            "a": [
+              204,
+              285
+            ],
+            "b": [
+              204,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_talk_a",
+            "face": 1,
+            "heightM": 1.59
+          },
+          {
+            "a": [
+              303,
+              285
+            ],
+            "b": [
+              303,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_talk_b",
+            "face": -1,
+            "heightM": 1.67
+          },
+          {
+            "a": [
+              52,
+              526
+            ],
+            "b": [
+              52,
+              526
+            ],
+            "speed": 0,
+            "npc": "d2_talk_a",
+            "face": 1,
+            "heightM": 1.59
+          },
+          {
+            "a": [
+              95,
+              527
+            ],
+            "b": [
+              95,
+              527
+            ],
+            "speed": 0,
+            "npc": "d2_talk_b",
+            "face": -1,
+            "heightM": 1.67
+          }
+        ],
+        "badge": "G-02",
+        "atmosphere": "",
+        "actors": [
+          {
+            "id": "g42",
+            "tex": "round1/vehicles/g42_front_r2.png",
+            "at": [
+              109,
+              368
+            ],
+            "plate": 0
+          },
+          {
+            "id": "axiao_car",
+            "tex": "round1/vehicles/g42_front_r2.png",
+            "at": [
+              250,
+              368
+            ],
+            "plate": 1
+          },
+          {
+            "id": "axiao",
+            "tex": "axiao_idle.png",
+            "at": [
+              230,
+              515
+            ]
+          }
+        ],
+        "beats": [
+          {
+            "say": "A1-2e",
+            "who": "axiao"
+          }
+        ]
+      }
+    },
+    {
+      "id": "line_6",
+      "continueShot": true,
+      "type": "scene",
+      "sceneId": "shanghai_parking",
+      "speaker": "ayu",
+      "actorMode": "none",
+      "actorSlot": null,
+      "background": "scene",
+      "visibleActors": [],
+      "scene": {
+        "bg": "round1/rework1107/shanghai_parking.png",
+        "scaleProfile": "shanghai_parking",
+        "personHeight": 105,
+        "start": [
+          187,
+          515
+        ],
+        "walkArea": [
+          [
+            24,
+            467
+          ],
+          [
+            332,
+            467
+          ],
+          [
+            328,
+            610
+          ],
+          [
+            28,
+            610
+          ]
+        ],
+        "walkers": [
+          {
+            "a": [
+              68,
+              285
+            ],
+            "b": [
+              68,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_01",
+            "face": 1,
+            "heightM": 1.57
+          },
+          {
+            "a": [
+              127,
+              285
+            ],
+            "b": [
+              127,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_02",
+            "face": -1,
+            "heightM": 1.67
+          },
+          {
+            "a": [
+              204,
+              285
+            ],
+            "b": [
+              204,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_talk_a",
+            "face": 1,
+            "heightM": 1.59
+          },
+          {
+            "a": [
+              303,
+              285
+            ],
+            "b": [
+              303,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_talk_b",
+            "face": -1,
+            "heightM": 1.67
+          },
+          {
+            "a": [
+              52,
+              526
+            ],
+            "b": [
+              52,
+              526
+            ],
+            "speed": 0,
+            "npc": "d2_talk_a",
+            "face": 1,
+            "heightM": 1.59
+          },
+          {
+            "a": [
+              95,
+              527
+            ],
+            "b": [
+              95,
+              527
+            ],
+            "speed": 0,
+            "npc": "d2_talk_b",
+            "face": -1,
+            "heightM": 1.67
+          }
+        ],
+        "badge": "G-02",
+        "atmosphere": "",
+        "actors": [
+          {
+            "id": "g42",
+            "tex": "round1/vehicles/g42_front_r2.png",
+            "at": [
+              109,
+              368
+            ],
+            "plate": 0
+          },
+          {
+            "id": "axiao_car",
+            "tex": "round1/vehicles/g42_front_r2.png",
+            "at": [
+              250,
+              368
+            ],
+            "plate": 1
+          },
+          {
+            "id": "axiao",
+            "tex": "axiao_idle.png",
+            "at": [
+              230,
+              515
+            ]
+          }
+        ],
+        "beats": [
+          {
+            "say": "A1-2f",
+            "who": "ayu"
+          }
+        ]
+      }
+    },
+    {
+      "id": "meet_close",
+      "type": "scene",
+      "sceneId": "shanghai_parking",
+      "speaker": "narrator",
+      "actorMode": "none",
+      "actorSlot": null,
+      "background": "scene",
+      "visibleActors": [],
+      "scene": {
+        "bg": "round1/rework1107/shanghai_parking.png",
+        "scaleProfile": "shanghai_parking",
+        "personHeight": 105,
+        "start": [
+          160,
+          510
+        ],
+        "walkArea": [
+          [
+            24,
+            467
+          ],
+          [
+            332,
+            467
+          ],
+          [
+            328,
+            610
+          ],
+          [
+            28,
+            610
+          ]
+        ],
+        "walkers": [
+          {
+            "a": [
+              68,
+              285
+            ],
+            "b": [
+              68,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_01",
+            "face": 1,
+            "heightM": 1.57
+          },
+          {
+            "a": [
+              127,
+              285
+            ],
+            "b": [
+              127,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_02",
+            "face": -1,
+            "heightM": 1.67
+          },
+          {
+            "a": [
+              204,
+              285
+            ],
+            "b": [
+              204,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_talk_a",
+            "face": 1,
+            "heightM": 1.59
+          },
+          {
+            "a": [
+              303,
+              285
+            ],
+            "b": [
+              303,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_talk_b",
+            "face": -1,
+            "heightM": 1.67
+          },
+          {
+            "a": [
+              52,
+              526
+            ],
+            "b": [
+              52,
+              526
+            ],
+            "speed": 0,
+            "npc": "d2_talk_a",
+            "face": 1,
+            "heightM": 1.59
+          },
+          {
+            "a": [
+              95,
+              527
+            ],
+            "b": [
+              95,
+              527
+            ],
+            "speed": 0,
+            "npc": "d2_talk_b",
+            "face": -1,
+            "heightM": 1.67
+          }
+        ],
+        "badge": "G-02",
+        "atmosphere": "",
+        "actors": [
+          {
+            "id": "g42",
+            "tex": "round1/vehicles/g42_front_r2.png",
+            "at": [
+              109,
+              368
+            ],
+            "plate": 0
+          },
+          {
+            "id": "axiao_car",
+            "tex": "round1/vehicles/g42_front_r2.png",
+            "at": [
+              250,
+              368
+            ],
+            "plate": 1
+          },
+          {
+            "id": "axiao",
+            "tex": "axiao_idle.png",
+            "at": [
+              230,
+              515
+            ]
+          }
+        ],
+        "beats": [
+          {
+            "narrate": "A1-2g"
+          }
+        ]
+      }
+    },
+    {
+      "id": "quiet",
+      "type": "scene",
+      "sceneId": "shanghai_parking",
+      "speaker": "system",
+      "actorMode": "none",
+      "actorSlot": null,
+      "background": "scene",
+      "visibleActors": [],
+      "scene": {
+        "bg": "round1/rework1107/shanghai_parking.png",
+        "scaleProfile": "shanghai_parking",
+        "personHeight": 105,
+        "start": [
+          160,
+          510
+        ],
+        "walkArea": [
+          [
+            24,
+            467
+          ],
+          [
+            332,
+            467
+          ],
+          [
+            328,
+            610
+          ],
+          [
+            28,
+            610
+          ]
+        ],
+        "walkers": [
+          {
+            "a": [
+              68,
+              285
+            ],
+            "b": [
+              68,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_01",
+            "face": 1,
+            "heightM": 1.57
+          },
+          {
+            "a": [
+              127,
+              285
+            ],
+            "b": [
+              127,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_02",
+            "face": -1,
+            "heightM": 1.67
+          },
+          {
+            "a": [
+              204,
+              285
+            ],
+            "b": [
+              204,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_talk_a",
+            "face": 1,
+            "heightM": 1.59
+          },
+          {
+            "a": [
+              303,
+              285
+            ],
+            "b": [
+              303,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_talk_b",
+            "face": -1,
+            "heightM": 1.67
+          },
+          {
+            "a": [
+              52,
+              526
+            ],
+            "b": [
+              52,
+              526
+            ],
+            "speed": 0,
+            "npc": "d2_talk_a",
+            "face": 1,
+            "heightM": 1.59
+          },
+          {
+            "a": [
+              95,
+              527
+            ],
+            "b": [
+              95,
+              527
+            ],
+            "speed": 0,
+            "npc": "d2_talk_b",
+            "face": -1,
+            "heightM": 1.67
+          }
+        ],
+        "badge": "G-02",
+        "atmosphere": "",
+        "actors": [
+          {
+            "id": "g42",
+            "tex": "round1/vehicles/g42_front_r2.png",
+            "at": [
+              109,
+              368
+            ],
+            "plate": 0
+          },
+          {
+            "id": "axiao_car",
+            "tex": "round1/vehicles/g42_front_r2.png",
+            "at": [
+              250,
+              368
+            ],
+            "plate": 1
+          },
+          {
+            "id": "axiao",
+            "tex": "axiao_idle.png",
+            "at": [
+              230,
+              515
+            ]
+          }
+        ],
+        "beats": [
+          {
+            "wait": 1.5
+          }
+        ]
+      }
+    },
+    {
+      "id": "later",
+      "type": "scene",
+      "sceneId": "shanghai_parking",
+      "speaker": "narrator",
+      "actorMode": "none",
+      "actorSlot": null,
+      "background": "scene",
+      "visibleActors": [],
+      "scene": {
+        "bg": "round1/rework1107/shanghai_parking.png",
+        "scaleProfile": "shanghai_parking",
+        "personHeight": 105,
+        "start": [
+          160,
+          510
+        ],
+        "walkArea": [
+          [
+            24,
+            467
+          ],
+          [
+            332,
+            467
+          ],
+          [
+            328,
+            610
+          ],
+          [
+            28,
+            610
+          ]
+        ],
+        "walkers": [
+          {
+            "a": [
+              68,
+              285
+            ],
+            "b": [
+              68,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_01",
+            "face": 1,
+            "heightM": 1.57
+          },
+          {
+            "a": [
+              127,
+              285
+            ],
+            "b": [
+              127,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_02",
+            "face": -1,
+            "heightM": 1.67
+          },
+          {
+            "a": [
+              204,
+              285
+            ],
+            "b": [
+              204,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_talk_a",
+            "face": 1,
+            "heightM": 1.59
+          },
+          {
+            "a": [
+              303,
+              285
+            ],
+            "b": [
+              303,
+              285
+            ],
+            "speed": 0,
+            "npc": "d2_talk_b",
+            "face": -1,
+            "heightM": 1.67
+          },
+          {
+            "a": [
+              52,
+              526
+            ],
+            "b": [
+              52,
+              526
+            ],
+            "speed": 0,
+            "npc": "d2_talk_a",
+            "face": 1,
+            "heightM": 1.59
+          },
+          {
+            "a": [
+              95,
+              527
+            ],
+            "b": [
+              95,
+              527
+            ],
+            "speed": 0,
+            "npc": "d2_talk_b",
+            "face": -1,
+            "heightM": 1.67
+          }
+        ],
+        "badge": "G-02",
+        "atmosphere": "",
+        "actors": [
+          {
+            "id": "g42",
+            "tex": "round1/vehicles/g42_front_r2.png",
+            "at": [
+              109,
+              368
+            ],
+            "plate": 0
+          },
+          {
+            "id": "axiao_car",
+            "tex": "round1/vehicles/g42_front_r2.png",
+            "at": [
+              250,
+              368
+            ],
+            "plate": 1
+          },
+          {
+            "id": "axiao",
+            "tex": "axiao_idle.png",
+            "at": [
+              230,
+              515
+            ]
+          }
+        ],
+        "beats": [
+          {
+            "narrate": "A1-T1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "chat_system",
+      "type": "scene",
+      "sceneId": "shanghai_phone",
+      "speaker": "system",
+      "actorMode": "none",
+      "actorSlot": null,
+      "background": "scene",
+      "visibleActors": [],
+      "messageId": "invite",
+      "scene": {
+        "hideAyu": true,
+        "bg": "round1/people/group_phone_1109_bg.png",
+        "badge": "",
+        "beats": [
+          {
+            "game": "group_chat",
+            "lines": [
+              {
+                "say": "A1-3a",
+                "who": "system"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "chat_axiao",
+      "continueShot": true,
+      "type": "scene",
+      "sceneId": "shanghai_phone",
+      "speaker": "axiao",
+      "actorMode": "none",
+      "actorSlot": null,
+      "background": "scene",
+      "visibleActors": [],
+      "messageId": "axiao",
+      "scene": {
+        "hideAyu": true,
+        "bg": "round1/people/group_phone_1109_bg.png",
+        "badge": "",
+        "beats": [
+          {
+            "game": "group_chat",
+            "lines": [
+              {
+                "say": "A1-3a",
+                "who": "system"
+              },
+              {
+                "say": "A1-3b",
+                "who": "axiao"
+              }
+            ],
+            "startLine": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "chat_toretto",
+      "continueShot": true,
+      "type": "scene",
+      "sceneId": "shanghai_phone",
+      "speaker": "toretto",
+      "actorMode": "none",
+      "actorSlot": null,
+      "background": "scene",
+      "visibleActors": [],
+      "messageId": "toretto",
+      "scene": {
+        "hideAyu": true,
+        "bg": "round1/people/group_phone_1109_bg.png",
+        "badge": "",
+        "beats": [
+          {
+            "game": "group_chat",
+            "lines": [
+              {
+                "say": "A1-3a",
+                "who": "system"
+              },
+              {
+                "say": "A1-3b",
+                "who": "axiao"
+              },
+              {
+                "say": "A1-3c",
+                "who": "toretto"
+              }
+            ],
+            "startLine": 2
+          }
+        ]
+      }
+    },
+    {
+      "id": "chat_ayu",
+      "continueShot": true,
+      "type": "scene",
+      "sceneId": "shanghai_phone",
+      "speaker": "ayu",
+      "actorMode": "none",
+      "actorSlot": null,
+      "background": "scene",
+      "visibleActors": [],
+      "messageId": "ayu",
+      "caret": true,
+      "scene": {
+        "hideAyu": true,
+        "bg": "round1/people/group_phone_1109_bg.png",
+        "badge": "",
+        "beats": [
+          {
+            "game": "group_chat",
+            "lines": [
+              {
+                "say": "A1-3a",
+                "who": "system"
+              },
+              {
+                "say": "A1-3b",
+                "who": "axiao"
+              },
+              {
+                "say": "A1-3c",
+                "who": "toretto"
+              },
+              {
+                "say": "A1-3d",
+                "who": "ayu"
+              }
+            ],
+            "startLine": 3
+          }
+        ]
+      }
+    },
+    {
+      "id": "pen",
+      "type": "scene",
+      "sceneId": "invitation",
+      "speaker": "system",
+      "actorMode": "none",
+      "actorSlot": null,
+      "background": "scene",
+      "visibleActors": [],
+      "materialId": "pen",
+      "scene": {
+        "hideAyu": true,
+        "bg": "w2/shanghai/bund_night_g42.png",
+        "beats": [
+          {
+            "material": "pen"
+          }
+        ]
+      }
+    },
+    {
+      "id": "to_chengdu",
+      "afterChapterCoda": true,
+      "type": "scene",
+      "sceneId": "invitation",
+      "speaker": "system",
+      "actorMode": "none",
+      "actorSlot": null,
+      "background": "scene",
+      "visibleActors": [],
+      "effect": "ink_to_chengdu",
+      "scene": {
+        "hideAyu": true,
+        "bg": "w2/common/chapter_end_chengdu.png",
+        "beats": [
+          {
+            "narrate": "W-NEXT-CHENGDU"
+          }
+        ]
+      }
+    }
+  ]
+}

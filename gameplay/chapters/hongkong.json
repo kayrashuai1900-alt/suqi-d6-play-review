@@ -1,0 +1,1066 @@
+{
+  "chapterId": "hongkong",
+  "titleId": "G-11",
+  "steps": [
+    {
+      "id": "hk",
+      "type": "scene",
+      "sceneId": "hongkong",
+      "speaker": "system",
+      "actorMode": "none",
+      "actorSlot": null,
+      "background": "scene",
+      "visibleActors": [],
+      "scene": {
+        "goalRewardId": "envelope",
+        "codaAtLastButton": "hongkong",
+        "badge": "G-02",
+        "bg": "round1/people/offer_room.png",
+        "fill": "#2a1c18",
+        "hideAyu": true,
+        "beats": [
+          {
+            "card": "G-11",
+            "duration": 2.0
+          },
+          {
+            "narrate": "A6-0"
+          },
+          {
+            "hint": "A6-P1"
+          },
+          {
+            "goal": {
+              "目标": "带回信封",
+              "任务": "打开新邮件，带着行李去机场，沿途拍下合影。"
+            }
+          },
+          {
+            "game": "offer"
+          },
+          {
+            "hint": ""
+          },
+          {
+            "narrate": "A6-1"
+          },
+          {
+            "say": "HK-SHARE",
+            "who": "ayu"
+          },
+          {
+            "say": "HK-TOGETHER",
+            "who": "toretto"
+          },
+          {
+            "personHeight": 112,
+            "bg": "w2/hongkong/bg_departure_pvg.png",
+            "sky": "#cfe3ee",
+            "ground": "#d8d2c6",
+            "horizon": 330,
+            "decor": [
+              {
+                "r": [
+                  0,
+                  120,
+                  360,
+                  200
+                ],
+                "c": "#a9c9dc"
+              },
+              {
+                "r": [
+                  0,
+                  300,
+                  360,
+                  30
+                ],
+                "c": "#7d8c7a"
+              },
+              {
+                "r": [
+                  296,
+                  300,
+                  54,
+                  118
+                ],
+                "c": "#3f7d5a"
+              },
+              {
+                "r": [
+                  306,
+                  312,
+                  34,
+                  22
+                ],
+                "c": "#f2f2f2"
+              }
+            ],
+            "hideAyu": false,
+            "start": [
+              50,
+              590
+            ],
+            "follow": "w2/hongkong/suitcase_1.png",
+            "companion": "toretto",
+            "walkers": [
+              {
+                "a": [
+                  67,
+                  440
+                ],
+                "b": [
+                  67,
+                  440
+                ],
+                "speed": 0,
+                "npc": "d11_talk_a",
+                "face": 1,
+                "chatBank": "shanghai_airport",
+                "chatSide": 0,
+                "chatOffset": -0.0,
+                "chatPair": true,
+                "heightM": 1.57
+              },
+              {
+                "a": [
+                  97,
+                  485
+                ],
+                "b": [
+                  97,
+                  485
+                ],
+                "speed": 0,
+                "npc": "d11_talk_b",
+                "face": -1,
+                "chatBank": "shanghai_airport",
+                "chatSide": 1,
+                "chatOffset": -2.3,
+                "chatPair": true,
+                "heightM": 1.68
+              },
+              {
+                "a": [
+                  275,
+                  507
+                ],
+                "b": [
+                  275,
+                  567
+                ],
+                "speed": 14,
+                "npc": "d11_01",
+                "once": true,
+                "heightM": 1.68
+              },
+              {
+                "a": [
+                  309,
+                  441
+                ],
+                "b": [
+                  310,
+                  480
+                ],
+                "speed": 13,
+                "npc": "d11_02",
+                "once": true,
+                "heightM": 1.57
+              },
+              {
+                "a": [
+                  210,
+                  389
+                ],
+                "b": [
+                  252,
+                  387
+                ],
+                "speed": 14,
+                "npc": "d11_03",
+                "once": true,
+                "heightM": 1.73
+              }
+            ],
+            "walkArea": [
+              [
+                20,
+                330
+              ],
+              [
+                345,
+                330
+              ],
+              [
+                345,
+                615
+              ],
+              [
+                20,
+                615
+              ]
+            ],
+            "actors": [],
+            "hotspots": [
+              {
+                "id": "security",
+                "at": [
+                  268,
+                  342
+                ],
+                "snap": [
+                  268,
+                  346
+                ],
+                "icon": "exit",
+                "iconAt": [
+                  268,
+                  300
+                ]
+              }
+            ]
+          },
+          {
+            "go": "security",
+            "hint": "HK-DEPARTURE-SECURITY"
+          },
+          {
+            "wait": 1.2
+          },
+          {
+            "bg": "w2/hongkong/flight_to_hongkong.png",
+            "hideAyu": true,
+            "walkers": [],
+            "companion": "",
+            "atmosphere": "flight",
+            "music": "flight"
+          },
+          {
+            "wait": 3.2,
+            "caption": "HK-FLIGHT-ROUTE"
+          },
+          {
+            "bg": "w2/hongkong/arrivals_sunset.png",
+            "start": [
+              60,
+              590
+            ],
+            "walkArea": [
+              [
+                130,
+                320
+              ],
+              [
+                345,
+                320
+              ],
+              [
+                345,
+                615
+              ],
+              [
+                20,
+                615
+              ],
+              [
+                20,
+                395
+              ],
+              [
+                130,
+                395
+              ]
+            ],
+            "hotspots": [
+              {
+                "id": "exit",
+                "at": [
+                  250,
+                  336
+                ],
+                "snap": [
+                  250,
+                  340
+                ],
+                "icon": "exit",
+                "iconAt": [
+                  250,
+                  296
+                ]
+              }
+            ],
+            "actors": [],
+            "walkers": [
+              {
+                "npc": "d12_03",
+                "a": [
+                  53,
+                  460
+                ],
+                "b": [
+                  53,
+                  460
+                ],
+                "speed": 0,
+                "face": 1,
+                "chatOffset": 0,
+                "chat": [
+                  "請問機場快綫點行？",
+                  "落咗機先攞行李。"
+                ],
+                "heightM": 1.57
+              },
+              {
+                "npc": "d12_02",
+                "a": [
+                  103,
+                  455
+                ],
+                "b": [
+                  103,
+                  455
+                ],
+                "speed": 0,
+                "face": -1,
+                "chatOffset": -1.8,
+                "chat": [
+                  "出去向右行就到。",
+                  "得，慢慢嚟。"
+                ],
+                "heightM": 1.68
+              },
+              {
+                "npc": "hk_maya",
+                "a": [
+                  138,
+                  420
+                ],
+                "b": [
+                  138,
+                  420
+                ],
+                "speed": 0,
+                "face": 1,
+                "chatOffset": 1.8,
+                "chat": [
+                  "Made it from London."
+                ],
+                "heightM": 1.62
+              },
+              {
+                "npc": "hk_sam",
+                "a": [
+                  320,
+                  504
+                ],
+                "b": [
+                  320,
+                  504
+                ],
+                "speed": 0,
+                "face": -1,
+                "chatOffset": 3.6,
+                "chat": [
+                  "Is the train this way?",
+                  "Glad to be in Hong Kong."
+                ],
+                "heightM": 1.75
+              },
+              {
+                "npc": "hk_asha",
+                "a": [
+                  162,
+                  519
+                ],
+                "b": [
+                  162,
+                  519
+                ],
+                "speed": 0,
+                "face": 1,
+                "chatOffset": -3.3,
+                "chat": [
+                  "Our bags from Delhi.",
+                  "Thank you!"
+                ],
+                "heightM": 1.57
+              },
+              {
+                "npc": "d12_01",
+                "a": [
+                  204,
+                  411
+                ],
+                "b": [
+                  218,
+                  438
+                ],
+                "speed": 11,
+                "once": true,
+                "heightM": 1.68
+              }
+            ],
+            "locationSign": "香港國際機場",
+            "music": "hongkong",
+            "hideAyu": false,
+            "companion": "toretto"
+          },
+          {
+            "card": "HK-LANDED",
+            "duration": 1.6
+          },
+          {
+            "go": "exit",
+            "hint": "A6-P3"
+          },
+          {
+            "companion": "",
+            "walkers": []
+          },
+          {
+            "bg": "round1/scenes/hk_street.png",
+            "scaleProfile": "disney",
+            "start": [
+              58,
+              590
+            ],
+            "hideAyu": false,
+            "personHeight": 100,
+            "companion": "toretto",
+            "actors": [],
+            "walkArea": [
+              [
+                176,
+                256
+              ],
+              [
+                233,
+                256
+              ],
+              [
+                360,
+                720
+              ],
+              [
+                0,
+                720
+              ]
+            ],
+            "walkers": [
+              {
+                "a": [
+                  139,
+                  390
+                ],
+                "b": [
+                  139,
+                  390
+                ],
+                "speed": 0,
+                "scale": 0.95,
+                "npc": "d13_talk_a",
+                "face": 1,
+                "chatBank": "hongkong_street",
+                "chatSide": 0,
+                "chatOffset": -0.0,
+                "chatPair": true
+              },
+              {
+                "a": [
+                  189,
+                  395
+                ],
+                "b": [
+                  189,
+                  395
+                ],
+                "speed": 0,
+                "scale": 0.95,
+                "npc": "d13_talk_b",
+                "face": -1,
+                "chatBank": "hongkong_street",
+                "chatSide": 1,
+                "chatOffset": -2.3,
+                "chatPair": true
+              },
+              {
+                "a": [
+                  114,
+                  475
+                ],
+                "b": [
+                  156,
+                  474
+                ],
+                "speed": 18,
+                "scale": 0.95,
+                "npc": "d13_01",
+                "phase": 0.21,
+                "pause": 2.1
+              },
+              {
+                "a": [
+                  253,
+                  459
+                ],
+                "b": [
+                  278,
+                  484
+                ],
+                "speed": 18,
+                "scale": 0.95,
+                "npc": "d13_02",
+                "phase": 0.53,
+                "pause": 2.1
+              },
+              {
+                "a": [
+                  246,
+                  538
+                ],
+                "b": [
+                  283,
+                  548
+                ],
+                "speed": 18,
+                "scale": 0.95,
+                "npc": "d13_03",
+                "phase": 0.35,
+                "pause": 2.1
+              }
+            ],
+            "hotspots": [
+              {
+                "id": "street_photo",
+                "companionSnap": [224, 554],
+                "snap": [180, 560],
+                "at": [
+                  180,
+                  560
+                ],
+                "icon": "pick"
+              }
+            ],
+            "follow": "w2/hongkong/suitcase_1.png",
+            "badge": ""
+          },
+          {
+            "narrate": "R1-HK-ARRIVAL"
+          },
+          {
+            "go": "street_photo"
+          },
+          {
+            "hideAyu": true,
+            "companion": ""
+          },
+          {
+            "game": "photo",
+            "caption": "R1-HK-PHOTO"
+          },
+          {
+            "bg": "w2/hongkong/park_toys_r2.png",
+            "scaleProfile": "hk_park",
+            "start": [
+              58,
+              590
+            ],
+            "hideAyu": false,
+            "personHeight": 100,
+            "companion": "toretto",
+            "actors": [],
+            "walkArea": [
+              [
+                60,
+                250
+              ],
+              [
+                250,
+                250
+              ],
+              [
+                300,
+                420
+              ],
+              [
+                335,
+                612
+              ],
+              [
+                25,
+                612
+              ],
+              [
+                45,
+                420
+              ]
+            ],
+            "walkers": [
+              {
+                "a": [
+                  105,
+                  342
+                ],
+                "b": [
+                  105,
+                  342
+                ],
+                "speed": 0,
+                "npc": "d14toys_talk_a",
+                "face": 1,
+                "chatBank": "hongkong_toys",
+                "chatSide": 0,
+                "chatOffset": -0.0,
+                "chatPair": true,
+                "heightM": 1.57
+              },
+              {
+                "a": [
+                  157,
+                  342
+                ],
+                "b": [
+                  157,
+                  342
+                ],
+                "speed": 0,
+                "npc": "d14toys_talk_b",
+                "face": -1,
+                "chatBank": "hongkong_toys",
+                "chatSide": 1,
+                "chatOffset": -2.3,
+                "chatPair": true,
+                "heightM": 1.69
+              },
+              {
+                "a": [
+                  255,
+                  393
+                ],
+                "b": [
+                  282,
+                  424
+                ],
+                "speed": 16,
+                "npc": "d14toys_01",
+                "once": true,
+                "heightM": 1.55
+              },
+              {
+                "a": [
+                  106,
+                  454
+                ],
+                "b": [
+                  126,
+                  465
+                ],
+                "speed": 17,
+                "npc": "d14toys_02",
+                "once": true,
+                "heightM": 1.12
+              }
+            ],
+            "hotspots": [
+              {
+                "id": "toys_path",
+                "at": [
+                  220,
+                  330
+                ],
+                "icon": "pick"
+              }
+            ],
+            "follow": "",
+            "badge": ""
+          },
+          {
+            "narrate": "R1-DISNEY-TOYS"
+          },
+          {
+            "go": "toys_path"
+          },
+          {
+            "bg": "w2/hongkong/park_garden_r2.png",
+            "scaleProfile": "hk_park",
+            "start": [
+              58,
+              590
+            ],
+            "hideAyu": false,
+            "personHeight": 100,
+            "companion": "toretto",
+            "actors": [],
+            "walkArea": [
+              [
+                40,
+                300
+              ],
+              [
+                320,
+                300
+              ],
+              [
+                335,
+                612
+              ],
+              [
+                25,
+                612
+              ]
+            ],
+            "walkers": [
+              {
+                "a": [
+                  88,
+                  366
+                ],
+                "b": [
+                  88,
+                  366
+                ],
+                "speed": 0,
+                "npc": "d14garden_talk_a",
+                "face": 1,
+                "chatBank": "hongkong_garden",
+                "chatSide": 0,
+                "chatOffset": -0.0,
+                "chatPair": true,
+                "heightM": 1.57
+              },
+              {
+                "a": [
+                  143,
+                  366
+                ],
+                "b": [
+                  143,
+                  366
+                ],
+                "speed": 0,
+                "npc": "d14garden_talk_b",
+                "face": -1,
+                "chatBank": "hongkong_garden",
+                "chatSide": 1,
+                "chatOffset": -2.3,
+                "chatPair": true,
+                "heightM": 1.68
+              },
+              {
+                "a": [
+                  281,
+                  411
+                ],
+                "b": [
+                  303,
+                  441
+                ],
+                "speed": 17,
+                "npc": "d14garden_01",
+                "once": true,
+                "heightM": 1.61
+              },
+              {
+                "a": [
+                  116,
+                  459
+                ],
+                "b": [
+                  155,
+                  465
+                ],
+                "speed": 16,
+                "npc": "d14garden_02",
+                "once": true,
+                "heightM": 1.59
+              }
+            ],
+            "hotspots": [
+              {
+                "id": "garden_path",
+                "at": [
+                  235,
+                  420
+                ],
+                "icon": "pick"
+              }
+            ],
+            "follow": "",
+            "badge": ""
+          },
+          {
+            "narrate": "R1-DISNEY-GARDEN"
+          },
+          {
+            "go": "garden_path"
+          },
+          {
+            "bg": "w2/hongkong/park_castle_r2.png",
+            "scaleProfile": "hk_park",
+            "start": [
+              58,
+              590
+            ],
+            "hideAyu": false,
+            "personHeight": 100,
+            "companion": "toretto",
+            "actors": [],
+            "walkArea": [
+              [
+                20,
+                400
+              ],
+              [
+                345,
+                400
+              ],
+              [
+                345,
+                615
+              ],
+              [
+                20,
+                615
+              ]
+            ],
+            "walkers": [
+              {
+                "a": [
+                  242,
+                  416
+                ],
+                "b": [
+                  242,
+                  416
+                ],
+                "speed": 0,
+                "npc": "d14castle_talk_a",
+                "face": 1,
+                "chatBank": "hongkong_castle",
+                "chatSide": 0,
+                "chatOffset": -0.0,
+                "chatPair": true,
+                "heightM": 1.6
+              },
+              {
+                "a": [
+                  296,
+                  418
+                ],
+                "b": [
+                  296,
+                  418
+                ],
+                "speed": 0,
+                "npc": "d14castle_talk_b",
+                "face": -1,
+                "chatBank": "hongkong_castle",
+                "chatSide": 1,
+                "chatOffset": -2.3,
+                "chatPair": true,
+                "heightM": 1.68
+              },
+              {
+                "a": [
+                  67,
+                  470
+                ],
+                "b": [
+                  107,
+                  471
+                ],
+                "speed": 17,
+                "npc": "d14castle_01",
+                "once": true,
+                "heightM": 1.7
+              },
+              {
+                "a": [
+                  270,
+                  500
+                ],
+                "b": [
+                  312,
+                  502
+                ],
+                "speed": 16,
+                "npc": "d14castle_02",
+                "once": true,
+                "heightM": 1.62
+              }
+            ],
+            "hotspots": [
+              {
+                "id": "castle_photo",
+                "companionSnap": [224, 464],
+                "snap": [180, 470],
+                "at": [
+                  180,
+                  470
+                ],
+                "icon": "pick"
+              }
+            ],
+            "follow": "",
+            "badge": ""
+          },
+          {
+            "narrate": "R1-DISNEY-CASTLE"
+          },
+          {
+            "go": "castle_photo"
+          },
+          {
+            "hideAyu": true,
+            "companion": ""
+          },
+          {
+            "game": "photo",
+            "caption": "B-G3-1"
+          },
+          {
+            "bg": "round1/scenes/university.png",
+            "scaleProfile": "disney",
+            "start": [
+              58,
+              590
+            ],
+            "hideAyu": false,
+            "personHeight": 100,
+            "companion": "toretto",
+            "actors": [],
+            "walkArea": [
+              [
+                20,
+                440
+              ],
+              [
+                340,
+                440
+              ],
+              [
+                340,
+                610
+              ],
+              [
+                20,
+                610
+              ]
+            ],
+            "walkers": [
+              {
+                "a": [
+                  88,
+                  467
+                ],
+                "b": [
+                  88,
+                  467
+                ],
+                "speed": 0,
+                "scale": 0.95,
+                "npc": "d15_talk_a",
+                "face": 1,
+                "chatBank": "hongkong_campus",
+                "chatSide": 0,
+                "chatOffset": -0.0,
+                "chatPair": true
+              },
+              {
+                "a": [
+                  139,
+                  465
+                ],
+                "b": [
+                  139,
+                  465
+                ],
+                "speed": 0,
+                "scale": 0.95,
+                "npc": "d15_talk_b",
+                "face": -1,
+                "chatBank": "hongkong_campus",
+                "chatSide": 1,
+                "chatOffset": -2.3,
+                "chatPair": true
+              },
+              {
+                "a": [
+                  230,
+                  486
+                ],
+                "b": [
+                  278,
+                  493
+                ],
+                "speed": 17,
+                "scale": 0.95,
+                "npc": "d15_01",
+                "phase": 0.28,
+                "pause": 2.1
+              },
+              {
+                "a": [
+                  202,
+                  579
+                ],
+                "b": [
+                  252,
+                  581
+                ],
+                "speed": 16,
+                "scale": 0.95,
+                "npc": "d15_02",
+                "phase": 0.6,
+                "pause": 2.1
+              }
+            ],
+            "hotspots": [
+              {
+                "id": "campus_photo",
+                "companionSnap": [224, 544],
+                "snap": [180, 550],
+                "at": [
+                  180,
+                  550
+                ],
+                "icon": "pick"
+              }
+            ],
+            "follow": "",
+            "badge": ""
+          },
+          {
+            "narrate": "R1-HK-CAMPUS"
+          },
+          {
+            "go": "campus_photo"
+          },
+          {
+            "hideAyu": true,
+            "companion": ""
+          },
+          {
+            "game": "photo",
+            "caption": "R1-CAMPUS-PHOTO"
+          },
+          {
+            "material": "envelope"
+          },
+          {
+            "badge": "",
+            "bg": "round1/scenes/university.png",
+            "hideAyu": true,
+            "walkers": [],
+            "actors": [],
+            "companion": ""
+          },
+          {
+            "button": "A6-B2"
+          }
+        ]
+      }
+    }
+  ]
+}

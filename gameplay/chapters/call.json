@@ -1,0 +1,533 @@
+{
+  "chapterId": "call",
+  "titleId": "G-08",
+  "steps": [
+    {
+      "id": "night_call",
+      "type": "scene",
+      "sceneId": "call_room",
+      "speaker": "system",
+      "actorMode": "none",
+      "actorSlot": null,
+      "background": "scene",
+      "visibleActors": [],
+      "scene": {
+        "goalRewardId": "paper",
+        "badge": "G-02",
+        "bg": "w2/call/bg_room_night.png|l3_computer.webp",
+        "fill": "#1a120e",
+        "night": 0.0,
+        "personHeight": 128,
+        "walkArea": [
+          [
+            150,
+            372
+          ],
+          [
+            282,
+            368
+          ],
+          [
+            282,
+            445
+          ],
+          [
+            350,
+            452
+          ],
+          [
+            350,
+            620
+          ],
+          [
+            20,
+            620
+          ],
+          [
+            20,
+            470
+          ],
+          [
+            150,
+            462
+          ]
+        ],
+        "start": [
+          200,
+          545
+        ],
+        "actors": [
+          {
+            "id": "phone",
+            "tex": "w2/call/phone_ring_1.png|phone_prop.png",
+            "at": [
+              215,
+              300
+            ],
+            "scale": 1.7,
+            "ring": true
+          }
+        ],
+        "hotspots": [
+          {
+            "id": "phone",
+            "at": [
+              180,
+              390
+            ],
+            "snap": [
+              168,
+              392
+            ],
+            "face": 1,
+            "pose": "back",
+            "icon": "phone",
+            "iconAt": [
+              215,
+              240
+            ]
+          }
+        ],
+        "beats": [
+          {
+            "card": "G-08",
+            "duration": 2.0
+          },
+          {
+            "narrate": "A3-1a"
+          },
+          {
+            "narrate": "A3-1b"
+          },
+          {
+            "goal": {
+              "目标": "带回信纸",
+              "任务": "走近手机，点接听，再按住听通话。"
+            }
+          },
+          {
+            "go": "phone"
+          },
+          {
+            "game": "call",
+            "aside": "A3-D1",
+            "lines": [
+              {
+                "say": "A3-W1",
+                "who": "toretto"
+              },
+              {
+                "say": "A3-CALL-AYU-1",
+                "who": "ayu"
+              },
+              {
+                "say": "A3-W2",
+                "who": "toretto"
+              },
+              {
+                "say": "A3-CALL-AYU-2",
+                "who": "ayu"
+              },
+              {
+                "say": "A3-W3",
+                "who": "toretto"
+              },
+              {
+                "say": "A3-CALL-AYU-3",
+                "who": "ayu"
+              },
+              {
+                "say": "A3-W4",
+                "who": "toretto"
+              },
+              {
+                "say": "A3-CALL-AYU-4",
+                "who": "ayu"
+              },
+              {
+                "say": "A3-W5",
+                "who": "toretto"
+              },
+              {
+                "say": "A3-CALL-AYU-5",
+                "who": "ayu"
+              },
+              {
+                "say": "A3-2c",
+                "who": "narrator"
+              },
+              {
+                "say": "A3-2d",
+                "who": "toretto"
+              },
+              {
+                "say": "A3-2e",
+                "who": "ayu"
+              },
+              {
+                "say": "A3-CALL-T-1",
+                "who": "toretto"
+              },
+              {
+                "say": "A3-2g",
+                "who": "ayu"
+              },
+              {
+                "say": "A3-2h",
+                "who": "toretto"
+              }
+            ],
+            "music": "late_call"
+          },
+          {
+            "bg": "w2/call/ayu_bedside_night.tres",
+            "hideAyu": true,
+            "actors": []
+          },
+          {
+            "narrate": "A3-CALL-AYU-REFLECT"
+          },
+          {
+            "bg": "w2/call/bg_room_night.png",
+            "hideAyu": true,
+            "actors": []
+          },
+          {
+            "narrate": "A3-R1"
+          },
+          {
+            "bg": "w2/call/bg_cbd_office_r2.png",
+            "bgFit": true,
+            "personHeight": 160,
+            "night": 0.0,
+            "badge": "",
+            "hideAyu": false,
+            "player": "toretto",
+            "pose": "",
+            "actors": [],
+            "start": [
+              28,
+              580
+            ],
+            "walkArea": [
+              [
+                48,
+                432
+              ],
+              [
+                318,
+                432
+              ],
+              [
+                318,
+                568
+              ],
+              [
+                48,
+                568
+              ]
+            ],
+            "hotspots": [
+              {
+                "id": "cake",
+                "at": [
+                  94,
+                  440
+                ],
+                "snap": [
+                  94,
+                  440
+                ],
+                "face": 1,
+                "pose": "gifts",
+                "icon": "pick",
+                "iconAt": [
+                  194,
+                  289
+                ]
+              },
+              {
+                "id": "flowers",
+                "at": [
+                  94,
+                  440
+                ],
+                "icon": "pick",
+                "iconAt": [
+                  260,
+                  247
+                ]
+              },
+              {
+                "id": "desk_phone",
+                "at": [
+                  94,
+                  440
+                ],
+                "icon": "phone",
+                "iconAt": [
+                  150,
+                  300
+                ]
+              }
+            ],
+            "walkers": [
+              {
+                "a": [
+                  240,
+                  840
+                ],
+                "b": [
+                  240,
+                  840
+                ],
+                "speed": 0,
+                "pause": 5.0,
+                "sourceAnchored": true,
+                "sourceHeight": 310,
+                "frameRow": 8,
+                "avoidPlayer": false,
+                "npc": "d4_03",
+                "chatOffset": -0.0,
+                "chatBank": "office",
+                "chatSide": 0
+              },
+              {
+                "a": [
+                  750,
+                  850
+                ],
+                "b": [
+                  750,
+                  850
+                ],
+                "speed": 0,
+                "sourceAnchored": true,
+                "sourceHeight": 310,
+                "frameRow": 0,
+                "avoidPlayer": false,
+                "occludeBelowSource": 670,
+                "npc": "d4_01",
+                "chatBank": "office",
+                "chatSide": 1,
+                "chatOffset": -2.3
+              }
+            ],
+            "scaleProfile": "office"
+          },
+          {
+            "narrate": "A3-2i"
+          },
+          {
+            "go": "cake",
+            "hint": "G-DESK-APPROACH"
+          },
+          {
+            "say": "A3-2j",
+            "who": "toretto"
+          },
+          {
+            "go": "flowers",
+            "hint": "G-DESK-FLOWERS"
+          },
+          {
+            "narrate": "A3-2k"
+          },
+          {
+            "go": "desk_phone",
+            "hint": "G-DESK-PHONE"
+          },
+          {
+            "hint": "",
+            "bg": "w2/call/bg_cbd_window_chat_r3.png",
+            "bgFit": true,
+            "hideAyu": true,
+            "actors": [],
+            "hotspots": [],
+            "walkers": []
+          },
+          {
+            "game": "desk_chat",
+            "lines": [
+              {
+                "say": "A3-2l",
+                "who": "toretto"
+              },
+              {
+                "say": "A3-2m",
+                "who": "ayu"
+              },
+              {
+                "say": "A3-2n",
+                "who": "toretto"
+              },
+              {
+                "say": "A3-2o",
+                "who": "toretto"
+              },
+              {
+                "say": "A3-2p",
+                "who": "ayu"
+              }
+            ]
+          },
+          {
+            "player": "ayu",
+            "hideAyu": true,
+            "actors": [],
+            "hotspots": [],
+            "pose": ""
+          },
+          {
+            "bg": "round1/people/daily_walk_separate.png",
+            "fill": "#2a1414",
+            "badge": "",
+            "hideAyu": true,
+            "walkers": []
+          },
+          {
+            "narrate": "A3-2q",
+            "chapterCaption": "call",
+            "captionLow": true
+          },
+          {
+            "narrate": "A3-2r"
+          },
+          {
+            "narrate": "A3-2s"
+          },
+          {
+            "bg": "w2/call/together_portrait.png",
+            "fill": "#2a1414",
+            "badge": "",
+            "hideAyu": true,
+            "walkers": [],
+            "music": "being_there"
+          },
+          {
+            "narrate": "A3-2t",
+            "captionLow": true,
+            "captionDelay": 0.8
+          },
+          {
+            "wait": 2.2
+          },
+          {
+            "goal": {
+              "目标": "带回信纸",
+              "任务": "往上拖动 Toretto 的爱心，消解阿鱼的愁云。"
+            }
+          },
+          {
+            "bg": "w2/call/late_office.png",
+            "hideAyu": true,
+            "actors": [],
+            "music": "late_call"
+          },
+          {
+            "game": "care"
+          },
+          {
+            "bg": "w2/call/ayu_bedside_night.tres",
+            "hideAyu": true,
+            "actors": [],
+            "walkers": [],
+            "hotspots": [],
+            "companion": ""
+          },
+          {
+            "narrate": "A3-S1"
+          },
+          {
+            "say": "A3-S2",
+            "who": "toretto"
+          },
+          {
+            "narrate": "A3-S3"
+          },
+          {
+            "bg": "w2/call/video_call_sing.png|round1/people/call_split.png",
+            "hideAyu": true,
+            "music": "silence"
+          },
+          {
+            "game": "song",
+            "part": "sing",
+            "count": 5
+          },
+          {
+            "say": "A3-S4",
+            "who": "ayu"
+          },
+          {
+            "narrate": "A3-S5"
+          },
+          {
+            "say": "A3-S6",
+            "who": "toretto"
+          },
+          {
+            "say": "A3-S7",
+            "who": "ayu"
+          },
+          {
+            "say": "A3-S8",
+            "who": "toretto"
+          },
+          {
+            "say": "A3-S9",
+            "who": "ayu"
+          },
+          {
+            "say": "A3-S10",
+            "who": "toretto"
+          },
+          {
+            "say": "A3-S11",
+            "who": "ayu"
+          },
+          {
+            "game": "song",
+            "part": "crash"
+          },
+          {
+            "say": "A3-S12",
+            "who": "toretto"
+          },
+          {
+            "game": "song",
+            "part": "laugh"
+          },
+          {
+            "narrate": "A3-S13"
+          },
+          {
+            "bg": "round1/people/daily_walk_separate.png",
+            "hideAyu": true,
+            "music": "being_there"
+          },
+          {
+            "game": "moments",
+            "text": "A3-POST"
+          },
+          {
+            "bg": "w2/call/two_cities.png",
+            "hideAyu": true
+          },
+          {
+            "narrate": "A3-3a",
+            "captionLow": true
+          },
+          {
+            "narrate": "A3-3b",
+            "captionLow": true
+          },
+          {
+            "material": "paper"
+          }
+        ]
+      },
+      "endCodaId": "chengdu"
+    }
+  ]
+}
