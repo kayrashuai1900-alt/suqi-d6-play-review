@@ -124,6 +124,15 @@
             fillEntries();
             go.disabled = catalog.length === 0;
             status.textContent = "";
+            const target = new URLSearchParams(location.hash.slice(1));
+            const targetStep = catalog.find(item => item.id === target.get("step"));
+            if (targetStep && targetStep.entries.some(item => item.beat === Number(target.get("beat")))) {
+                scene.value = targetStep.id;
+                fillEntries();
+                entry.value = String(Number(target.get("beat")));
+                setPanel(panel, scenes, true);
+                status.textContent = "已选好要复验的环节，点「前往」。";
+            }
         },
         detachPlayer(callback) {
             if (player === callback) {
