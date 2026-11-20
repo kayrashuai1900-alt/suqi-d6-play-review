@@ -293,9 +293,6 @@ func _place_walkers(authored: Array, include_layout: bool) -> void:
 			var turns := _ambient_lines(str(walker.chatBank), int(walker.get("chatSide", 0)))
 			if not turns.is_empty():
 				walker["chat"] = turns
-		if not walker.has("reply") and not walker.get("chat", []).is_empty():
-			walker["reply"] = [_text(str(walker.chat[0]))]
-			walker["nextChat"] = 0
 	crowd.setup(walkers)
 
 
@@ -1100,6 +1097,8 @@ func _draw_npc_strip(w: Dictionary, state: Dictionary, pos: Vector2, height: flo
 
 
 func _draw_walker_extras(w: Dictionary, state: Dictionary, pos: Vector2, height: float) -> void:
+	if w.has("chat"):
+		_draw_walker_chat(w, state, pos, height)
 	if bool(w.get("sourceAnchored",false)) and w.has("occludeBelowSource"):
 		var plate := texture(bg)
 		var source_h := float(w.get("sourceHeight",310))
@@ -1160,16 +1159,6 @@ func _talk_to_npc(pos: Vector2) -> bool:
 	var body := Rect2(at - Vector2(height * 0.22, height), Vector2(height * 0.44, height))
 	if not (_npc_talk_button(at, height).grow(8.0).has_point(pos) or body.has_point(pos)):
 		return false
-	if w.has("nextChat"):
-		var side := int(w.get("chatSide",0))
-		var other := _ambient_lines(str(w.get("chatBank","")),1-side)
-		var turn := int(w.nextChat)
-		w.reply = [_text(str(w.chat[turn]))]
-		if not other.is_empty() and side == 0:
-			w.reply.append("阿鱼：" + str(other[turn % other.size()]))
-		elif not other.is_empty():
-			w.reply = [str(other[turn % other.size()]), "阿鱼：" + str(w.chat[turn])]
-		w.nextChat = (int(w.nextChat)+1)%w.chat.size()
 	var lines: Array = w.reply if w.reply is Array else [w.reply]
 	if lines.is_empty(): return false
 	if npc_reply == i and npc_reply_t > REPLY_SECONDS:
@@ -1195,15 +1184,6 @@ func _draw_optional_chat() -> void:
 		_draw_guest_bubble(str(lines[turn]), at, height, minf(npc_reply_t * 3.0, 1.0))
 		return
 	var i := _nearest_chat()
-	for index in walkers.size():
-		var speaker: Dictionary = walkers[index]
-		var turns: Array = speaker.get("chat", [])
-		if turns.is_empty() or not _chat_on(speaker) or crowd.at(index).walking: continue
-		var at := _walker_pos(speaker)
-		var height := _walker_height(speaker, at)
-		var turn := floori(world_elapsed / CHAT_PERIOD) % turns.size()
-		_draw_guest_bubble(_text(str(turns[turn])), at - Vector2(0,32 if index == i else 0), height, 1.0)
-		break
 	if i >= 0:
 		var w: Dictionary = walkers[i]
 		var at := _walker_pos(w)
@@ -1212,6 +1192,21 @@ func _draw_optional_chat() -> void:
 		draw_colored_polygon(PackedVector2Array([badge.end-Vector2(17,1),badge.end-Vector2(10,1),badge.end-Vector2(15,-5)]),PAPER)
 
 
+func _draw_walker_chat(walker: Dictionary, state: Dictionary, pos: Vector2, height: float) -> void:
+	if bool(state.walking) or mode in ["game", "material", "card", "choice", "goal", "button"]:
+		return
+	if npc_reply_t > 0.0 and npc_reply >= 0 and npc_reply < walkers.size() and is_same(walkers[npc_reply], walker):
+		return
+	var lines: Array = walker.chat
+	if lines.is_empty() or not _chat_on(walker):
+		return
+	var clock := world_elapsed + float(walker.get("chatOffset", 0.0))
+	var phase := fposmod(clock, CHAT_PERIOD)
+	var text := _text(str(lines[int(clock / CHAT_PERIOD) % lines.size()]))
+	var opacity := clampf(minf(phase / 0.18, (CHAT_SHOW - phase) / 0.3), 0.0, 1.0)
+	var nearest := _nearest_chat() if player_visible and mode == "go" and npc_reply_t <= 0.0 else -1
+	var clearance := 28.0 if nearest >= 0 and is_same(walkers[nearest], walker) else 0.0
+	_draw_guest_bubble(text, pos, height + clearance, opacity)
 
 
 func _draw_guest_bubble(text: String, pos: Vector2, height: float, a: float) -> void:
