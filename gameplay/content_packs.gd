@@ -258,9 +258,9 @@ func _download_and_mount(entry: Dictionary, job: Dictionary) -> bool:
 	var request := HTTPRequest.new()
 	request.timeout = timeout_seconds
 	request.body_size_limit = int(entry.bytes)
+	request.accept_gzip = false
 	if not OS.has_feature("web"):
 		request.download_file = temporary
-		request.accept_gzip = false
 	add_child(request)
 	var response: Array = []
 	request.request_completed.connect(func(result: int, code: int, _headers: PackedStringArray, body: PackedByteArray):
