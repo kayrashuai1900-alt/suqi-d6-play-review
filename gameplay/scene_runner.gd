@@ -111,6 +111,7 @@ var companion := ""        # 同行的人（和玩家并排走）：目前只有
 var comp_pos := Vector2.ZERO
 var comp_walk := 0.0
 var comp_moving := false
+var comp_direction := Vector2.RIGHT
 var walkers: Array = []
 static var _scene_crowds: Dictionary = {}
 var npc_reply := -1
@@ -154,6 +155,8 @@ var material_exit_t := 0.0
 const MATERIAL_FADE := 0.4
 const DeskArt := preload("res://hongyuan/ui/desk_art.gd")
 const MATERIAL_READ_TIME := 2.8
+const MATERIAL_CONTINUE := Rect2(100, 566, 160, 44)
+const MATERIAL_LABELED_CONTINUE := Rect2(52, 566, 256, 44)
 # Detail plates on the original painted writing desk, in its 841 × 1870 artwork.
 const MATERIAL_DETAILS := {
 	"pen": Rect2(437,695,186,150), "ink": Rect2(478,450,172,139),
@@ -502,9 +505,9 @@ func _walk(dt: float) -> void:
 				return
 	var step := feet - before
 	move_dir = step
-	_update_companion(dt)
 	if absf(step.x) > 0.05:
 		facing = signf(step.x)
+	_update_companion(dt)
 	walk_dist += step.length()
 	if step.length() > 0.01 and follower != "":
 		trail.push_front(feet)
@@ -518,8 +521,10 @@ func _update_companion(dt: float) -> void:
 	var want := _clamp(feet + Vector2(36 * facing, -10))  # 同伴也不能走出可走区域（比如走到水面上）
 	var before := comp_pos
 	comp_pos = comp_pos.lerp(want, 1.0 - exp(-6.0 * dt))
-	var moved := comp_pos.distance_to(before)
+	var step := comp_pos - before
+	var moved := step.length()
 	comp_moving = moved > 0.12
+	if comp_moving: comp_direction = step / moved
 	comp_walk += moved
 
 
@@ -639,6 +644,8 @@ func _gui_input(event: InputEvent) -> void:
 				_next()
 		"material":
 			if tap and t >= MATERIAL_READ_TIME and not material_leaving:
+				if beats[bi].has("continueText") and not (MATERIAL_LABELED_CONTINUE.has_point(down_pos) and MATERIAL_LABELED_CONTINUE.has_point(pos)):
+					return
 				material_leaving = true
 				material_exit_t = 0.0
 		"game":
@@ -764,10 +771,17 @@ func _draw() -> void:
 	if mode == "material" or (mode == "finished" and not material_id.is_empty()):
 		_draw_material()
 		return
+	if mode == "finished" and game and beats[bi].has("post"):
+		game.draw(self)
+		return
 	draw_rect(view_rect, bg_fill)
 	_draw_bg()
-	if atmosphere == "coast": CoastShow.draw(self, atmosphere_elapsed)
-	elif atmosphere != "": preload("res://hongyuan/ui/ambient_scene.gd").draw(self, atmosphere, atmosphere_elapsed)
+	if mode == "game" and game and game.get_script() == GAMES.fireworks:
+		game.draw_coast(self, atmosphere_elapsed if atmosphere == "coast" else -1.0)
+	elif atmosphere == "coast":
+		CoastShow.draw(self, atmosphere_elapsed)
+	elif atmosphere != "":
+		preload("res://hongyuan/ui/ambient_scene.gd").draw(self, atmosphere, atmosphere_elapsed)
 	draw_set_transform(Vector2(0, camera_y))
 	_draw_world()
 	if bool(spec.get("pandaPreview", false)) and mode != "game":
@@ -787,7 +801,9 @@ func _draw() -> void:
 		var badge_top := maxf(StoryCaption.safe_top + 8.0, minf(12.0, StoryCaption.narration_top - 30.0))
 		_pill(Rect2(250, badge_top, 100, 22), badge, 12, Color(RED, 0.85), PAPER)
 	if hint != "" and mode in ["go", "game"]:
-		_hint(hint)
+		var hot: Dictionary = hotspots.get(go_id, {}) if mode == "go" else {}
+		var hint_top := clampf(_icon_rect(go_id).end.y + camera_y + 49.0, 100.0, 515.0) if hot.get("guideBelow", false) else 46.0
+		_hint(hint, hint_top)
 	if _skip_visible():
 		_pill(SKIP_RECT, _skip_label(), 13, Color(INK, 0.7), WHEAT)
 	match mode:
@@ -800,6 +816,9 @@ func _draw() -> void:
 				_panel(box, Color(PAPER, alpha), Color(GOLD, alpha))
 				var label_color := Color(RED, alpha)
 				var text_color := Color(INK, alpha)
+				var title := _text(str(goal_data.get("标题", "")))
+				if not title.is_empty():
+					draw_string(FONT, Vector2(42, 88), title, HORIZONTAL_ALIGNMENT_CENTER, 276, 16, label_color)
 				draw_string(FONT, Vector2(42, 110), "目标", HORIZONTAL_ALIGNMENT_LEFT, 52, 15, label_color)
 				draw_string(FONT, Vector2(98, 110), str(goal_data.get("目标", "")), HORIZONTAL_ALIGNMENT_LEFT, 164, 19, text_color)
 				draw_line(Vector2(42, 131), Vector2(318, 131), Color(GOLD, alpha), 1)
@@ -929,6 +948,10 @@ func _draw_world() -> void:
 		if a.has("appearAfter") and world_elapsed < float(a.appearAfter):
 			continue
 		var pos := _v(a.at)
+		if a.get("sourceAnchored", false):
+			pos = _walker_source_transform() * pos
+		if mode == "say" and id == say_who and spec.get("animateDialogue", false):
+			pos.y -= _speaking_motion()
 		var sc := float(a.get("scale", 1.0))
 		if a.has("moveFrom"):
 			var move_clock := maxf(0.0, world_elapsed - float(a.get("appearAfter", 0.0)))
@@ -952,14 +975,21 @@ func _draw_world() -> void:
 		items.append({"y": feet.y, "player": true})
 	if companion == "toretto" and player_visible:
 		var cf := "w2/common/toretto_neutral_r2.png"
+		var flip := facing < 0
 		# This beach memory is viewed together from behind, before the fireworks.
 		if bg == "w2/hainan/bg_wenchang_memory_r2.png" and pose == "back":
 			cf = "w2/common/toretto_back_r2.png"
 		if mode == "game" and game and game.has_method("companion_frame"):
 			cf = game.companion_frame()
-		elif mode == "go" and comp_moving and int(comp_walk / _stride(comp_pos.y)) % 2 == 0:
-			cf = "w2/common/toretto_walk.png"
-		items.append({"y": comp_pos.y, "tex": cf, "at": comp_pos, "flip": facing < 0, "scale": 1.0})
+		elif mode == "go" and comp_moving:
+			var frame := int(comp_walk / _stride(comp_pos.y)) % 4
+			flip = comp_direction.x < 0
+			if comp_direction.y < -absf(comp_direction.x) * 1.1:
+				cf = "w2/common/toretto_back_r2.png" if frame % 2 == 1 else "w2/common/toretto_walk_back.png|w2/common/toretto_back_r2.png"
+				flip = frame == 2
+			elif frame % 2 == 0:
+				cf = "w2/common/toretto_walk.png"
+		items.append({"y": comp_pos.y, "tex": cf, "at": comp_pos, "flip": flip, "scale": 1.0})
 	for i in range(walkers.size()):
 		items.append({"y": _walker_pos(walkers[i]).y, "walker": i})
 	if follower != "" and player_visible:
@@ -1025,7 +1055,7 @@ func _draw_walker(w: Dictionary) -> void:
 	if w.has("frameRow"): row = int(w.frameRow)
 	var pos: Vector2 = _walker_pos(w)
 	var height := _walker_height(w, pos)
-	if w.has("npc"):
+	if w.has("npc") and not w.has("guest"):
 		_draw_npc_strip(w, state, pos, height)
 		_draw_walker_extras(w, state, pos, height)
 		return
@@ -1119,6 +1149,13 @@ func _draw_walker_extras(w: Dictionary, state: Dictionary, pos: Vector2, height:
 		var float_at := tip+Vector2(-15,-24)
 		draw_line(tip,float_at,Color(0.9,0.94,0.95,0.65),0.8)
 		draw_circle(float_at,1.5,Color("#dc6652"))
+	if w.get("luggage", false):
+		var bag := texture("w2/hongkong/suitcase_%d.png" % (1 + int(float(state.distance) / 9.0) % 2))
+		if bag:
+			var facing_left: bool = state.heading.x < 0.0
+			var size := bag.get_size() * (height * 0.43 / bag.get_height())
+			var at := pos + Vector2(height * (0.24 if facing_left else -0.24), -size.y + 1)
+			draw_texture_rect(bag, Rect2(at - Vector2(size.x / 2.0, 0), size), false)
 
 
 ## 路人闲聊：站着的时候头顶轮流冒一句。两人一对时用 chatOffset 错开，像在你一句我一句。
@@ -1188,7 +1225,15 @@ func _draw_optional_chat() -> void:
 		var w: Dictionary = walkers[i]
 		var at := _walker_pos(w)
 		var badge := _npc_talk_button(at, _walker_height(w, at))
-		_pill(badge, "···", 16, PAPER, INK, true)
+		var chip := StyleBoxFlat.new()
+		chip.bg_color = PAPER
+		chip.set_corner_radius_all(5)
+		chip.set_border_width_all(1)
+		chip.border_color = WOOD
+		draw_style_box(chip, badge)
+		var mid := badge.get_center()
+		draw_line(mid + Vector2(-8, -3), mid + Vector2(8, -3), WOOD, 1.4)
+		draw_line(mid + Vector2(-8, 3), mid + Vector2(4, 3), WOOD, 1.4)
 		draw_colored_polygon(PackedVector2Array([badge.end-Vector2(17,1),badge.end-Vector2(10,1),badge.end-Vector2(15,-5)]),PAPER)
 
 
@@ -1274,6 +1319,12 @@ func _player_frame() -> String:
 			name = "%s/ayu_walk_side_%d.png|%s" % [walk_dir, f, idle_art]
 	if follower != "" and walking:
 		name = "w2/hongkong/ayu_drag_side_%d.png|%s" % [1 + int(walk_dist / _stride()) % 4, name]
+	if player_role == "ayu" and bg == "round1/scenes/cabin.png":
+		if walking:
+			return "w2/shizuoka/ayu_trip_walk_%d.tres|%s" % [1 + int(walk_dist / _stride()) % 2, name]
+		if pose == "sit":
+			return "w2/shizuoka/ayu_trip_sit.png|" + name
+		return "w2/shizuoka/ayu_trip_idle.tres|" + name
 	return name
 
 
@@ -1283,13 +1334,24 @@ func _draw_player() -> void:
 		return
 	var walking := mode == "go" and (moving or stick.length() > 0.08) and move_dir.length() > 0.01
 	var bob := -1.0 if walking and int(walk_dist / _stride()) % 2 == 0 else 0.0
+	if mode == "say" and say_who == player_role and spec.get("animateDialogue", false):
+		bob -= _speaking_motion()
 	sprite(_player_frame(), feet + Vector2(0, bob), facing < 0, 1.0, feet.y)
+
+func _speaking_motion() -> float:
+	if reveal >= say_text.length(): return 0.0
+	return 0.85 * (1.0 + sin(t * 8.2))
 
 
 func _draw_go_ui() -> void:
 	if hotspots.has(go_id):
 		var h: Dictionary = hotspots[go_id]
 		var at := _v(h.at)
+		if h.get("guideBelow", false):
+			var hand := texture("interaction_hand.png")
+			if hand:
+				var finger := _icon_rect(go_id).get_center() + Vector2(1, 17 + sin(time * 4.0) * 2.0)
+				draw_texture_rect(hand, Rect2(finger, Vector2(29, 36)), false)
 		var near := _near_hotspot() != ""
 		if near:
 			var r := _icon_rect(go_id)
@@ -1395,8 +1457,12 @@ func _draw_material() -> void:
 	draw_string(FONT, Vector2(24, 441), "奖励物：" + str(MATERIAL_NAMES[material_id]), HORIZONTAL_ALIGNMENT_CENTER, 312, 23, ink)
 	draw_string(FONT, Vector2(24, 478), str(MATERIAL_LINES[material_id]), HORIZONTAL_ALIGNMENT_CENTER, 312, 15, gold)
 	if t >= MATERIAL_READ_TIME and not material_leaving:
-		var label := "收好信封" if material_id == "envelope" else "继续回忆"
-		_pill(Rect2(100, 566, 160, 44), label, 17, Color(RED, alpha), Color(PAPER, alpha))
+		var label := str(beats[bi].get("continueText", ""))
+		if label.is_empty():
+			label = "收好信封" if material_id == "envelope" else "继续回忆"
+			_pill(MATERIAL_CONTINUE, label, 17, Color(RED, alpha), Color(PAPER, alpha))
+		else:
+			_pill(MATERIAL_LABELED_CONTINUE, _text(label), 17, Color(RED, alpha), Color(PAPER, alpha))
 
 
 
@@ -1419,8 +1485,9 @@ func _choice_rect(i: int) -> Rect2:
 func _skip_visible() -> bool:
 	if t < SKIP_AFTER or bi < 0 or bi >= beats.size():
 		return false
-	if mode == "game" and beats[bi].get("game", "") == "moments" and game.viewing >= 0:
-		return false
+	if mode == "game" and beats[bi].get("game", "") == "moments":
+		if beats[bi].has("post") or game.viewing >= 0:
+			return false
 	# 开车时「下一步」晚一点出现（15 秒），免得换道时误点
 	if mode == "game" and str(beats[bi].get("game", "")) == "drive" and t < 15.0:
 		return false
@@ -1614,9 +1681,9 @@ func _tone(f0: float, f1: float, dur: float) -> AudioStreamWAV:
 
 # Only gameplay values enter the checkpoint. Nodes, resources, input holds and caches do not.
 const GAME_SAVE_FIELDS := ["phase", "t", "power", "bob", "from", "wait_for", "fish_t", "missed",
-	"thinned", "cloud_rounds", "cloud_arrivals",
+	"thinned", "cloud_rounds", "cloud_arrivals", "cloud_words",
 	"li", "reveal", "hand", "aim", "thrown", "rings", "hit_flash", "bursts", "count", "need",
-	"finale_t", "color_offset", "look", "hold", "name", "error", "lane", "car_x", "scroll",
+	"finale_t", "color_offset", "look", "hold", "name", "name_confirmed", "error", "lane", "car_x", "scroll",
 	"speed", "bump", "traffic", "spawn_at", "bay_y", "park_t", "hint_t", "birthday_seen", "birthday_flash", "call_time", "speaker_on", "chat_scroll", "wi", "wechat_done",
 	"caught", "fed", "hungry", "bamboo_held", "feed_flash", "last_fed", "ayu_x", "toretto_x", "sky_s", "field", "typed", "typing", "read_index", "cleared", "levels", "touches", "tended", "glow", "handed", "turn", "auto_t"]
 

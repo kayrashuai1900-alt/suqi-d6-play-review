@@ -1,6 +1,5 @@
 extends RefCounted
-## 去看阿鱼那晚发的朋友圈：整屏就是一条朋友圈的「详情」页。
-## 上下滑着读完长文和四张图，点右下角「··」弹出「赞」，点赞后 Toretto 的头像加进点赞栏，再留一句评论。
+## 深夜动态保留点赞互动，旅行动态直接浏览已发布的内容。
 const StoryCaption := preload("res://hongyuan/ui/story_caption.gd")
 var r
 var phase := "read"          # read → liked → done
@@ -15,6 +14,13 @@ var lines: PackedStringArray = []
 var toast := ""
 var viewing := -1           # 正在看大图的那张（-1 表示没在看）
 var view_t := 0.0
+var swiping := false
+var swipe_start := Vector2.ZERO
+var post: Dictionary = {}
+var photos: Array = []
+var post_likes: Array = []
+var post_comments: Array = []
+var post_date := ""
 
 const FS := 15
 const LH := 24.0
@@ -25,7 +31,16 @@ const BLUE := Color("#576b95")
 const GRAY := Color("#b2b2b2")
 const INK := Color("#191919")
 const PANEL := Color("#f7f7f7")
+const PAPER := Color("#fffcf6")
 const PHOTO := 92.0
+const POST_PHOTO := 84.0
+const PHOTO_GAP := 4.0
+const DATE_LINE := 22.0
+const POST_COLUMNS := 3
+const MAX_PHOTOS := 9
+const FOOTER_Y := 570.0
+const CONTINUE := Rect2(84, 582, 192, 44)
+const VIEW_CLOSE := Rect2(6, 6, 44, 44)
 ## 四张生活照：GPT 出的正式图（w2/call/moments_N.png）到位就用它，没到位先用游戏里现成场景的局部
 const PHOTOS := [
 	["w2/call/moments_1.png", "w2/call/ayu_toretto_holdhands.png", Rect2(0, 820, 841, 841)],
@@ -56,23 +71,43 @@ var bottom := 0.0
 func start(runner, beat: Dictionary) -> void:
 	r = runner
 	var body := str(r.copy.get(str(beat.get("text", "")), ""))
-	lines = StoryCaption.wrap_text(body, TEXT_W, FS).split("\n")
 	r.hint = ""
-	toast = "上下滑动，读完她那晚写下的话"
+	post = beat.get("post", {})
+	photos = post.get("photos", PHOTOS).slice(0, MAX_PHOTOS)
+	if post.is_empty():
+		toast = "上下滑动，读完她那晚写下的话"
+	else:
+		phase = "posted"
+		post_date = str(r.copy.get(post.get("date", ""), ""))
+		for who: String in post.get("likes", []):
+			post_likes.append([who + "_avatar.png", "", Color.WHITE])
+		for comment: Dictionary in post.get("comments", []):
+			post_comments.append([StoryCaption.NAMES.get(comment.who, comment.who), r.t_(comment.say)])
+	lines = StoryCaption.wrap_text(body.replace("<br>", "\n"), TEXT_W, FS).split("\n")
 	_layout()
 
 func _layout() -> void:
 	y_body = NAV_H + 44.0
 	y_photos = y_body + lines.size() * LH + 10.0
-	y_meta = y_photos + PHOTO * 2 + 4 + 22.0
-	y_panel = y_meta + 18.0
-	bottom = y_panel + _panel_h() + 40.0
+	var rows := ceili(float(_photo_count()) / _photo_columns())
+	var grid_height := rows * _photo_size() + maxi(0, rows - 1) * PHOTO_GAP
+	y_meta = y_photos + grid_height + 22.0
+	y_panel = y_meta + 18.0 + (DATE_LINE if not post_date.is_empty() else 0.0)
+	bottom = y_panel + _panel_h() + (6.0 if not post.is_empty() else 40.0)
+
+func _like_people() -> Array:
+	if not post.is_empty():
+		return post_likes
+	if phase == "read":
+		return FRIENDS
+	return [["toretto_avatar.png", "", Color.WHITE]] + FRIENDS
 
 func _like_rows() -> int:
-	var n := FRIENDS.size() + (1 if phase != "read" else 0)
-	return int(ceil(n / 8.0))
+	return ceili(_like_people().size() / 8.0)
 
 func _comments() -> Array:
+	if not post.is_empty():
+		return post_comments
 	var c := [["阿鱼。", "谢谢大家～点赞即祝福哈哈哈哈"], ["阿晓", "所以电脑最后修好了吗"]]
 	if phase != "read":
 		c.append(["Toretto", "下次换台电脑，再唱给你听。"])
@@ -82,7 +117,7 @@ func _panel_h() -> float:
 	return 12.0 + _like_rows() * 34.0 + 8.0 + _comments().size() * 24.0 + 8.0
 
 func _max_scroll() -> float:
-	return maxf(0.0, bottom - 640.0)
+	return maxf(0.0, bottom - (FOOTER_Y if not post.is_empty() else 640.0))
 
 func _dots_rect() -> Rect2:
 	return Rect2(312, y_meta - 15 - scroll, 34, 22)
@@ -95,9 +130,11 @@ func process(dt: float) -> bool:
 	if phase == "done":
 		return true
 	t += dt
+	view_t += dt
+	if not post.is_empty():
+		return false
 	if menu:
 		menu_t += dt
-	view_t += dt
 	if phase == "read" and scroll >= _max_scroll() - 30 and toast.begins_with("上下"):
 		toast = "读完了，点右下角的「··」给她点个赞"
 	if phase == "liked":
@@ -117,25 +154,28 @@ func restore_checkpoint() -> void:
 		toast = ""
 
 func _photo_rect(k: int) -> Rect2:
-	return Rect2(TEXT_X + (k % 2) * (PHOTO + 4), y_photos - scroll + int(k / 2) * (PHOTO + 4), PHOTO, PHOTO)
+	var columns := _photo_columns()
+	var side := _photo_size()
+	var step := side + PHOTO_GAP
+	return Rect2(TEXT_X + (k % columns) * step, y_photos - scroll + floori(float(k) / columns) * step, side, side)
+
+func _photo_columns() -> int:
+	return 2 if post.is_empty() else POST_COLUMNS
+
+func _photo_size() -> float:
+	if post.is_empty(): return PHOTO
+	return 178.0 if photos.size() == 1 else POST_PHOTO
 
 func input(kind: String, pos: Vector2) -> void:
-	if phase != "read":
-		return
 	if viewing >= 0:
-		# 看大图时：点左右两边换一张，点中间关掉
-		if kind == "tap":
-			if pos.x < 70 and viewing > 0:
-				viewing -= 1
-			elif pos.x > 290 and viewing < PHOTOS.size() - 1:
-				viewing += 1
-			else:
-				viewing = -1
-			view_t = 0.0
+		_view_input(kind, pos)
 		return
+	if phase not in ["read", "posted"]:
+		return
+	var content_end := FOOTER_Y if phase == "posted" else 640.0
 	match kind:
 		"down":
-			dragging = pos.y > NAV_H
+			dragging = pos.y > NAV_H and pos.y < content_end
 			last_y = pos.y
 		"move":
 			if dragging:
@@ -144,21 +184,52 @@ func input(kind: String, pos: Vector2) -> void:
 		"up":
 			dragging = false
 		"tap":
+			if phase == "posted" and CONTINUE.has_point(pos):
+				phase = "done"
+				r.play("pop")
+				return
+			if pos.y <= NAV_H or pos.y >= content_end:
+				return
 			if menu and _like_btn().grow(6).has_point(pos):
 				_like()
 				return
-			for k in range(PHOTOS.size()):
-				if not menu and pos.y > NAV_H and _photo_rect(k).has_point(pos):
+			for k in range(_photo_count()):
+				if not menu and _photo_rect(k).has_point(pos):
 					viewing = k
 					view_t = 0.0
 					r.play("pop")
 					return
+			if phase == "posted":
+				return
 			if _dots_rect().grow(10).has_point(pos):
 				menu = not menu
 				menu_t = 0.0
 				r.play("pop")
 			else:
 				menu = false
+
+func _view_input(kind: String, pos: Vector2) -> void:
+	match kind:
+		"down":
+			swiping = true
+			swipe_start = pos
+		"up":
+			var delta := pos - swipe_start
+			if swiping and absf(delta.x) >= 36.0 and absf(delta.x) > absf(delta.y):
+				_change_photo(1 if delta.x < 0 else -1)
+			swiping = false
+		"tap":
+			if VIEW_CLOSE.has_point(pos) or (pos.x >= 64 and pos.x <= 296):
+				viewing = -1
+			elif pos.y >= NAV_H:
+				_change_photo(-1 if pos.x < 64 else 1)
+
+func _change_photo(delta: int) -> void:
+	var index := clampi(viewing + delta, 0, _photo_count() - 1)
+	if index != viewing:
+		viewing = index
+		view_t = 0.12
+		r.play("pop")
 
 func _like() -> void:
 	menu = false
@@ -174,8 +245,13 @@ func auto_like() -> void:
 	_like()
 
 func draw(ci) -> void:
+	if viewing >= 0:
+		_draw_viewer(ci)
+		return
+	var published := not post.is_empty()
 	var s := scroll
-	ci.draw_rect(ci.view_rect, Color.WHITE)
+	var content_end := FOOTER_Y if published else 640.0
+	ci.draw_rect(ci.view_rect, PAPER if published else Color.WHITE)
 	# 头像、名字
 	var top := NAV_H + 14 - s
 	_avatar(ci, "ayu_avatar.png", "", Color.WHITE, Rect2(12, top, 42, 42))
@@ -183,25 +259,29 @@ func draw(ci) -> void:
 	# 正文
 	for i in range(lines.size()):
 		var y := y_body + i * LH - s + 4
-		if y < NAV_H or y > 660:
+		if y < NAV_H or y > content_end + 20.0:
 			continue
 		ci.text_at(Vector2(TEXT_X, y), lines[i], FS, INK, TEXT_W, HORIZONTAL_ALIGNMENT_LEFT)
-	# 2×2 配图
-	for k in range(PHOTOS.size()):
+	for k in range(_photo_count()):
 		var rect := _photo_rect(k)
-		if rect.end.y < NAV_H or rect.position.y > 640:
+		if rect.end.y < NAV_H or rect.position.y > content_end:
 			continue
-		_draw_photo(ci, k, rect)
+		_draw_photo(ci, k, rect, true)
 	# 时间行和「··」
 	var my := y_meta - s
-	ci.text_at(Vector2(TEXT_X, my), "深夜 · 异地的最后一段日子", 12, GRAY, 240, HORIZONTAL_ALIGNMENT_LEFT)
+	if not post_date.is_empty():
+		ci.text_at(Vector2(TEXT_X, my), post_date, 14, Color("#736c66"), TEXT_W, HORIZONTAL_ALIGNMENT_LEFT)
+		my += DATE_LINE
+	var metadata := str(ci.t_(post.location)) if published else "深夜 · 异地的最后一段日子"
+	ci.text_at(Vector2(TEXT_X, my), metadata, 14 if published else 12, BLUE if published else GRAY, 240, HORIZONTAL_ALIGNMENT_LEFT)
 	var d := _dots_rect()
 	if phase == "read" and not menu and scroll >= _max_scroll() - 30:
 		var a := 0.35 + 0.35 * sin(t * 5.0)
 		ci.draw_style_box(_box(Color(0, 0, 0, 0), 6, Color(BLUE, a), 2), d.grow(4))
-	ci.draw_style_box(_box(PANEL, 4), d)
-	ci.draw_circle(d.get_center() + Vector2(-5, 0), 2.4, BLUE)
-	ci.draw_circle(d.get_center() + Vector2(5, 0), 2.4, BLUE)
+	if not published:
+		ci.draw_style_box(_box(PANEL, 4), d)
+		ci.draw_circle(d.get_center() + Vector2(-5, 0), 2.4, BLUE)
+		ci.draw_circle(d.get_center() + Vector2(5, 0), 2.4, BLUE)
 	# 点赞和评论栏
 	_draw_panel(ci, y_panel - s)
 	# 弹出的「赞 | 评论」
@@ -214,16 +294,16 @@ func draw(ci) -> void:
 			ci.draw_line(Vector2(box.position.x + 76, box.position.y + 10), Vector2(box.position.x + 76, box.end.y - 10), Color(1, 1, 1, 0.25), 1)
 			ci.text_at(Vector2(box.position.x + 76, box.position.y + 25), "评论", 14, Color.WHITE, 74)
 	# 顶栏（盖在滚动内容上面）
-	ci.draw_rect(Rect2(ci.view_rect.position, Vector2(ci.view_rect.size.x, NAV_H - ci.view_rect.position.y)), Color("#ededed"))
-	ci.draw_line(Vector2(0, NAV_H), Vector2(360, NAV_H), Color("#dcdcdc"), 1)
-	ci.draw_polyline(PackedVector2Array([Vector2(26, 22), Vector2(18, 31), Vector2(26, 40)]), INK, 2.0)
-	ci.text_at(Vector2(0, 38), "详情", 17, INK, 360)
-	if viewing >= 0:
-		_draw_viewer(ci)
-		return
+	ci.draw_rect(Rect2(ci.view_rect.position, Vector2(ci.view_rect.size.x, NAV_H - ci.view_rect.position.y)), Color("#f2eadb") if published else Color("#ededed"))
+	ci.draw_line(Vector2(0, NAV_H), Vector2(360, NAV_H), Color("#dfd4c1") if published else Color("#dcdcdc"), 1)
+	ci.text_at(Vector2(0, 34), "朋友圈" if published else "详情", 17, INK, 360)
+	if published:
+		ci.draw_rect(Rect2(Vector2(0, FOOTER_Y), Vector2(360, ci.view_rect.end.y - FOOTER_Y)), PAPER)
+		ci.draw_line(Vector2(14, FOOTER_Y), Vector2(346, FOOTER_Y), Color("#e8dece"), 1)
+		ci.pill(CONTINUE, "继续回忆", 16, ci.RED, ci.PAPER)
 	# 滚动条
 	if _max_scroll() > 0:
-		var view := 640.0 - NAV_H
+		var view := content_end - NAV_H
 		var bar_h := view * view / (view + _max_scroll())
 		ci.draw_style_box(_box(Color(0, 0, 0, 0.18), 2), Rect2(354, NAV_H + (view - bar_h) * scroll / _max_scroll(), 3, bar_h))
 	# 底部提示
@@ -233,46 +313,66 @@ func draw(ci) -> void:
 		ci.draw_style_box(_box(Color(0, 0, 0, 0.62), 16), tr)
 		ci.text_at(Vector2(tr.position.x, tr.position.y + 21), toast, 14, Color.WHITE, w)
 
-func _draw_photo(ci, k: int, rect: Rect2) -> void:
-	var tex: Texture2D = ci.texture(str(PHOTOS[k][0]))
-	var fallback: Texture2D = ci.texture(str(PHOTOS[k][1]))
-	if tex:
-		ci.draw_texture_rect(tex, rect, false)
-	elif fallback:
-		ci.draw_texture_rect_region(fallback, rect, PHOTOS[k][2])
-	else:
+func _draw_photo(ci, k: int, rect: Rect2, thumbnail := false) -> void:
+	var entry = photos[k]
+	var tex: Texture2D = ci.texture(entry[0] if post.is_empty() else entry.asset)
+	var source := Rect2()
+	if not tex and post.is_empty():
+		tex = ci.texture(entry[1])
+		source = entry[2]
+	if not tex:
 		ci.draw_rect(rect, Color("#e8e2da"))
-
-## 点开的大图：黑底铺满，图片占满屏宽，底下是第几张和怎么操作
-func _draw_viewer(ci) -> void:
-	var k := clampf(view_t / 0.18, 0, 1)
-	ci.draw_rect(ci.view_rect, Color(0, 0, 0, k))
-	var size := lerpf(PHOTO, 360.0, ease(k, 0.5))
-	var rect := Rect2(Vector2(180, 300) - Vector2.ONE * size * 0.5, Vector2.ONE * size)
-	_draw_photo(ci, viewing, rect)
-	if k < 1:
 		return
-	for i in range(PHOTOS.size()):
-		ci.draw_circle(Vector2(180 + (i - 1.5) * 14, 512), 3.0, Color(1, 1, 1, 0.9 if i == viewing else 0.35))
+	if not source.has_area():
+		source.size = tex.get_size()
+	if thumbnail:
+		var side := minf(source.size.x, source.size.y)
+		var square := Vector2.ONE * side
+		var crop_y := 0.5 if post.is_empty() else clampf(float(entry.get("thumbnailY", 0.5)), 0.0, 1.0)
+		source = Rect2(source.position + (source.size - square) * Vector2(0.5, crop_y), square)
+	else:
+		var fit := minf(rect.size.x / source.size.x, rect.size.y / source.size.y)
+		var fitted := source.size * fit
+		rect = Rect2(rect.get_center() - fitted / 2.0, fitted)
+	ci.draw_texture_rect_region(tex, rect, source)
+
+func _draw_viewer(ci) -> void:
+	ci.draw_rect(ci.view_rect, Color("#151314"))
+	var zoom := lerpf(0.92, 1.0, smoothstep(0.0, 0.16, view_t))
+	var area := Vector2(360, 526) * zoom
+	_draw_photo(ci, viewing, Rect2(Vector2(180, 316) - area / 2.0, area))
+	var count := _photo_count()
+	ci.text_at(Vector2(0, 33), "%d / %d" % [viewing + 1, count], 15, Color.WHITE, 360)
+	var close := VIEW_CLOSE.get_center()
+	ci.draw_line(close - Vector2(6, 6), close + Vector2(6, 6), Color.WHITE, 2, true)
+	ci.draw_line(close + Vector2(-6, 6), close + Vector2(6, -6), Color.WHITE, 2, true)
+	if not post.is_empty() and photos[viewing].has("caption"):
+		ci.text_at(Vector2(12, 606), ci.t_(photos[viewing].caption), 15, Color.WHITE, 336)
 	if viewing > 0:
-		ci.text_at(Vector2(0, 312), "‹", 34, Color(1, 1, 1, 0.7), 50)
-	if viewing < PHOTOS.size() - 1:
-		ci.text_at(Vector2(310, 312), "›", 34, Color(1, 1, 1, 0.7), 50)
-	ci.text_at(Vector2(0, 560), "点两边换一张，点中间回到朋友圈", 13, Color(1, 1, 1, 0.6), 360)
+		_draw_viewer_arrow(ci, Vector2(22, 316), -1)
+	if viewing < count - 1:
+		_draw_viewer_arrow(ci, Vector2(338, 316), 1)
+
+func _draw_viewer_arrow(ci, at: Vector2, direction: int) -> void:
+	ci.draw_circle(at, 14.0, Color(0, 0, 0, 0.5))
+	ci.draw_polyline(PackedVector2Array([at + Vector2(-3 * direction, -6), at + Vector2(3 * direction, 0), at + Vector2(-3 * direction, 6)]), Color.WHITE, 2.0, true)
+
+func _photo_count() -> int:
+	return photos.size()
 
 func _draw_panel(ci, y: float) -> void:
+	var people := _like_people()
+	var comments := _comments()
+	if people.is_empty() and comments.is_empty(): return
 	var rect := Rect2(TEXT_X, y, 346 - TEXT_X, _panel_h())
 	ci.draw_colored_polygon(PackedVector2Array([Vector2(TEXT_X + 14, y - 6), Vector2(TEXT_X + 8, y), Vector2(TEXT_X + 20, y)]), PANEL)
 	ci.draw_style_box(_box(PANEL, 4), rect)
 	# 爱心 + 头像
-	_heart(ci, Vector2(TEXT_X + 14, y + 26), 7.0, BLUE)
-	var people: Array = FRIENDS.duplicate()
-	if phase != "read":
-		people.push_front(["toretto_avatar.png", "", Color.WHITE])
+	if not people.is_empty(): _heart(ci, Vector2(TEXT_X + 14, y + 26), 7.0, BLUE)
 	for i in range(people.size()):
 		var at := Vector2(TEXT_X + 30 + (i % 8) * 31, y + 12 + int(i / 8) * 34)
 		var size := 28.0
-		if phase != "read" and i == 0:
+		if phase == "liked" and i == 0:
 			var k := clampf(liked_t / 0.35, 0, 1)
 			size = 28.0 * (1.0 + 0.35 * sin(k * PI)) * k
 		var p: Array = people[i]
@@ -280,7 +380,7 @@ func _draw_panel(ci, y: float) -> void:
 	# 评论
 	var cy := y + 12 + _like_rows() * 34.0 + 4
 	ci.draw_line(Vector2(TEXT_X + 6, cy), Vector2(rect.end.x - 6, cy), Color("#e6e6e6"), 1)
-	for c: Array in _comments():
+	for c: Array in comments:
 		cy += 24
 		var name := str(c[0]) + "："
 		var nw := 0.0

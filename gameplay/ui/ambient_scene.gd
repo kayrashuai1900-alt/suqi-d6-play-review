@@ -91,16 +91,14 @@ static func _pool_glint(i: int,time: float) -> Rect2:
 	return Rect2(roundf(x),roundf(y),width,1.3)
 
 static func _street(ci,time: float) -> void:
-	# 11/08 新街景（540×1200）车道就在停车位前，紫色 G42 按真实比例停在位里；
-	# 旧图远处车道上的 82 像素小车放进来会开上人行道、也比 G42 小一大截，所以新图不再加过路车。
 	var plate: Texture2D = ci.texture(str(ci.bg))
-	if plate and plate.get_height() != 960: return
-	ci.draw_set_transform_matrix(_transform(ci,Vector2(540,960)))
-	var cars := ["car_street.png","car_parking.png"]
-	for lane in range(2):
-		var texture: Texture2D = ci.texture(cars[lane])
-		if not texture: continue
-		var x := fposmod(time*(27 if lane == 0 else -32)+lane*270,760)-110
-		var y := 573.0+lane*25
-		var size := texture.get_size()*(82.0/texture.get_width())
-		ci.draw_texture_rect(texture,Rect2(Vector2(x,y)-Vector2(size.x*0.5,size.y),size),false,Color(0.83,0.87,0.91))
+	var car: Texture2D = ci.texture("car_parking.png")
+	if not plate or not car: return
+	var source_size := plate.get_size()
+	ci.draw_set_transform_matrix(_transform(ci, source_size))
+	var width := source_size.x * 0.21
+	var margin := width * 2.0
+	var x := fposmod((time + 2.0) * 45.0, source_size.x + 2.0 * margin) - margin
+	var road_y := source_size.y * (573.0 / 960.0 if source_size.y == 960.0 else 0.407)
+	var size := car.get_size() * (width / car.get_width())
+	ci.draw_texture_rect(car, Rect2(Vector2(x - size.x * 0.5, road_y - size.y), size), false, Color(0.62, 0.75, 0.81))

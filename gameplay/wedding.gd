@@ -14,10 +14,8 @@ func _ready() -> void:
     if OS.has_feature("web") and cloud._js == null:
         cloud._in_wx = false
     if resume_location.is_empty():
-        # The invitation already completed the journey. Enter the original
-        # wedding hall, not the estate's unfinished parking/drive greybox.
-        # Only announce readiness after the original hall and fade are ready.
-        await _enter_banquet()
+        # Guests arrive at the existing courtyard gate before choosing how to enter the hall.
+        await _enter_court()
     else:
         await _enter_parking()
         var area := str(resume_location.get("area", "parking"))

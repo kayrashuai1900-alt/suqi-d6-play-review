@@ -1,6 +1,6 @@
 {
   "chapterId": "finale",
-  "titleId": "G-12",
+  "titleId": "A7-TITLE",
   "steps": [
     {
       "id": "finale",
@@ -17,7 +17,7 @@
         "hideAyu": true,
         "beats": [
           {
-            "card": "G-12",
+            "card": "A7-TITLE",
             "duration": 2.0
           },
           {

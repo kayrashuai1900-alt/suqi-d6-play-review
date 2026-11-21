@@ -10,13 +10,13 @@ static func texture(file: String) -> Texture2D:
 	if not ResourceLoader.exists(path): return null
 	if not textures.has(path): textures[path] = load(path)
 	return textures[path]
-static func cover(ci: CanvasItem, tex: Texture2D, area: Rect2, offset := 0.0) -> void:
+static func cover(ci: CanvasItem, tex: Texture2D, area: Rect2, offset := 0.0, tint := Color.WHITE) -> void:
 	if not tex: return
 	var scale := maxf(area.size.x / tex.get_width(), area.size.y / tex.get_height())
 	var size := tex.get_size() * scale
 	var free_y := maxf(0, size.y - area.size.y) * 0.5
 	var rect := Rect2(area.get_center() - size * 0.5 + Vector2(0, clampf(offset, -free_y, free_y)), size)
-	ci.draw_texture_rect_region(tex,area,Rect2((area.position-rect.position)/scale,area.size/scale))
+	ci.draw_texture_rect_region(tex,area,Rect2((area.position-rect.position)/scale,area.size/scale),tint)
 	if "/desk_r4/" in tex.resource_path: draw_family_frame(ci,rect)
 
 static func draw_family_frame(ci: CanvasItem, rect: Rect2) -> void:
@@ -58,3 +58,32 @@ static func draw(ci: CanvasItem, materials: Dictionary, area: Rect2, focus := ""
 		var source: Rect2 = REGIONS[id]
 		var alpha := clampf((elapsed - 0.25) / 0.9,0,1) if id == focus else 1.0
 		ci.draw_texture_rect_region(full,Rect2(rect.position + source.position*k,source.size*k),source,Color(1,1,1,alpha))
+
+const WRIST_X := [426, 474, 505, 534, 567, 602, 639]
+const WRIST_Y := [676, 719, 749, 784, 823, 865, 907]
+
+static func move_writing_wrist(ci: CanvasItem, area: Rect2, elapsed: float, duration: float) -> void:
+	var plate := texture("round1/desk_r4/writing.png")
+	if not plate:
+		return
+	var rect := canvas(area)
+	var k := rect.size.x / SOURCE_SIZE.x
+	var settle := smoothstep(0.0, 0.18, elapsed) * (1.0 - smoothstep(duration - 0.32, duration, elapsed))
+	var stroke := sin(elapsed * 8.0)
+	var motion := Vector2(19.0 * stroke, 4.0 * stroke + 6.0 * sin(elapsed * 15.0)) * settle
+	# Move only the wrist and pen in the side view. The edge of the patch,
+	# shoulder, and furniture retain their source positions.
+	for row in range(WRIST_Y.size() - 1):
+		for col in range(WRIST_X.size() - 1):
+			var source := PackedVector2Array([
+				Vector2(WRIST_X[col], WRIST_Y[row]), Vector2(WRIST_X[col + 1], WRIST_Y[row]),
+				Vector2(WRIST_X[col + 1], WRIST_Y[row + 1]), Vector2(WRIST_X[col], WRIST_Y[row + 1]),
+			])
+			var vertices := PackedVector2Array()
+			var uv := PackedVector2Array()
+			for point in source:
+				var wx := smoothstep(426.0, 519.0, point.x) * (1.0 - smoothstep(549.0, 639.0, point.x))
+				var wy := smoothstep(676.0, 762.0, point.y) * (1.0 - smoothstep(812.0, 907.0, point.y))
+				vertices.append(rect.position + (point + motion * wx * wy) * k)
+				uv.append(point / SOURCE_SIZE)
+			ci.draw_polygon(vertices, PackedColorArray([Color.WHITE]), uv, plate)

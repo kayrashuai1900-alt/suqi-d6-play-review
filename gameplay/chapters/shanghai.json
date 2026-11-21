@@ -154,9 +154,10 @@
           {
             "id": "g42",
             "tex": "car_street.png",
+            "sourceAnchored": true,
             "at": [
-              264,
-              300
+              380,
+              537
             ]
           }
         ],
@@ -319,9 +320,10 @@
           {
             "id": "g42",
             "tex": "car_street.png",
+            "sourceAnchored": true,
             "at": [
-              264,
-              300
+              380,
+              537
             ]
           }
         ],
@@ -483,9 +485,10 @@
           {
             "id": "g42",
             "tex": "car_street.png",
+            "sourceAnchored": true,
             "at": [
-              264,
-              300
+              380,
+              537
             ]
           }
         ],
@@ -496,7 +499,8 @@
               247,
               328
             ],
-            "icon": "pick"
+            "icon": "pick",
+            "guideBelow": true
           }
         ],
         "beats": [
@@ -523,6 +527,7 @@
         "beats": [
           {
             "goal": {
+              "标题": "第 1/6 关 · 外滩飞车",
               "目标": "带回钢笔",
               "任务": "左右滑动换道，驶向东方明珠。右侧金框车位靠近时，按住屏幕刹车。"
             }
@@ -1191,6 +1196,7 @@
       "background": "scene",
       "visibleActors": [],
       "scene": {
+        "animateDialogue": true,
         "bg": "round1/rework1107/shanghai_parking.png",
         "scaleProfile": "shanghai_parking",
         "personHeight": 105,
@@ -1351,6 +1357,7 @@
       "background": "scene",
       "visibleActors": [],
       "scene": {
+        "animateDialogue": true,
         "bg": "round1/rework1107/shanghai_parking.png",
         "scaleProfile": "shanghai_parking",
         "personHeight": 105,
@@ -1511,6 +1518,7 @@
       "background": "scene",
       "visibleActors": [],
       "scene": {
+        "animateDialogue": true,
         "bg": "round1/rework1107/shanghai_parking.png",
         "scaleProfile": "shanghai_parking",
         "personHeight": 105,
@@ -2615,7 +2623,7 @@
     },
     {
       "id": "to_chengdu",
-      "afterChapterCoda": true,
+      "continueShot": true,
       "type": "scene",
       "sceneId": "invitation",
       "speaker": "system",
@@ -2623,13 +2631,12 @@
       "actorSlot": null,
       "background": "scene",
       "visibleActors": [],
-      "effect": "ink_to_chengdu",
       "scene": {
         "hideAyu": true,
-        "bg": "w2/common/chapter_end_chengdu.png",
+        "bg": "w2/shanghai/bund_night_g42.png",
         "beats": [
           {
-            "narrate": "W-NEXT-CHENGDU"
+            "wait": 0.0
           }
         ]
       }

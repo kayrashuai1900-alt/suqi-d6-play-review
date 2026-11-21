@@ -2,6 +2,9 @@ extends RefCounted
 const AYU_STAND := "ayu_idle.png"
 const TORETTO_STAND := "w2/common/toretto_neutral_r2.png"
 const SHOW_TIME := 2.2
+const MEMORY_SHOW_TIME := 3.6
+const CAMERA_ART := "w2/hongkong/travel_camera.png"
+const WALK_ON := Rect2(102, 570, 156, 44)
 
 var r
 var phase := "ready"
@@ -10,12 +13,26 @@ var ayu_x := 0.0
 var toretto_x := 0.0
 var _frames := 0
 var caption := "B-G3-1"
+var memory_art := ""
+var park_photo := ""
+var park_photos_before := 0
+var optional := false
 var _photo: Texture2D
 
 
 func start(runner, beat: Dictionary) -> void:
 	r = runner
 	caption = str(beat.get("caption","B-G3-1"))
+	memory_art = str(beat.get("photoArt", ""))
+	park_photo = str(beat.get("parkPhoto", ""))
+	optional = bool(beat.get("photoOptional", false))
+	if not park_photo.is_empty():
+		# Only the normal shutter reaches the next photo beat. The current beat
+		# already lives in the checkpoint, so no separate counter can drift.
+		var earlier := {}
+		for previous: Dictionary in r.beats.slice(0, r.bi):
+			if previous.has("parkPhoto"): earlier[previous.parkPhoto] = true
+		park_photos_before = earlier.size()
 	phase = "ready"
 	ayu_x = r.feet.x
 	toretto_x = r.comp_pos.x
@@ -41,7 +58,7 @@ func process(dt: float) -> bool:
 	match phase:
 		"prep":
 			_frames += 1
-			if _frames >= 3:
+			if _frames >= 3 and t >= 0.26:
 				_capture()
 				phase = "flash"
 				t = 0.0
@@ -51,12 +68,18 @@ func process(dt: float) -> bool:
 				phase = "show"
 				t = 0.0
 		"show":
-			if t >= SHOW_TIME:
+			if t >= (MEMORY_SHOW_TIME if not memory_art.is_empty() else SHOW_TIME):
 				phase = "done"
 	return phase == "done"
 
 
 func _capture() -> void:
+	if not memory_art.is_empty():
+		_photo = r.texture(memory_art)
+		if _photo:
+			return
+	if DisplayServer.get_name() == "headless":
+		return
 	var vp: Viewport = r.get_viewport()
 	if vp and vp.get_texture():
 		var img: Image = vp.get_texture().get_image()
@@ -71,6 +94,9 @@ func _camera_rect() -> Rect2:
 
 func input(kind: String, pos: Vector2) -> void:
 	if kind != "tap" or phase != "ready":
+		return
+	if optional and WALK_ON.has_point(pos):
+		skip()
 		return
 	# 相机图标及其下方一整片都算（手指常点在图标下面）
 	var zone := _camera_rect().grow(16)
@@ -96,6 +122,7 @@ func draw(ci) -> void:
 		_draw_couple(ci)
 	if phase == "ready":
 		_draw_camera(ci)
+		if optional: ci.pill(WALK_ON, "继续走走", 16, ci.INK, ci.PAPER)
 	if phase == "show":
 		_draw_polaroid(ci)
 	if phase == "flash":
@@ -116,6 +143,11 @@ func _draw_camera(ci) -> void:
 		ring.append(c + Vector2(cos(ang), sin(ang)) * (30.0 + sin(ci.time * 4.5) * 2.0))
 	ci.draw_polyline(ring, Color(1.0, 0.92, 0.65, a), 2.0)
 	ci.draw_circle(c, 26.0, Color(ci.INK, 0.8))
+	var art: Texture2D = ci.texture(CAMERA_ART)
+	if art:
+		var size := art.get_size() * minf(46.0 / art.get_width(), 38.0 / art.get_height())
+		ci.draw_texture_rect(art, Rect2(c - size * 0.5, size), false)
+		return
 	ci.draw_rect(Rect2(c + Vector2(-15, -9), Vector2(30, 20)), Color("#e9dfd0"))
 	ci.draw_rect(Rect2(c + Vector2(-15, -9), Vector2(30, 20)), ci.INK, false, 2.0)
 	ci.draw_rect(Rect2(c + Vector2(-10, -14), Vector2(10, 6)), Color("#e9dfd0"))
@@ -151,3 +183,7 @@ func _draw_polaroid(ci) -> void:
 	ci.draw_rect(photo, Color(ci.WOOD, 0.8 * k), false, 2.0)
 	ci.text_at(Vector2(-122, 224), ci.t_(caption), 16, Color(ci.INK, k), 244)
 	ci.draw_set_transform(Vector2.ZERO)
+
+func hud() -> Array:
+	if park_photo.is_empty() or phase == "prep": return []
+	return [["乐园合影", park_photos_before + (1 if phase != "ready" else 0), 3]]

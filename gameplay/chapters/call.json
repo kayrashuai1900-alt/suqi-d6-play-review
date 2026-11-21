@@ -14,7 +14,8 @@
       "scene": {
         "goalRewardId": "paper",
         "badge": "G-02",
-        "bg": "w2/call/bg_room_night.png|l3_computer.webp",
+        "bg": "w2/common/chapter_end_call.png",
+        "hideAyu": true,
         "fill": "#1a120e",
         "night": 0.0,
         "personHeight": 128,
@@ -56,18 +57,6 @@
           200,
           545
         ],
-        "actors": [
-          {
-            "id": "phone",
-            "tex": "w2/call/phone_ring_1.png|phone_prop.png",
-            "at": [
-              215,
-              300
-            ],
-            "scale": 1.7,
-            "ring": true
-          }
-        ],
         "hotspots": [
           {
             "id": "phone",
@@ -98,6 +87,13 @@
           },
           {
             "narrate": "A3-1b"
+          },
+          {
+            "bg": "w2/call/bg_room_night.png|l3_computer.webp",
+            "hideAyu": false,
+            "actors": [
+              {"id": "phone", "tex": "w2/call/phone_ring_1.png|phone_prop.png", "at": [215, 300], "scale": 1.7, "ring": true}
+            ]
           },
           {
             "goal": {
@@ -180,17 +176,12 @@
             "music": "late_call"
           },
           {
-            "bg": "w2/call/ayu_bedside_night.tres",
+            "bg": "w2/call/ayu_after_call.png|w2/call/ayu_bedside_night.tres",
             "hideAyu": true,
             "actors": []
           },
           {
             "narrate": "A3-CALL-AYU-REFLECT"
-          },
-          {
-            "bg": "w2/call/bg_room_night.png",
-            "hideAyu": true,
-            "actors": []
           },
           {
             "narrate": "A3-R1"
@@ -316,6 +307,10 @@
             "scaleProfile": "office"
           },
           {
+            "card": "A3-NEXT-MORNING",
+            "duration": 1.8
+          },
+          {
             "narrate": "A3-2i"
           },
           {
@@ -379,16 +374,11 @@
             "pose": ""
           },
           {
-            "bg": "round1/people/daily_walk_separate.png",
+            "bg": "w2/call/diagonal_cities.png|w2/call/two_cities.png",
             "fill": "#2a1414",
             "badge": "",
             "hideAyu": true,
             "walkers": []
-          },
-          {
-            "narrate": "A3-2q",
-            "chapterCaption": "call",
-            "captionLow": true
           },
           {
             "narrate": "A3-2r"
@@ -397,7 +387,7 @@
             "narrate": "A3-2s"
           },
           {
-            "bg": "w2/call/together_portrait.png",
+            "bg": "w2/call/erma_bench.png|w2/call/together_portrait.png",
             "fill": "#2a1414",
             "badge": "",
             "hideAyu": true,
@@ -410,25 +400,22 @@
             "captionDelay": 0.8
           },
           {
-            "wait": 2.2
-          },
-          {
-            "goal": {
-              "目标": "带回信纸",
-              "任务": "往上拖动 Toretto 的爱心，消解阿鱼的愁云。"
-            }
-          },
-          {
             "bg": "w2/call/late_office.png",
             "hideAyu": true,
             "actors": [],
             "music": "late_call"
           },
           {
+            "goal": {
+              "目标": "带回信纸",
+              "任务": "往上拖动 Toretto 的爱心，累计消除 10 朵愁云。"
+            }
+          },
+          {
             "game": "care"
           },
           {
-            "bg": "w2/call/ayu_bedside_night.tres",
+            "bg": "w2/call/ayu_after_call.png|w2/call/ayu_bedside_night.tres",
             "hideAyu": true,
             "actors": [],
             "walkers": [],
@@ -502,7 +489,7 @@
             "narrate": "A3-S13"
           },
           {
-            "bg": "round1/people/daily_walk_separate.png",
+            "bg": "w2/call/diagonal_cities.png|w2/call/two_cities.png",
             "hideAyu": true,
             "music": "being_there"
           },
@@ -526,8 +513,7 @@
             "material": "paper"
           }
         ]
-      },
-      "endCodaId": "chengdu"
+      }
     }
   ]
 }

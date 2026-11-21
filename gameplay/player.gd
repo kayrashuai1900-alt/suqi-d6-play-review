@@ -442,6 +442,8 @@ func _enter_step(index: int, resume := false) -> void:
 
 func _chapter_groups(chapters: Array[String]) -> Array[String]:
 	var groups: Array[String] = ["love-core" if Packs.service().has_group("love-core") else "love-media"]
+	if "finale" in chapters:
+		groups.append("world-shared" if Packs.service().has_group("world-shared") else "world-media")
 	groups.append_array(chapters)
 	return groups
 
@@ -534,6 +536,7 @@ func _interlude(chapter_id: String) -> void:
 	for page in pages:
 		lines.append(StoryCaption.wrap_text(str(page), 312.0, 17))
 	label.text = "\n".join(lines)
+	card.offset_top -= maxi(0, label.text.count("\n") - 1) * 25.0
 	label.add_theme_constant_override("line_spacing", 7)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER

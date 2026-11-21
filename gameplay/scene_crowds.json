@@ -1,5 +1,9 @@
 {
   "bg_sh_street.png": {
+    "walkers": [
+      {"guest": "07", "a": [18, 731], "b": [160, 720], "speed": 51, "once": true, "sourceAnchored": true, "sourceDepthScale": true},
+      {"guest": "03", "a": [525, 857], "b": [394, 807], "speed": 49, "once": true, "startDelay": 1.4, "sourceAnchored": true, "sourceDepthScale": true}
+    ],
     "standing": [
       {
         "npc": "d1_05",
@@ -41,6 +45,10 @@
   },
   "round1/rework1107/shanghai_parking.png": {
     "standing": [],
+    "walkers": [
+      {"guest": "10", "a": [15, 291], "b": [128, 278], "speed": 31, "once": true},
+      {"guest": "03", "a": [339, 246], "b": [257, 263], "speed": 32, "once": true, "startDelay": 1.6}
+    ],
     "talk": {
       "d2_talk_a": [
         "找车？看看右边那抹紫。",
@@ -53,6 +61,10 @@
     }
   },
   "w2/chengdu/wolong_entrance.png": {
+    "talk": {
+      "d3_01": ["第一次来卧龙吗？从这条小路往里走。", "阿鱼：好，我去看看熊猫。"],
+      "d3_05": ["你听，里面有人在叫熊猫的名字。", "阿鱼：我也去看看是哪一只。"]
+    },
     "standing": [
       {
         "npc": "d3_01",
@@ -141,10 +153,19 @@
         "startDelay": 2.4,
         "avoidPlayer": false,
         "guest": "10"
-      }
+      },
+      {"guest": "03", "a": [98, 791], "b": [115, 638], "speed": 51, "once": true, "startDelay": 1.3, "sourceAnchored": true, "sourceDepthScale": true},
+      {"guest": "07", "a": [439, 631], "b": [454, 856], "speed": 67, "once": true, "startDelay": 0.6, "sourceAnchored": true, "sourceDepthScale": true}
     ]
   },
   "round1/scenes/panda_garden.png": {
+    "walkers": [
+      {"guest": "07", "a": [16, 284], "b": [67, 300], "speed": 23, "once": true},
+      {"guest": "10", "a": [342, 235], "b": [302, 263], "speed": 18, "once": true, "startDelay": 1.1}
+    ],
+    "talk": {
+      "d3_06": ["它趴着也能吃，手一直没停。", "阿鱼：它真会享受。"]
+    },
     "standing": [
       {
         "npc": "d3_06",
@@ -374,6 +395,14 @@
     }
   },
   "w2/hongkong/arrivals_sunset.png": {
+    "walkers": [
+      {"guest": "07", "a": [284, 389], "b": [332, 510], "speed": 32, "once": true, "luggage": true},
+      {"guest": "10", "a": [13, 610], "b": [104, 489], "speed": 36, "once": true, "luggage": true, "startDelay": 1.8},
+      {"guest": "03", "a": [230, 331], "b": [272, 385], "speed": 22, "once": true, "luggage": true, "startDelay": 3.4}
+    ],
+    "standing": [
+      {"guest": "03", "at": [249, 470], "heightM": 1.62, "face": -1, "luggage": true}
+    ],
     "talk": {
       "hk_maya": [
         "Did your flight just land?",
@@ -447,8 +476,8 @@
       {
         "npc": "d14garden_05",
         "at": [
-          271,
-          464
+          332,
+          513
         ],
         "heightM": 1.59,
         "face": -1

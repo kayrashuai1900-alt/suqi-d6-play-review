@@ -21,6 +21,10 @@
         "walkers": [],
         "beats": [
           {
+            "card": "G-07",
+            "duration": 1.7
+          },
+          {
             "narrate": "A2-1a"
           }
         ],
@@ -39,6 +43,7 @@
       "background": "scene",
       "visibleActors": [],
       "scene": {
+        "goalRewardId": "ink",
         "bg": "w2/chengdu/wolong_entrance.png",
         "start": [
           221,
@@ -49,6 +54,13 @@
         "beats": [
           {
             "narrate": "A2-1b"
+          },
+          {
+            "goal": {
+              "标题": "第 2/6 关 · 喂饱大熊猫",
+              "目标": "带回墨水",
+              "任务": "先用箩筐装竹笋和竹子，走近后喂饱 3 只熊猫。"
+            }
           },
           {
             "go": "garden_gate"
@@ -133,12 +145,6 @@
         ],
         "beats": [
           {
-            "goal": {
-              "目标": "带回墨水",
-              "任务": "移动人物采集竹子，\n并喂饱 3 只熊猫。"
-            }
-          },
-          {
             "game": "pandas"
           }
         ],
@@ -158,11 +164,12 @@
       "background": "scene",
       "visibleActors": [],
       "scene": {
-        "bg": "round1/people/group_phone_1109_bg.png",
+        "bg": "w2/chengdu/garden_phone.png",
         "hideAyu": true,
         "beats": [
           {
             "game": "group_chat",
+            "phoneAlert": "A2-PHONE-RING",
             "lines": [
               {
                 "say": "A2-2",
@@ -185,7 +192,7 @@
       "background": "scene",
       "visibleActors": [],
       "scene": {
-        "bg": "round1/people/group_phone_1109_bg.png",
+        "bg": "w2/chengdu/garden_phone.png",
         "hideAyu": true,
         "beats": [
           {

@@ -7,7 +7,7 @@ const Checkpoint := preload("res://hongyuan/checkpoint.gd")
 const StoryCaption := preload("res://hongyuan/ui/story_caption.gd")
 const FONT := preload("res://hongyuan/fonts/dialogue_font.tres")
 const ASSET_ROOT := "res://hongyuan/assets/"
-const SPLASH := "round1/common/splash_title_1109.png"
+const SPLASH := "round1/common/splash_1108.png"
 
 const CANVAS := Vector2(360, 640)
 const INK := Color("#281a1a")
@@ -148,18 +148,27 @@ func _fit_canvas() -> void:
 func _draw_canvas() -> void:
 	if not show_menu:
 		return
+	var title := "苏七镇奇缘"
+	for offset: Vector2 in [Vector2(-2, 0), Vector2(2, 0), Vector2(0, -2), Vector2(0, 3)]:
+		canvas.draw_string(FONT, Vector2(0, 88) + offset, title, HORIZONTAL_ALIGNMENT_CENTER, CANVAS.x, 34, Color("#642e32"))
+	canvas.draw_string(FONT, Vector2(0, 88), title, HORIZONTAL_ALIGNMENT_CENTER, CANVAS.x, 34, WHEAT)
+	canvas.draw_string(FONT, Vector2(0, 112), "爱情篇 · 宴席篇 · 裳泓篇", HORIZONTAL_ALIGNMENT_CENTER, CANVAS.x, 15, PAPER)
+	canvas.draw_string(FONT, Vector2(0, 635), "OPC 制作人：@阿鱼ayu_", HORIZONTAL_ALIGNMENT_CENTER, CANVAS.x, 11, WHEAT)
 	if completed:
 		_pill(Rect2(48, 456, 264, MENU_H), "回顾爱情篇", 19, RED, PAPER)
 		_pill(Rect2(48, 508, 264, MENU_H), "去婚礼现场", 19, RED, PAPER)
 		_pill(Rect2(48, 560, 264, MENU_H), "去裳泓村", 19, RED, PAPER)
 		return
+	var panel := Rect2(30, 492, 300, 133)
 	if confirm_restart:
-		var warn := Rect2(24, 368, 312, 108)
-		canvas.draw_rect(warn, Color(INK, 0.94))
-		canvas.draw_rect(warn, Color(GOLD, 0.6), false, 2.0)
+		panel.position.y = 440
+		panel.size.y = 185
+	canvas.draw_rect(panel, Color(INK, 0.94))
+	canvas.draw_rect(panel, Color(GOLD, 0.6), false, 2.0)
+	if confirm_restart:
 		canvas.draw_multiline_string(
 			FONT,
-			Vector2(40, warn.position.y + 34),
+			Vector2(40, panel.position.y + 31),
 			StoryCaption.wrap_text("确定要重新开始吗？当前进度将被清除。", 280, 17),
 			HORIZONTAL_ALIGNMENT_LEFT,
 			280,

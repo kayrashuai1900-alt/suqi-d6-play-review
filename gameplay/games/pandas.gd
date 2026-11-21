@@ -1,5 +1,5 @@
 extends RefCounted
-## 六只熊猫轮流喊饿；每次取一根竹子，走近后手动喂，喂饱三只离场。
+## 熊猫轮流喊饿，阿鱼装一篮竹笋和竹子，走近后喂食。
 ## D2-C2 可在喂食间隙接消息；本卡不新增聊天或情感台词。
 
 const FEET := [Vector2(62, 350), Vector2(180, 350), Vector2(298, 350),
@@ -23,6 +23,7 @@ const GOAL := 3   # 阿鱼 11/08 定：喂饱三只就够，不用来回跑五�
 var fed: Array = []
 var hungry := -1
 var bamboo_held := false
+var pickup_t := 0.0
 var feed_flash := 0.0
 var last_fed := -1
 var rng := RandomNumberGenerator.new()
@@ -43,6 +44,7 @@ func _choose_hungry() -> void:
 
 func process(dt: float) -> bool:
 	t += dt
+	pickup_t = maxf(0.0, pickup_t - dt)
 	feed_flash = maxf(0.0, feed_flash - dt)
 	if phase == "done":
 		return t >= 1.1
@@ -66,6 +68,7 @@ func _act() -> void:
 	match _action():
 		"take":
 			bamboo_held = true
+			pickup_t = 0.45
 			r.moving = false
 			r.play("blip")
 		"feed":
@@ -144,6 +147,7 @@ func restore_checkpoint() -> void:
 
 static func draw_preview(ci) -> void:
 	# The same six residents are already in the garden before its task opens.
+	_draw_far_pandas(ci)
 	for i in range(FEET.size()):
 		var art: String = POSES[i]
 		if i in [0, 5] and int(ci.time * 1.5) % 2 == 1:
@@ -151,6 +155,7 @@ static func draw_preview(ci) -> void:
 		ci.sprite(art, FEET[i], i % 2 == 1, PANDA_SCALE)
 
 func draw(ci) -> void:
+	_draw_far_pandas(ci)
 	var items: Array = []
 	for i in range(FEET.size()): items.append({"y": FEET[i].y, "panda": i})
 	items.append({"y": r.feet.y, "player": true})
@@ -187,6 +192,10 @@ func draw(ci) -> void:
 			var icon: Texture2D = ci.texture("w2/common/icon_pick.png" if action == "take" else "w2/common/icon_feed.png")
 			if icon: ci.draw_texture_rect(icon, _action_rect(), false)
 
+static func _draw_far_pandas(ci) -> void:
+	ci.sprite("w2/chengdu/panda_sleep.png", Vector2(127, 242), false, PANDA_SCALE * 0.64)
+	ci.sprite("w2/chengdu/panda_slow.png", Vector2(214, 218), true, PANDA_SCALE * 0.54)
+
 func _draw_player(ci) -> void:
 	var art := "ayu_idle.png"
 	if (r.moving or r.stick.length() > 0.08) and r.move_dir.length() > 0.01:
@@ -197,8 +206,15 @@ func _draw_player(ci) -> void:
 		else: art = "w2/common/ayu_walk_side_%d.png|ayu_idle.png" % frame
 	ci.sprite(art, r.feet, r.facing < 0)
 	if bamboo_held:
-		var tex: Texture2D = ci.texture("w2/chengdu/bamboo_held.png")
-		if tex: ci.draw_texture_rect(tex, Rect2(r.feet + Vector2(16 * r.facing - 6, -49), Vector2(12, 37)), false)
+		var tex: Texture2D = ci.texture("w2/chengdu/bamboo_basket.png")
+		if not tex:
+			tex = ci.texture("w2/chengdu/bamboo_held.png")
+		if tex:
+			var size := tex.get_size() * minf(38.0 / tex.get_width(), 33.0 / tex.get_height())
+			var held_at: Vector2 = r.feet + Vector2(12 * r.facing, -42)
+			var lift := 1.0 - smoothstep(0.0, 0.45, pickup_t)
+			var at := (BAMBOO - Vector2(0, 14)).lerp(held_at, lift)
+			ci.draw_texture_rect(tex, Rect2(at - size * 0.5, size), false)
 
 func _heart(ci, c: Vector2, rad: float, col: Color) -> void:
 	# GPT 像素爱心 32×32，中心锚点；按原来画的大小缩到约 3.2 倍半径

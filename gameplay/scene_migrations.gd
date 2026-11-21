@@ -11,6 +11,8 @@ static func _archived(baseline: Dictionary, full_id: String, signature: String) 
 	return []
 
 static func _key(beat: Dictionary) -> String:
+	if beat.get("game", "") == "photo" and beat.has("photoId"):
+		return "game:photo:" + str(beat.photoId)
 	for name in ["game", "go", "material", "card", "button"]:
 		if beat.has(name): return name+":"+str(beat[name])
 	for name in ["say", "narrate"]:
@@ -33,6 +35,10 @@ static func _same_beat(old: Array, index: int, current: Array) -> int:
 		var matched := _find_key(current,key,occurrence)
 		if matched < 0 and key == "game:balance":
 			return _find_key(current,"copy:A3-S1")
+		if matched < 0 and key == "copy:A3-2q":
+			matched = _find_key(current, "copy:A3-2r")
+		if matched < 0 and key == "card:G-10":
+			matched = _find_key(current, "card:A5-LANDED")
 		if matched < 0 and key in ["copy:A3-2a", "copy:A3-2b", "copy:A3-2f"]:
 			matched = _find_key(current, "copy:A3-CALL-AYU-REFLECT")
 		if matched < 0 and key.begins_with("copy:"):
@@ -52,8 +58,8 @@ static func _new_entry(old: Array,index: int,current: Array,new_index: int) -> i
 	# An old awarded token remains awarded, but newly required play is not skipped.
 	var care := _find_key(current,"game:care")
 	if care >= 0 and _find_key(old,"game:care") < 0 and new_index > care:
-		# Include the new instruction card and its scene setup before care.
-		return maxi(0,care-2)
+		# The runner reapplies the office before the instruction card.
+		return maxi(0, care - 1)
 	var registry := _find_key(current,"game:registration")
 	if registry >= 0 and _find_key(old,"game:registration") < 0:
 		if _key(old[index]) in ["copy:A4-3a","copy:A4-3b","material:stamp"]:
@@ -143,22 +149,33 @@ static func migrate(state: Dictionary, shot: Dictionary) -> bool:
 	# The retired call button only opened Moments. Resume the post itself, not the whole scene.
 	if new_index < 0 and str(shot.fullId) == "call/night_call" and _key(beat) == "button:A3-S14":
 		new_index = _find_key(current, "game:moments")
+	# The Japan draft moved past the registry and reward. Resume the next event
+	# from the original timeline so a mid-draft save still plays both.
+	if beat.has("draftPhotos") and new_index >= 0 and current[new_index].has("post") and index + 1 < old.size():
+		new_index = _same_beat(old, index + 1, current)
 	if new_index >= 0: new_index = _new_entry(old,index,current,new_index)
 	if str(shot.chapterId) == "finale":
+		if beat.get("card") == "G-12":
+			new_index = _find_key(current, "card:A7-TITLE")
 		var guest: Dictionary = state.get("guest", snapshot.get("result", {}))
 		var game: Dictionary = snapshot.get("game", {})
 		var name := str(game.get("name", guest.get("name", "")))
-		var keeps_letter_flow: bool = old.size() == 6 and old[3].has("choice") and beat.get("game", "") == "finale"
+		var same_letter: bool = old.size() == 3 or (old.size() == 6 and old[3].has("choice"))
+		var keeps_letter_flow: bool = same_letter and beat.get("game", "") == "finale"
 		if keeps_letter_flow and new_index >= 0 and not game.is_empty():
-			# This release only removes what follows the letter. Keep its current phase.
-			snapshot.game = game
+			var was_entering_name: bool = game.get("phase") == "name"
+			if was_entering_name:
+				# Old forms appeared before the seal. Keep the draft for after opening.
+				game.phase = "write"
+				game.t = 0.0
+			game.name_confirmed = not was_entering_name and name.strip_edges().length() >= 2
 		elif name.length() >= 2:
 			new_index = _find_key(current,"game:finale")
 			var old_phase := str(game.get("phase", ""))
-			var phase := old_phase if old_phase in ["name", "seal"] else "write"
+			var phase := "seal" if old_phase == "seal" else "write"
 			if old_phase in ["stamped", "done"] or not guest.is_empty(): phase = "ready_send"
 			var look := int(game.get("look", int(str(guest.get("look", "01"))) - 1))
-			game = {"phase": phase, "name": name, "look": look, "typed": 0.0, "hold": 0.0, "t": 0.0}
+			game = {"phase": phase, "name": name, "look": look, "name_confirmed": old_phase != "name", "hold": 0.0, "t": 0.0}
 			snapshot = {"mode": "game", "game": game, "result": guest}
 	elif new_index >= 0:
 		var target: Dictionary = current[new_index]

@@ -2,7 +2,8 @@
   "prologue": {
     "pages": [
       "一封信写了很久",
-      "是因为有些话，见面时反而说不出来"
+      "是因为有些话，见面时反而说不出来",
+      "先去上海吧，故事要从那里说起。"
     ],
     "image": "bg_sh_street.png"
   },
@@ -10,7 +11,8 @@
     "image": "w2/shanghai/bund_night_coda.png",
     "pages": [
       "一辆同款的车",
-      "两个同频的人"
+      "两个同频的人",
+      "下一站：阿鱼回成都"
     ]
   },
   "chengdu": {
@@ -21,6 +23,7 @@
     "image": "w2/common/chapter_end_call.png"
   },
   "call": {
+    "image": "w2/call/ayu_toretto_holdhands.png",
     "pages": [
       "有人愿意听你说话",
       "就已经是开始心动了"

@@ -121,6 +121,9 @@
             "narrate": "A4-1c"
           },
           {
+            "narrate": "A4-TRIP-BLESSING"
+          },
+          {
             "goal": {
               "目标": "带回印章",
               "任务": "走到码头钓位，按住蓄力，松手甩竿。"
@@ -326,7 +329,7 @@
             "actors": [
               {
                 "id": "toretto",
-                "tex": "w2/common/toretto_sit.png",
+                "tex": "w2/shizuoka/toretto_trip_sit.png|w2/common/toretto_sit.png",
                 "at": [
                   170,
                   264
@@ -410,7 +413,8 @@
                 "sourceDepthScale": true,
                 "once": true,
                 "face": -1
-              }
+              },
+              {"guest": "07", "a": [384, 965], "b": [345, 671], "speed": 53, "once": true, "startDelay": 2.2, "sourceAnchored": true, "sourceDepthScale": true}
             ],
             "music": "shizuoka"
           },
@@ -447,6 +451,20 @@
           },
           {
             "wait": 1.5
+          },
+          {
+            "bg": "w2/shizuoka/trip_urashima_road.png",
+            "bgFit": true,
+            "badge": "",
+            "pose": "",
+            "actors": [],
+            "hotspots": [],
+            "hideAyu": true,
+            "walkers": [],
+            "companion": ""
+          },
+          {
+            "narrate": "A4-TRIP-ROAD"
           },
           {
             "card": "B-J3-1",
@@ -503,7 +521,7 @@
             "duration": 1.8
           },
           {
-            "bg": "round1/scenes/registry.png",
+            "bg": "w2/shizuoka/registry_door.png|round1/scenes/registry.png",
             "fill": "#5e2929",
             "actors": [],
             "hideAyu": true,
@@ -534,7 +552,32 @@
             ]
           },
           {
-            "material": "stamp"
+            "material": "stamp",
+            "continueText": "A4-TRIP-VIEW"
+          },
+          {
+            "game": "moments",
+            "text": "A4-TRIP-POST",
+            "post": {
+              "date": "A4-TRIP-DATE",
+              "location": "A4-TRIP-LOCATION",
+              "photos": [
+                {"asset": "w2/shizuoka/trip_urashima_road.png", "caption": "A4-TRIP-STREET"},
+                {"asset": "w2/shizuoka/trip_sunset_fishing.png", "caption": "A4-TRIP-FISH"},
+                {"asset": "w2/shizuoka/trip_rain_umbrella.png", "caption": "A4-TRIP-RAIN"},
+                {"asset": "w2/shizuoka/trip_cedar_path.png", "caption": "A4-TRIP-WOODS"},
+                {"asset": "w2/shizuoka/trip_exhibit.png", "caption": "A4-TRIP-EXHIBIT", "thumbnailY": 0.25},
+                {"asset": "w2/shizuoka/trip_swing.png", "caption": "A4-TRIP-SWING"},
+                {"asset": "w2/shizuoka/trip_window_dinner.png", "caption": "A4-TRIP-DINNER"},
+                {"asset": "w2/shizuoka/trip_night_cabin.png", "caption": "A4-TRIP-NIGHT"},
+                {"asset": "w2/shizuoka/bg_onsen_sunset_r3.png", "caption": "A4-TRIP-ONSEN"}
+              ],
+              "likes": ["toretto", "axiao"],
+              "comments": [
+                {"who": "axiao", "say": "A4-TRIP-COMMENT-AXIAO"},
+                {"who": "toretto", "say": "A4-TRIP-COMMENT-TORETTO"}
+              ]
+            }
           }
         ],
         "scaleProfile": "harbor",

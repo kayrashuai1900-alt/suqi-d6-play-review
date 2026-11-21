@@ -84,8 +84,17 @@ static func visible_rect(texture: Texture2D) -> Rect2:
 	var bounds := {"ayu_fish_hold.png":Rect2(12,8,104,192), "ayu_fish_cast.png":Rect2(39,8,51,192), "ayu_fish_reel.png":Rect2(39,8,51,192),
 		"toretto_neutral_r2.png": Rect2(299, 61, 412, 1457),
 		"toretto_gifts_r2.png": Rect2(251, 66, 546, 1459),
-		"toretto_back_r2.png": Rect2(299, 64, 386, 1458)}
-	return bounds.get(texture.resource_path.get_file(), Rect2(texture.get_image().get_used_rect()))
+		"toretto_back_r2.png": Rect2(299, 64, 386, 1458),
+		"toretto_walk_back.png": Rect2(75, 17, 111, 386),
+		"ayu_trip_sit.png": Rect2(295, 276, 382, 1224),
+		"toretto_trip_sit.png": Rect2(241, 269, 496, 1137)}
+	var file := texture.resource_path.get_file()
+	# Cabin atlas regions are already cut to the visible figure.
+	if texture is AtlasTexture and file.begins_with("ayu_trip_"):
+		return Rect2(Vector2.ZERO, texture.get_size())
+	if bounds.has(file):
+		return bounds[file]
+	return Rect2(texture.get_image().get_used_rect())
 
 static func local_rect(file: String, texture_width: float, used: Rect2, standing_height: float) -> Rect2:
 	var height := standing_height * pose_ratio(file)

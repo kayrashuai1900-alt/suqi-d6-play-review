@@ -2,12 +2,23 @@ extends RefCounted
 ## 两个视角共用同一封信。寄信时看落笔，收到后才看见全文。
 
 const LOOKS := ["01", "02", "03", "04", "05", "06", "07", "08"]
+const DESK := preload("res://hongyuan/ui/desk_art.gd")
+const GUEST_ATLAS := "res://assets/characters/lm/guest_atlas.png"
+const GUEST_FRAME := Vector2(64, 84)
+const GRIPS := [
+	Vector2(45, 55), Vector2(32, 51), Vector2(29, 55), Vector2(44, 55),
+	Vector2(46, 57), Vector2(28, 54), Vector2(43, 57), Vector2(32, 51),
+]
+const LOOK_PANEL := Rect2(22, 114, 316, 360)
+const LOOK_CELL := Vector2(68, 121)
+const LOOK_START := Vector2(34, 169)
+const LOOK_STRIDE := Vector2(75, 130)
+const INVITE_SIZE := Vector2(360, 640)
+const WRITE_TIME := 3.8
 
 var r
 var phase := "read"
-var read_index := 0
-var send_caption := ""
-var typed := 0.0
+var closing_caption := ""
 var dragging := false
 var from := Vector2.ZERO
 var open_progress := 0.0
@@ -17,10 +28,10 @@ var error := false
 const SEND_TIME := 3.3   # 寄信过场：书桌窗口飞出 → 飞过江岸 → 落到收件人桌上
 const LETTER := "w2/finale/invite_card.png|w2/finale/letter_closeup.png"
 ## GPT 重画的邀请函到位后，字写在中间留白处（顶部是插画）
-const NEW_CARD := "w2/finale/invite_card.png"
 const GUEST_DESK := "w2/finale/guest_first_person.png"
+const ESTATE_GATE := preload("res://hongyuan/ui/travel_arrival.gd").WEDDING_ART
 const TRAVEL_CHOICES := [
-	{"label": "去婚礼现场", "scene": "res://hongyuan/world_entry.tscn"},
+	{"label": "前往罗曼山庄", "scene": "res://hongyuan/world_entry.tscn"},
 	{"label": "先去裳泓村", "scene": "res://hongyuan/village_entry.tscn"},
 	{"label": "回首页", "scene": "res://hongyuan/boot.tscn"}
 ]
@@ -31,21 +42,22 @@ const SEAL_BAR := Rect2(65, 475, 230, 44)
 var hold := 0.0
 var holding := false
 var name := ""
-var tex_cache := {}
+var name_confirmed := false
+var guest_sheet: Texture2D
 var keyboard_callback: JavaScriptObject
 var keyboard_open := false
 
 
 func start(runner, _beat: Dictionary) -> void:
 	r = runner
-	send_caption = "\n".join(r.StoryCaption.chapter_coda("finale").get("pages", []))
+	closing_caption = "\n".join(r.StoryCaption.chapter_coda("finale").get("pages", []))
 
 
 func process(dt: float) -> bool:
 	t += dt
 	match phase:
 		"write":
-			if t > 2.3: _set_phase("written")
+			if t >= WRITE_TIME: _set_phase("written")
 		"fold":
 			if t >= 1.3: _set_phase("seal")
 		"seal":
@@ -71,28 +83,26 @@ func _set_phase(value: String) -> void:
 	if value == "receive": r.music_requested.emit("prologue")
 
 func _letter() -> String:
-	var salutation: String = "亲爱的朋友：" if name == SKIP_NAME_AS or name.strip_edges().is_empty() else r.t_("A7-LETTER-TO").replace("{名字}", name)
 	# Preserve the approved signature/date spacing instead of unit-normalizing it.
 	var closing: String = str(r.copy.get("A7-1e", r.t_("A7-1e"))).replace("<br>", "\n")
-	return "\n".join([salutation, r.t_("A7-1a"), r.t_("A7-1c"), closing])
+	return "\n".join(["亲爱的朋友：", r.t_("A7-1a"), r.t_("A7-1c"), closing])
 
 func _ok_rect(phase_name := "") -> Rect2:
 	if phase_name == "look":
-		return Rect2(100, 603, 160, 36)
+		return Rect2(68, 504, 224, 48)
 	return Rect2(100, 560, 160, 48)
 
-const LOOK_PANEL_Y := 50.0
-const LOOK_CELL_W := 180.0
-const LOOK_CELL_H := 138.0
-
 func _look_rect(i: int) -> Rect2:
-	return Rect2((i % 2) * LOOK_CELL_W, LOOK_PANEL_Y + (i / 2) * LOOK_CELL_H, LOOK_CELL_W, LOOK_CELL_H)
+	return Rect2(LOOK_START + LOOK_STRIDE * Vector2(i % 4, floori(i / 4.0)), LOOK_CELL)
 
 func _envelope() -> Rect2:
 	return Rect2(68, 315, 224, 151) if phase in ["receive", "opening"] else Rect2(50, 218, 260, 165)
 
 func _route_rect(i: int) -> Rect2:
-	return Rect2(48, 463 + i * 52, 264, 45)
+	match i:
+		0: return Rect2(36, 495, 288, 48)
+		1: return Rect2(36, 554, 155, 44)
+		_: return Rect2(201, 554, 123, 44)
 
 func _accept_invitation() -> void:
 	look = clampi(look, 0, LOOKS.size() - 1)
@@ -103,13 +113,8 @@ func _accept_invitation() -> void:
 func input(kind: String, pos: Vector2) -> void:
 	match phase:
 		"read":
-			if kind == "tap" and t > 0.6:
-				if read_index < 2:
-					read_index += 1
-					t = 0.0
-				else:
-					_set_phase("name")
-					_make_edit()
+			if kind == "tap" and t > 0.6 and _ok_rect().has_point(pos):
+				_set_phase("write")
 		"name":
 			if kind == "tap" and _ok_rect().grow(8).has_point(pos): _submit_name()
 			elif kind == "tap" and SKIP_NAME.grow(6).has_point(pos): _skip_name()
@@ -141,13 +146,19 @@ func input(kind: String, pos: Vector2) -> void:
 				if open_progress >= 0.6: _set_phase("opening")
 				open_progress = 0.0
 		"read_received":
-			if kind == "tap" and t > 0.5: _set_phase("look")
+			if kind == "tap" and t > 0.5 and _ok_rect().has_point(pos):
+				if name_confirmed:
+					_set_phase("look")
+				else:
+					_set_phase("name")
+					_make_edit()
 		"look":
 			if kind == "tap":
 				for i in range(LOOKS.size()):
 					if _look_rect(i).has_point(pos):
 						look = i
 						r.play("blip")
+						return
 				if look >= 0 and _ok_rect("look").has_point(pos):
 					_accept_invitation()
 		"welcome":
@@ -163,7 +174,7 @@ func input(kind: String, pos: Vector2) -> void:
 func restore_checkpoint() -> void:
 	if phase in ["welcome", "done"]:
 		_accept_invitation()
-	if phase in ["receive", "opening", "read_received", "look", "destination"]:
+	if phase in ["receive", "opening", "read_received", "name", "look", "destination"]:
 		r.music_requested.emit("prologue")
 	# Old sealed saves predate sending/opening: continue with the physical letter.
 	if phase == "stamped" and hold >= 1.0:
@@ -177,6 +188,7 @@ func restore_checkpoint() -> void:
 
 func _make_edit() -> void:
 	edit = LineEdit.new()
+	edit.text = name
 	edit.placeholder_text = "例如：小林"
 	edit.max_length = 12
 	edit.alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -256,12 +268,7 @@ func _skip_name() -> void:
 		edit.queue_free()
 	edit = null
 	name = SKIP_NAME_AS
-	error = false
-	keyboard_open = false
-	phase = "write"
-	typed = 0.0
-	t = 0.0
-	r.play("pop")
+	_finish_name()
 
 
 func _submit_name() -> void:
@@ -278,41 +285,40 @@ func _submit_name() -> void:
 		r.play("blip")
 		return
 	name = s
-	error = false
 	edit.queue_free()
 	edit = null
-	phase = "write"
-	typed = 0.0
-	t = 0.0
-	r.play("pop")
+	_finish_name()
 
+func _finish_name() -> void:
+	name_confirmed = true
+	error = false
+	keyboard_open = false
+	_set_phase("look")
 
-func _guest(i: int) -> Texture2D:
-	var id: String = LOOKS[i]
-	if not tex_cache.has(id):
-		var path := "res://hongyuan/assets/w2/finale/chr_LM-GUEST-07.png" if id == "07" else "res://assets/characters/lm/chr_LM-GUEST-%s.png" % id
-		tex_cache[id] = load(path) if ResourceLoader.exists(path) else null
-	return tex_cache[id]
+func _guest_frame(i: int) -> Rect2:
+	return Rect2(Vector2(0, i * GUEST_FRAME.y), GUEST_FRAME)
+
+func _draw_guest(ci, i: int, frame: Rect2) -> void:
+	if guest_sheet == null and ResourceLoader.exists(GUEST_ATLAS):
+		guest_sheet = load(GUEST_ATLAS)
+	if guest_sheet:
+		ci.draw_texture_rect_region(guest_sheet, frame, _guest_frame(i))
 
 
 func draw(ci) -> void:
-	var desk = preload("res://hongyuan/ui/desk_art.gd")
-	if phase == "welcome":
-		# 新欢迎图把两人画在门里，整张铺满，不再叠旧人物
-		desk.cover(ci, ci.texture("round1/common/welcome_entrance_r2.png"), r.view_rect)
-	elif phase == "send":
+	if phase == "send":
 		_send_frames(ci)
-		ci.StoryCaption.draw_low_narration(ci, send_caption, send_caption.length())
 		return
-	elif phase in ["receive", "opening", "read_received", "look", "destination"]:
-		desk.cover(ci, ci.texture(GUEST_DESK), r.view_rect)
+	if phase in ["destination", "welcome"]:
+		DESK.cover(ci, ci.texture(ESTATE_GATE), r.view_rect)
+	elif phase in ["receive", "opening", "read_received", "name", "look"]:
+		DESK.cover(ci, ci.texture(GUEST_DESK), r.view_rect)
 	else:
-		desk.draw(ci, r.materials, r.view_rect, "", t, false, phase in ["write", "written"])
+		DESK.draw(ci, r.materials, r.view_rect, "", t, true, phase in ["write", "written"])
 	match phase:
 		"read":
-			var copy_id: String = ["R1-I02-REUNION", "R1-I02-YOU", "A7-2b"][read_index]
-			ci.StoryCaption.draw_caption(ci, ci.t_(copy_id), "ayu", -1, false, desk.head(r.view_rect))
-			ci.pill(_ok_rect(), "写下名字" if read_index == 2 else "轻点继续", 18, ci.RED, ci.PAPER)
+			ci.StoryCaption.draw_caption(ci, ci.t_("A7-SENDER"), "ayu", -1, false, DESK.head(r.view_rect))
+			ci.pill(_ok_rect(), "写邀请函", 18, ci.RED, ci.PAPER)
 		"name":
 			ci.draw_rect(Rect2(30,432,300,112),Color(ci.PAPER,0.96))
 			ci.text_at(Vector2(42,458),ci.t_("A7-I1"),16,ci.INK,276)
@@ -320,10 +326,8 @@ func draw(ci) -> void:
 			ci.pill(_ok_rect(), ci.t_("G-19"), 18, ci.RED, ci.PAPER)
 			ci.pill(SKIP_NAME, "键盘没弹出来？点这里先跳过", 13, Color(ci.INK, 0.72), ci.PAPER)
 		"write", "written":
-			_draw_desk_words(ci, minf(1.0, t / 2.3) if phase == "write" else 1.0)
-			var ink_alpha := minf(1.0, t / 0.6) if phase == "write" else 1.0
-			ci.draw_rect(Rect2(66, 478, 228, 42), Color(ci.INK, ink_alpha * 0.82))
-			ci.text_at(Vector2(70, 504), "收件人 · " + name, 17, Color(ci.PAPER, ink_alpha), 220)
+			if phase == "write":
+				DESK.move_writing_wrist(ci, r.view_rect, t, WRITE_TIME)
 			if phase == "written":
 				ci.pill(_ok_rect(), "装进信封", 18, ci.RED, ci.PAPER)
 		"fold":
@@ -338,51 +342,81 @@ func draw(ci) -> void:
 				ci.pill(SEAL_BAR, "按住火漆一秒", 18, ci.RED, ci.PAPER)
 				if hold > 0: ci.draw_rect(Rect2(SEAL_BAR.position + Vector2(8, SEAL_BAR.size.y - 6), Vector2((SEAL_BAR.size.x - 16) * hold, 3)), ci.GOLD)
 			elif phase == "ready_send":
-				ci.pill(_ok_rect(), "寄出邀请函", 18, ci.RED, ci.PAPER)
+				ci.pill(_ok_rect(), "帮她寄出", 18, ci.RED, ci.PAPER)
 		"receive":
 			var rect := _envelope()
 			ci.draw_set_transform(Vector2(24 * open_progress, 0))
 			_envelope_art(ci, true)
 			ci.draw_set_transform(Vector2.ZERO)
-			ci.StoryCaption.draw_caption(ci, "你收到了一封邀请函", "narrator")
+			ci.StoryCaption.draw_caption(ci, "桌上落了一封信", "narrator")
 			if dragging:
 				ci.draw_line(Vector2(rect.position.x, rect.end.y + 8), Vector2(rect.position.x + rect.size.x * open_progress, rect.end.y + 8), ci.GOLD, 3)
 			ci.pill(Rect2(48, 525, 264, 44), "按住信封，向右拖动拆开", 16, ci.RED, ci.PAPER)
 		"opening":
 			var k := clampf(t / 0.8, 0, 1)
-			var open_art: Texture2D = ci.texture("round1/finale/mail_02_open.png" if k < 0.5 else "round1/finale/mail_03_pull.png")
-			if open_art: ci.draw_texture_rect_region(open_art, Rect2(68, 279 - k * 52, 224, 257), Rect2(27, 5, 306, 351))
+			var open_art: Texture2D = ci.texture("round1/finale/mail_02_open.png")
+			if open_art:
+				ci.draw_texture_rect_region(open_art, Rect2(68, 235, 224, 257), Rect2(27, 5, 306, 351))
+			var pull := smoothstep(0.30, 0.92, k)
+			if pull > 0.0:
+				_draw_invitation(ci, Rect2(Vector2(104, 328).lerp(Vector2(63, 88), pull), INVITE_SIZE * lerpf(0.42, 0.65, pull)), false)
+				_draw_envelope_front(ci, Rect2(68, 341, 224, 151))
 		"read_received":
-			_paper(ci, _letter().length())
+			_draw_invitation(ci, Rect2(Vector2.ZERO, INVITE_SIZE))
+			_draw_plaque(ci, Rect2(30, 34, 300, 42))
+			ci.text_at(Vector2(36, 61), ci.t_("G-12"), 17, ci.PAPER, 288)
 			ci.pill(_ok_rect(), "收下这份邀请", 18, ci.RED, ci.PAPER)
 		"look":
-			ci.text_at(Vector2(30, 22), ci.t_("G-CHOOSE-LOOK"), 18, ci.PAPER, 300)
-			var panel: Texture2D = ci.texture("round1/people/choose_look_panel.png")
-			if panel:
-				# Panel 720×1100 → 360×550 at 0.5×
-				ci.draw_texture_rect(panel, Rect2(0, LOOK_PANEL_Y, 360, 550), false)
-				var hi: Texture2D = ci.texture("round1/people/choose_look_highlight.png")
-				if hi and look >= 0:
-					var rr := _look_rect(look)
-					ci.draw_texture_rect(hi, Rect2(rr.position + Vector2(2, 2), rr.size - Vector2(4, 4)), false)
-			else:
-				for i in range(LOOKS.size()):
-					var rr := _look_rect(i)
-					ci.draw_rect(rr, ci.PAPER if i != look else Color("#ffe6a8"))
-					ci.draw_rect(rr, ci.GOLD if i == look else ci.WOOD, false, 3 if i == look else 2)
-					var guest := _guest(i)
-					if guest: ci.draw_texture_rect_region(guest, Rect2(rr.position + Vector2(1, 0), Vector2(64, 84)), Rect2(0, 0, 64, 84))
-			if look >= 0: ci.pill(_ok_rect("look"), ci.t_("G-19"), 16, ci.RED, ci.PAPER)
-		"destination":
-			var curtain := 1.0 - smoothstep(0.0, 0.35, t)
-			var opened: Texture2D = ci.texture("round1/finale/mail_03_pull.png")
-			if opened:
-				ci.draw_texture_rect_region(opened, Rect2(108, 203, 144, 165), Rect2(27, 5, 306, 351))
-			ci.text_at(Vector2(24, 126), "赴约", 28, ci.PAPER, 312)
-			for i in range(TRAVEL_CHOICES.size()):
-				ci.pill(_route_rect(i), TRAVEL_CHOICES[i].label, 17 if i < 2 else 14,
-					ci.RED if i < 2 else Color(ci.INK, 0.83), ci.PAPER)
-			if curtain > 0: ci.draw_rect(r.view_rect, Color(0, 0, 0, 0.55 * curtain))
+			_draw_look(ci)
+		"destination", "welcome":
+			_draw_coda(ci)
+
+func _draw_plaque(ci, rect: Rect2) -> void:
+	ci.draw_rect(rect, Color("#381e18", 0.94))
+	ci.draw_rect(rect.grow(-2), Color("#be9059"), false, 1.0)
+
+func _draw_look(ci) -> void:
+	ci.draw_rect(LOOK_PANEL.grow(3), Color("#351b17", 0.88))
+	ci.draw_rect(LOOK_PANEL, Color("#f6e7c9"))
+	ci.draw_rect(LOOK_PANEL.grow(-4), Color("#b48a59"), false, 1.0)
+	ci.text_at(Vector2(34, 148), ci.t_("G-CHOOSE-LOOK"), 16, ci.INK, 292)
+	for i in range(LOOKS.size()):
+		var cell := _look_rect(i)
+		var selected := i == look
+		ci.draw_rect(cell, Color("#fff0bd") if selected else Color("#e8d5b3"))
+		ci.draw_rect(cell, ci.RED if selected else Color("#b48a59"), false, 2.0 if selected else 1.0)
+		var portrait_size := GUEST_FRAME * 1.23
+		var portrait_at := cell.get_center() - portrait_size * 0.5
+		_draw_guest(ci, i, Rect2(portrait_at, portrait_size))
+	ci.pill(_ok_rect("look"), "确认形象", 17, ci.RED if look >= 0 else Color("#57433a"), ci.PAPER)
+
+func _draw_coda(ci) -> void:
+	var index := clampi(look, 0, LOOKS.size() - 1)
+	var guest := Rect2(Vector2(62, 82), GUEST_FRAME * 3.68)
+	ci.draw_rect(r.view_rect, Color("#301c1a", 0.14))
+	_draw_plaque(ci, Rect2(103, 35, 154, 38))
+	ci.text_at(Vector2(106, 60), "爱情篇 · 完", 18, ci.PAPER, 148)
+	_draw_guest(ci, index, guest)
+	var grip: Vector2 = GRIPS[index]
+	var hand := guest.position + grip * guest.size / GUEST_FRAME
+	var paper_size := INVITE_SIZE * 0.17
+	var paper_at := hand - Vector2(8.0 if grip.x > 36.0 else paper_size.x * 0.5, 8.0)
+	ci.draw_rect(Rect2(paper_at + Vector2(3, 4), paper_size), Color(ci.INK, 0.32))
+	_draw_invitation(ci, Rect2(paper_at, paper_size))
+	# The pixels around the original grip sit in front of the paper.
+	if guest_sheet:
+		var patch := Rect2(grip - Vector2(2, 1), Vector2(5, 4))
+		var zoom := guest.size / GUEST_FRAME
+		ci.draw_texture_rect_region(guest_sheet, Rect2(guest.position + patch.position * zoom, patch.size * zoom),
+			Rect2(_guest_frame(index).position + patch.position, patch.size))
+	_draw_plaque(ci, Rect2(26, 406, 308, 69))
+	ci.text_at(Vector2(34, 433), closing_caption, 16, ci.PAPER, 292)
+	for i in range(TRAVEL_CHOICES.size()):
+		ci.pill(_route_rect(i), TRAVEL_CHOICES[i].label, 17 if i == 0 else 15,
+			ci.RED if i == 0 else Color(ci.INK, 0.91), ci.PAPER)
+	var curtain := 1.0 - smoothstep(0.0, 0.35, t)
+	if curtain > 0.0:
+		ci.draw_rect(r.view_rect, Color(ci.INK, 0.40 * curtain))
 
 const LETTER_WORDS := ["四川乐山", "苏七镇", "罗曼山庄", "幸福的日子"]
 const LETTER_TRAILING := "，。！？、；：）」』…"
@@ -409,38 +443,26 @@ func _letter_lines(ci, text: String, font_size := 20, width := 205.0) -> Array[S
 		result.append(line)
 	return result
 
-func _paper(ci, length: int) -> void:
-	var desk = preload("res://hongyuan/ui/desk_art.gd")
-	# 正面信纸特写占满屏幕，字一行一行写上去，手机上也看得清
-	if phase == "read_received":
-		desk.cover(ci, ci.texture(LETTER), r.view_rect)
-	var fancy: bool = ci.texture(NEW_CARD) != null
-	var fs := 15 if fancy else 18
-	var width := 220.0 if fancy else 248.0
-	var origin := Vector2(72, 304) if fancy else Vector2(56, 120)
-	var step := 23.0 if fancy else 30.0
-	var letter := _letter()
-	# Layout the full letter before revealing a character so lines never reflow while typing.
-	while fs > 11 and _letter_lines(ci, letter, fs, width).size() * step > 238:
-		fs -= 1
-		step = fs + 5.0
-	var row := 0
-	var remaining := length
-	for paragraph: String in letter.split("\n"):
-		for line in _letter_lines(ci, paragraph, fs, width):
-			if remaining <= 0:
-				return
-			ci.draw_string(ci.FONT, origin + Vector2(0, row * step), line.left(remaining), HORIZONTAL_ALIGNMENT_LEFT, width, fs, ci.INK)
-			remaining -= line.length()
-			row += 1
-		remaining -= 1
+## The recipient's close-up and the guest portrait use the same card.
+func _draw_invitation(ci, frame: Rect2, readable := true) -> void:
+	var paper: Texture2D = ci.texture(LETTER)
+	if paper:
+		ci.draw_texture_rect(paper, frame, false)
+	else:
+		ci.draw_rect(frame, ci.PAPER)
+	if not readable:
+		return
+	ci.draw_set_transform(frame.position, 0.0, frame.size / INVITE_SIZE)
+	var lines := _letter_lines(ci, _letter(), 16, 240.0)
+	for row in range(lines.size()):
+		ci.draw_string(ci.FONT, Vector2(60, 306 + row * 21), lines[row], HORIZONTAL_ALIGNMENT_LEFT, 240.0, 16, ci.INK)
+	ci.draw_set_transform(Vector2.ZERO)
 
 func _envelope_art(ci, sealed: bool, at := Rect2()) -> void:
 	var rect: Rect2 = at if at.has_area() else _envelope()
 	var art: Texture2D = ci.texture("round1/finale/mail_01_closed.png")
 	if art:
 		ci.draw_texture_rect_region(art, rect, Rect2(27, 137, 306, 219))
-	ci.text_at(rect.position + Vector2(15, rect.size.y - 18), name, 17, ci.INK, rect.size.x - 30)
 	if sealed:
 		var file := "round1/finale/wax_03_seal.png"
 		if phase == "seal": file = "round1/finale/wax_01_melt.png" if hold < 0.45 else "round1/finale/wax_02_press.png"
@@ -482,40 +504,19 @@ func _cover_alpha(ci, file: String, alpha: float) -> void:
 	ci.draw_texture_rect_region(tex, area, Rect2((area.position - rect.position) / scale, area.size / scale), Color(1, 1, 1, alpha))
 
 
-func _draw_desk_words(ci, progress: float) -> void:
-	var desk = preload("res://hongyuan/ui/desk_art.gd")
-	ci.draw_set_transform_matrix(desk.paper_transform(r.view_rect))
-	_draw_sheet_words(ci, Vector2(4, 21), 205, 12, 16, int(_letter().length() * progress))
-	ci.draw_set_transform(Vector2.ZERO)
-
-func _draw_sheet_words(ci, origin: Vector2, width: float, font_size: int, line_step: float, length: int) -> void:
-	var remaining := length
-	var row := 0
-	for paragraph: String in _letter().split("\n"):
-		for line: String in _letter_lines(ci, paragraph, font_size, width):
-			if remaining <= 0: return
-			ci.draw_string(ci.FONT, origin + Vector2(0, row * line_step), line.left(remaining), HORIZONTAL_ALIGNMENT_LEFT, width, font_size, ci.INK)
-			remaining -= line.length()
-			row += 1
-		remaining -= 1
-
 func _draw_folding_letter(ci) -> void:
-	var desk = preload("res://hongyuan/ui/desk_art.gd")
 	_envelope_art(ci, false)
 	var k := smoothstep(0.0, 1.0, clampf(t / 1.3, 0.0, 1.0))
-	var page := Rect2(Vector2(70, 130).lerp(Vector2(75, 280), k), Vector2(210, 260).lerp(Vector2(210, 95), k))
-	# Paper and ink share one transform. Folded backs and the envelope front
-	# occlude both, rather than replacing the written letter with a blank sheet.
-	ci.draw_set_transform(page.position, 0, page.size / Vector2(210, 260))
-	desk.paper_art(ci, Rect2(0, 0, 210, 260))
-	_draw_sheet_words(ci, Vector2(14, 28), 182, 11, 15, _letter().length())
-	var fold := smoothstep(0.12, 0.62, k)
-	if fold > 0:
-		ci.draw_rect(Rect2(1, 88, 208, 82 * fold), Color("#e8d5ae"))
-		ci.draw_line(Vector2(1, 88), Vector2(209, 88), Color("#b89c71"), 1)
-	ci.draw_set_transform(Vector2.ZERO)
+	var page := Rect2(Vector2(76, 170).lerp(Vector2(80, 302), k), Vector2(208, 180).lerp(Vector2(200, 69), k))
+	ci.draw_rect(page.grow(2.0), Color(ci.INK, 0.28))
+	ci.draw_rect(page, Color("#f5e1b9"))
+	var fold_y := page.position.y + page.size.y * lerpf(0.68, 0.48, k)
+	ci.draw_rect(Rect2(page.position.x, fold_y, page.size.x, page.end.y - fold_y), Color("#e8cda0"))
+	ci.draw_line(Vector2(page.position.x, fold_y), Vector2(page.end.x, fold_y), Color("#c8aa7b"))
+	_draw_envelope_front(ci, _envelope())
+
+func _draw_envelope_front(ci, rect: Rect2) -> void:
 	var art: Texture2D = ci.texture("round1/finale/mail_01_closed.png")
 	if art:
-		var rect := _envelope()
 		var front_y := rect.position.y + rect.size.y * 0.42
 		ci.draw_texture_rect_region(art, Rect2(rect.position.x, front_y, rect.size.x, rect.end.y - front_y), Rect2(27, 137 + 219 * 0.42, 306, 219 * 0.58))

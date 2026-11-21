@@ -43,16 +43,16 @@ func run() -> void:
 			runner.restore(partial)
 			check(index in care.thinned and care.visible_at(index),"second cloud layer survives resume")
 			care.input("down",care.HEART_CENTER);care.input("up",care.center(index))
-	check(runner.bi==0 and care.can_talk(),"six cleared worries do not end care")
+	check(runner.bi==0 and care.phase=="care","six cleared worries do not end care")
 	for wave in 1:
 		tick(runner,3.5)
-		for index in [0,1,2]:
+		for index in [0,1,5]:
 			check(care.visible_at(index),"a new cloud returns after its cooldown")
 			while care.visible_at(index):
 				care.input("down",care.HEART_CENTER);care.input("up",care.center(index))
 	var checkpoint := runner.snapshot()
 	runner.begin(0); runner.restore(checkpoint); care = runner.game
-	check(care.group_count()==9 and not care.visible_at(0) and care.visible_at(3) and care.can_talk(),"nine worries resume without completing")
+	check(care.group_count()==9 and not care.visible_at(0) and care.visible_at(3) and care.phase=="care","nine worries resume without completing")
 	while care.visible_at(3):
 		care.input("down",care.HEART_CENTER);care.input("up",care.center(3))
 	check(care.group_count()==10 and care.phase=="settle","tenth worry automatically ends care")

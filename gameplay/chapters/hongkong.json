@@ -32,7 +32,7 @@
           {
             "goal": {
               "目标": "带回信封",
-              "任务": "打开新邮件，带着行李去机场，沿途拍下合影。"
+              "任务": "打开邮件去香港，在乐园拍齐三张合影。"
             }
           },
           {
@@ -350,6 +350,7 @@
               },
               {
                 "npc": "hk_sam",
+                "guest": "10",
                 "a": [
                   320,
                   504
@@ -369,6 +370,7 @@
               },
               {
                 "npc": "hk_asha",
+                "guest": "07",
                 "a": [
                   162,
                   519
@@ -388,6 +390,7 @@
               },
               {
                 "npc": "d12_01",
+                "guest": "03",
                 "a": [
                   204,
                   411
@@ -557,7 +560,8 @@
           },
           {
             "game": "photo",
-            "caption": "R1-HK-PHOTO"
+            "caption": "R1-HK-PHOTO",
+            "photoOptional": true
           },
           {
             "bg": "w2/hongkong/park_toys_r2.png",
@@ -635,12 +639,12 @@
               },
               {
                 "a": [
-                  255,
-                  393
+                  289,
+                  442
                 ],
                 "b": [
-                  282,
-                  424
+                  311,
+                  488
                 ],
                 "speed": 16,
                 "npc": "d14toys_01",
@@ -665,6 +669,8 @@
             "hotspots": [
               {
                 "id": "toys_path",
+                "snap": [220, 330],
+                "companionSnap": [259, 330],
                 "at": [
                   220,
                   330
@@ -682,6 +688,17 @@
             "go": "toys_path"
           },
           {
+            "hideAyu": true,
+            "companion": ""
+          },
+          {
+            "game": "photo",
+            "photoId": "toys",
+            "parkPhoto": "toys",
+            "photoArt": "w2/hongkong/photo_toys_memory.png",
+            "caption": "HK-PHOTO-TOYS"
+          },
+          {
             "bg": "w2/hongkong/park_garden_r2.png",
             "scaleProfile": "hk_park",
             "start": [
@@ -691,7 +708,9 @@
             "hideAyu": false,
             "personHeight": 100,
             "companion": "toretto",
-            "actors": [],
+            "actors": [
+              {"id": "space_board", "tex": "w2/hongkong/space_photo_board.png", "at": [299, 343], "scale": 0.42}
+            ],
             "walkArea": [
               [
                 40,
@@ -749,12 +768,12 @@
               },
               {
                 "a": [
-                  281,
-                  411
+                  182,
+                  390
                 ],
                 "b": [
-                  303,
-                  441
+                  185,
+                  427
                 ],
                 "speed": 17,
                 "npc": "d14garden_01",
@@ -779,6 +798,8 @@
             "hotspots": [
               {
                 "id": "garden_path",
+                "snap": [235, 420],
+                "companionSnap": [279, 420],
                 "at": [
                   235,
                   420
@@ -794,6 +815,17 @@
           },
           {
             "go": "garden_path"
+          },
+          {
+            "hideAyu": true,
+            "companion": ""
+          },
+          {
+            "game": "photo",
+            "photoId": "space",
+            "parkPhoto": "space",
+            "photoArt": "w2/hongkong/photo_space_memory.png",
+            "caption": "HK-PHOTO-SPACE"
           },
           {
             "bg": "w2/hongkong/park_castle_r2.png",
@@ -917,7 +949,8 @@
           },
           {
             "game": "photo",
-            "caption": "B-G3-1"
+            "caption": "B-G3-1",
+            "parkPhoto": "castle"
           },
           {
             "bg": "round1/scenes/university.png",
@@ -1043,7 +1076,8 @@
           },
           {
             "game": "photo",
-            "caption": "R1-CAMPUS-PHOTO"
+            "caption": "R1-CAMPUS-PHOTO",
+            "photoOptional": true
           },
           {
             "material": "envelope"

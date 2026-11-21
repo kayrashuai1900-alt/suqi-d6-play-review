@@ -6,28 +6,27 @@ var cleared: Array = []
 var thinned: Array = []
 var cloud_rounds: Array = [0,0,0,0,0,0]
 var cloud_arrivals: Array = [0.0,0.8,2.5,2.9,4.6,5.0]
+var cloud_words: Array = [0,1,2,3,4,5]
 var dragging := false
 var pointer := Vector2.ZERO
 var pops: Array = []   # [中心, 剩余时间]：泡泡碎开的动画
-const CENTERS := [Vector2(162,145), Vector2(79,247), Vector2(266,223), Vector2(179,315), Vector2(270,360), Vector2(82,385)]
-const WORDS := ["找工作的事","手头的工作","又要加班","家里的牵挂","异地的摩擦","忙不完的事"]
+const CENTERS := [Vector2(162,145), Vector2(72,245), Vector2(268,221), Vector2(168,258), Vector2(281,360), Vector2(75,382)]
+const WORDS := ["找工作的事", "手头的项目", "今天又加班", "家里的牵挂", "异地的摩擦", "下班还在忙",
+	"换工作怎么办", "见面要等多久", "两地来回跑", "以后住在哪儿"]
 const DOUBLE := [2,4]
 const LIMIT := 10
-const TALK_RECT := Rect2(194,449,138,46)
-const TRAY := Rect2(28,514,304,104)
+const PROGRESS := Rect2(112, 324, 136, 31)
+const TRAY := Rect2(28,538,304,82)
 const HEART_CENTER := Vector2(66, 586)
 const INSTRUCTION := "往上拖动 Toretto 的爱心，消解阿鱼的愁云"
 func start(runner,_beat: Dictionary) -> void:
 	r = runner
 	r.hint = ""
 func visible_at(index: int) -> bool:
-	return phase == "care" and t >= float(cloud_arrivals[index])
+	return phase == "care" and cloud_type(index) >= 0 and t >= float(cloud_arrivals[index])
 
 func cloud_type(index: int) -> int:
-	return (index + int(cloud_rounds[index])) % WORDS.size()
-
-func can_talk() -> bool:
-	return phase == "care" and group_count() >= 3
+	return int(cloud_words[index])
 
 func center(index: int) -> Vector2:
 	var age := maxf(0.0,t-float(cloud_arrivals[index]))
@@ -37,6 +36,11 @@ func group_count() -> int:
 	for rounds in cloud_rounds: count += int(rounds)
 	return count
 func restore_checkpoint() -> void:
+	# Older saves counted each slot's clearances but had no distinct labels.
+	if group_count() > 0 and cloud_words == [0,1,2,3,4,5]:
+		var outstanding := LIMIT - group_count()
+		for index in cloud_words.size():
+			cloud_words[index] = index if index < outstanding else -1
 	for index in CENTERS.size():
 		if index in cleared:
 			if int(cloud_rounds[index]) == 0: _renew(index)
@@ -51,6 +55,8 @@ func _finish_if_ready() -> void:
 
 func _renew(index: int) -> void:
 	cloud_rounds[index] = int(cloud_rounds[index]) + 1
+	var next_word := CENTERS.size() + group_count() - 1
+	cloud_words[index] = next_word if next_word < LIMIT else -1
 	cloud_arrivals[index] = t + 2.2 + 0.3 * ((index + int(cloud_rounds[index])) % 4)
 	thinned.erase(index)
 func process(dt: float) -> bool:
@@ -61,9 +67,6 @@ func process(dt: float) -> bool:
 	return phase == "done"
 func input(kind: String,pos: Vector2) -> void:
 	if phase != "care": return
-	if kind == "tap" and can_talk() and TALK_RECT.has_point(pos) and TALK_RECT.has_point(r.down_pos):
-		phase = "settle"; t = 0; dragging = false
-		return
 	if kind == "down": dragging = TRAY.has_point(pos);pointer = pos
 	elif kind == "move" and dragging: pointer = pos
 	elif kind == "up" and dragging:
@@ -92,7 +95,7 @@ func draw(ci) -> void:
 		if cloud_type(i) in DOUBLE and i not in thinned:
 			_bubble(ci,c+Vector2(12,-13),43)
 		_bubble(ci,c,43)
-		ci.text_at(c-Vector2(42,-5),WORDS[cloud_type(i)],14,ci.PAPER,84)
+		ci.text_at(c-Vector2(47,-5),WORDS[cloud_type(i)],13,ci.PAPER,94)
 		if cloud_type(i) in DOUBLE and i not in thinned:
 			ci.pill(Rect2(c+Vector2(23,-35),Vector2(42,20)),"两层",12,ci.INK,ci.PAPER)
 	for p in pops:
@@ -105,24 +108,21 @@ func draw(ci) -> void:
 			var a := TAU * j / 8.0
 			var q: Vector2 = (p[0] as Vector2) + Vector2(cos(a),sin(a)) * (30 + 30 * k)
 			ci.draw_rect(Rect2(q.round() - Vector2(3,3),Vector2(6,6)),Color(0.62,0.72,0.95,1.0 - k))
+	ci.pill(PROGRESS, "已消除 %d/%d" % [mini(group_count(), LIMIT), LIMIT], 15, Color(ci.INK, 0.84), ci.PAPER)
 	if phase != "care": return
-	if can_talk(): ci.pill(TALK_RECT,"陪她聊聊",17,ci.INK,ci.PAPER)
 	ci.pill(TRAY, "", 16, Color("#f5dfbe"), ci.INK)
-	ci.text_at(Vector2(104, 550), INSTRUCTION, 14, ci.INK, 212)
-	_heart(ci, HEART_CENTER, 3.0)
+	ci.text_at(Vector2(105, 566), INSTRUCTION, 14, ci.INK, 212)
+	_heart(ci, HEART_CENTER, 2.8)
 	if group_count() == 0 and not dragging:
 		# 往上拖提示：GPT 画的手形图标（64×96）优先，没有就退回箭头
 		var rise := fposmod(t, 1.1) / 1.1
-		var a := HEART_CENTER + Vector2(0, -34 - rise * 40)
+		var a := HEART_CENTER + Vector2(0, -69 - rise * 34)
 		var tint := Color(1, 1, 1, 1.0 - rise)
 		var hand_tex: Texture2D = ci.texture("w2/call/care_hand.png")
 		if hand_tex:
 			ci.draw_texture_rect(hand_tex, Rect2(a - Vector2(16, 24), Vector2(32, 48)), false, tint)
 		else:
 			ci.draw_colored_polygon(PackedVector2Array([a + Vector2(0, -12), a + Vector2(12, 4), a + Vector2(5, 4), a + Vector2(5, 16), a + Vector2(-5, 16), a + Vector2(-5, 4), a + Vector2(-12, 4)]), Color(PIXEL_HEART, 1.0 - rise))
-	var face: Texture2D = ci.texture("toretto_avatar.png")
-	if face: ci.draw_texture_rect(face,Rect2(Vector2(46,526),Vector2(40,40)),false)
-	ci.text_at(Vector2(104,601),"已散去 %d / %d 朵 · 十朵后进入夜谈" % [group_count(),LIMIT],13,ci.INK,212)
 	if dragging:
 		_heart(ci, pointer, 4.0)
 

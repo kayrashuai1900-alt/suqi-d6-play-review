@@ -1,8 +1,11 @@
 extends RefCounted
-## 码头短钓：按住蓄力，松手甩竿；等 2～4 秒浮标下沉，点「收！」。错过了浮标回来，再甩一次，不计次数。
+## 钓上鱼后，由玩家决定再钓一条或收竿上船。
+
+const FISH_AGAIN := Rect2(32, 570, 140, 44)
+const PUT_ROD_AWAY := Rect2(188, 570, 140, 44)
 
 var r
-var phase := "aim"   # aim → backcast → cast → fly → wait → bite → reel → caught
+var phase := "aim"
 var t := 0.0
 var power := 0.0
 var holding := false
@@ -12,6 +15,7 @@ var wait_for := 3.0
 var rng := RandomNumberGenerator.new()
 var fish_t := 0.0
 var missed := false
+var count := 0
 
 
 func start(runner, _beat: Dictionary) -> void:
@@ -156,15 +160,13 @@ func process(dt: float) -> bool:
 			bob = _landing().lerp(r.feet + Vector2(-30, -36), k) + Vector2(sin(t * 26) * 2, 0)
 			if k >= 1:
 				phase = "caught"
+				count += 1
 				t = 0.0
 				fish_t = 0.0
 				r.play("pop")
 		"caught":
-			fish_t += dt
-			if fish_t >= 1.6:
-				r.pose = ""
-				return true
-	return false
+			fish_t = minf(1.6, fish_t + dt)
+	return phase == "done"
 
 
 func _p() -> float:
@@ -196,6 +198,16 @@ func input(kind: String, pos: Vector2) -> void:
 				r.play("blip")
 		"wait":
 			pass  # 还没咬钩时乱点不惩罚
+		"caught":
+			if kind != "tap" or fish_t < 0.9:
+				return
+			if FISH_AGAIN.has_point(pos):
+				phase = "aim"
+				power = 0.0
+				t = 0.0
+			elif PUT_ROD_AWAY.has_point(pos):
+				r.pose = ""
+				phase = "done"
 
 
 func draw(ci) -> void:
@@ -245,7 +257,10 @@ func draw(ci) -> void:
 	if hint != "":
 		ci.pill(Rect2(58, 536, 244, 48), hint, 21 if phase == "bite" else 15, ci.RED if phase == "bite" else Color(ci.INK, 0.88), ci.PAPER)
 	if phase == "caught":
-		ci.pill(Rect2(110, 520, 140, 40), ci.t_("G-FISH-GOT"), 20, ci.RED, ci.PAPER)
+		ci.pill(Rect2(110, 520, 140, 36), ci.t_("G-FISH-GOT") if count == 1 else "钓到 %d 条啦" % count, 18, ci.RED, ci.PAPER)
+		if fish_t >= 0.9:
+			ci.pill(FISH_AGAIN, "再钓一条", 17, ci.INK, ci.PAPER)
+			ci.pill(PUT_ROD_AWAY, "收竿", 17, ci.RED, ci.PAPER)
 
 
 func _line(ci, a: Vector2, b: Vector2) -> void:
@@ -269,6 +284,8 @@ func _bobber(ci, p: Vector2, sinking: bool) -> void:
 
 func restore_checkpoint() -> void:
 	_place_pair()
+	if phase == "caught":
+		count = maxi(1, count)
 
 func hud() -> Array:
-	return [["钓上一条鱼", 1 if phase == "caught" else 0, 1]]
+	return [["钓上一条鱼", mini(count, 1), 1]]

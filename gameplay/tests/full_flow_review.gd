@@ -79,11 +79,10 @@ func game_action(r, g, kind: String) -> void:
 			elif g.phase in ["talk", "wechat"] and not g.holding:
 				g.input("down", g._listen_rect().get_center())
 			elif g.phase == "reply": g.input("tap", Vector2(180,500))
-		"desk_chat", "group_chat": g.input("tap",Vector2(180,610))
+		"desk_chat", "group_chat":
+			g.input("tap", g.CHECK_PHONE.get_center() if g.phase == "alert" else Vector2(180,610))
 		"care":
 			if g.phase == "care":
-				if g.can_talk():
-					tap_scene(r,g.TALK_RECT.get_center());return
 				for i in g.CENTERS.size():
 					if g.visible_at(i):
 						g.input("down",g.TRAY.get_center());g.input("move",g.center(i));g.input("up",g.center(i));break
@@ -92,7 +91,9 @@ func game_action(r, g, kind: String) -> void:
 				for n in g.notes:
 					if not n.caught: g.input("down",n.p);break
 		"moments":
-			if g.phase == "read":
+			if g.phase == "posted":
+				g.input("tap", g.CONTINUE.get_center())
+			elif g.phase == "read":
 				g.input("down",Vector2(180,600));g.input("move",Vector2(180,600-g._max_scroll()-20));g.input("up",Vector2(180,580-g._max_scroll()))
 				g.input("tap",g._dots_rect().get_center());g.input("tap",g._like_btn().get_center())
 		"fireworks":
@@ -106,11 +107,12 @@ func game_action(r, g, kind: String) -> void:
 			g.input("tap",g.rect(index).get_center())
 		"registration":
 			if g.phase == "stamp": g.input("down",g._stamp_rect().get_center())
-			elif g.phase in ["handover","photo","memory"]: g.input("tap",g._next_rect().get_center())
+			elif g.phase in ["consent_ayu", "consent_toretto", "handover", "photo", "memory"]: g.input("tap", g._next_rect().get_center())
 		"fishing":
 			if g.phase == "aim":
 				g.input("down",Vector2(180,590));tick(0.6);g.input("up",Vector2(180,590))
 			elif g.phase == "bite": g.input("tap",Vector2(180,560))
+			elif g.phase == "caught": g.input("tap", g.PUT_ROD_AWAY.get_center())
 		"onsen":
 			if g.phase == "join": g.input("tap",g._spot().get_center())
 			elif g.phase == "talk": g.input("tap",Vector2(180,300))

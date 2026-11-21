@@ -79,8 +79,7 @@
         "hideAyu": true,
         "beats": [
           {
-            "game": "desk_intro",
-            "copyId": "A0-3"
+            "wait": 0.0
           }
         ]
       }

@@ -15,7 +15,8 @@
         "goalRewardId": "wax",
         "personHeight": 120,
         "badge": "G-02",
-        "bg": "round1/rework1107/wanning_stall.png",
+        "bg": "w2/hainan/bg_wanning.png",
+        "hideAyu": true,
         "sky": "#86cfe8",
         "ground": "#e8d6a8",
         "horizon": 250,
@@ -69,11 +70,15 @@
         ],
         "beats": [
           {
-            "card": "G-10",
+            "card": "A5-LANDED",
             "duration": 2.0
           },
           {
             "narrate": "A5-0"
+          },
+          {
+            "bg": "round1/rework1107/wanning_stall.png",
+            "hideAyu": false
           },
           {
             "narrate": "A5-1a"
@@ -184,12 +189,12 @@
             "walkers": [
               {
                 "a": [
-                  315,
-                  1240
+                  322,
+                  1338
                 ],
                 "b": [
-                  315,
-                  1240
+                  322,
+                  1338
                 ],
                 "speed": 0,
                 "scale": 0.95,

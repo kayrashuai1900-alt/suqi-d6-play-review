@@ -146,7 +146,9 @@ func draw(ci) -> void:
 			ci.draw_line(Vector2(180, 560), Vector2(180, 600), Color(ci.PAPER, 0.4 * a), 2.0)
 
 	if phase == "aim" and thrown == 0 and not dragging:
-		ci.pill(Rect2(40, 140, 280, 36), ci.t_("G-RING-HOW"), 15, Color(ci.INK, 0.86), ci.PAPER)
+		var instruction: String = ci.t_("G-RING-HOW")
+		var width := minf(296.0, ci.FONT.get_string_size(instruction, HORIZONTAL_ALIGNMENT_LEFT, -1, 15).x + 28.0)
+		ci.pill(Rect2(180.0 - width / 2.0, 140, width, 36), instruction, 15, Color(ci.INK, 0.86), ci.PAPER)
 	if hit_flash > 0.0:
 		ci.draw_rect(Rect2(0, 0, 360, 640), Color(1, 0.9, 0.5, hit_flash * 0.15))
 
