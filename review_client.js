@@ -141,10 +141,14 @@
             status.textContent = "";
             const target = new URLSearchParams(location.hash.slice(1));
             const targetStep = catalog.find(item => item.id === target.get("step"));
-            if (targetStep && targetStep.entries.some(item => item.beat === Number(target.get("beat")))) {
+            const beat = Number(target.get("beat"));
+            if (targetStep && target.has("beat") && Number.isSafeInteger(beat) && beat >= 0) {
                 scene.value = targetStep.id;
                 fillEntries();
-                entry.value = String(Number(target.get("beat")));
+                if (!targetStep.entries.some(item => item.beat === beat)) {
+                    entry.add(new Option(`环节 ${beat}`, beat));
+                }
+                entry.value = String(beat);
                 setPanel(panel, scenes, true);
                 status.textContent = "已选好要复验的环节，点「前往」。";
             }
@@ -269,7 +273,13 @@
         const x = (event.clientX - bounds.left) / bounds.width;
         const y = (event.clientY - bounds.top) / bounds.height;
         if (!armed || !(x >= 0 && x <= 1 && y >= 0 && y <= 1)) return;
-        draft = { version, ...context, x, y };
+        draft = { version, ...context, x, y, width: Math.round(bounds.width), height: Math.round(bounds.height) };
+        if (context.stageTransform) {
+            const [originX, originY, unitX, unitY] = context.stageTransform;
+            if (unitX > 0 && unitY > 0) {
+                draft.stagePoint = [Math.round((x - originX) / unitX), Math.round((y - originY) / unitY)];
+            }
+        }
         if (!issueUrl) {
             const screenshot = document.createElement("canvas");
             const ratio = Math.min(1, 1000 / Math.max(canvas.width, canvas.height));
@@ -291,7 +301,8 @@
         textarea.value = "";
         saveStatus.textContent = "";
         const chapter = context.chapter || "游戏画面";
-        locationText.textContent = issueUrl ? `${chapter} · 将附上环节和位置。登录 GitHub 并提交后，反馈才会送达。` : `${chapter} · 将附上截图与点击位置`;
+        const point = draft.stagePoint?.join(", ") || `${Math.round(x * 100)}%, ${Math.round(y * 100)}%`;
+        locationText.textContent = issueUrl ? `${chapter} · 已记录落点（${point}）。登录 GitHub 并提交后，反馈才会送达。` : `${chapter} · 将附上截图与点击位置`;
         dialog.showModal();
         textarea.focus();
     });
@@ -306,7 +317,19 @@
         if (issueUrl) {
             const destination = new URL(issueUrl);
             destination.searchParams.set("title", `[试玩] ${draft.chapter || draft.step || "游戏画面"} · ${textarea.value.trim().slice(0, 36)}`);
-            destination.searchParams.set("body", `${textarea.value.trim()}\n\n版本：${version}\n场景：${draft.step || "开场"} / beat ${draft.beat ?? "-"} / ${draft.mode || "-"} / ${draft.phase || "-"}\n点击位置：${Math.round(draft.x*100)}%, ${Math.round(draft.y*100)}%`);
+            const details = [
+                `版本：${version}`,
+                `章节：${draft.chapter || "开场"}`,
+                `场景：${draft.step || "开场"} · 环节 ${draft.beat ?? "-"} · ${draft.mode || "-"} / ${draft.phase || "-"}`,
+                `可视画布：${draft.width} × ${draft.height} CSS px；落点 ${(draft.x * 100).toFixed(1)}%, ${(draft.y * 100).toFixed(1)}%`,
+            ];
+            if (draft.stagePoint) details.push(`游戏坐标（360 × 640 基准）：${draft.stagePoint.join(", ")}`);
+            if (draft.step && Number.isSafeInteger(draft.beat) && draft.beat >= 0) {
+                const replay = new URL("./", location.href);
+                replay.hash = new URLSearchParams({ step: draft.step, beat: draft.beat }).toString();
+                details.push(`[定位复验（打开后点「前往」）](${replay.href})`);
+            }
+            destination.searchParams.set("body", `${textarea.value.trim()}\n\n${details.join("\n")}`);
             const link = document.createElement("a");
             link.href = destination.href;
             link.target = "_blank";

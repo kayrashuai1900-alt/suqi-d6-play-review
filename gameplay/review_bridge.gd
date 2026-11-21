@@ -81,6 +81,11 @@ func _command(args: Array) -> void:
 				froze_tree = true
 				player.get_tree().paused = true
 			var details := {"step": player.shot.get("fullId", ""), "chapter": player._text(str(player.shot.get("titleId", ""))), "beat": -1, "mode": "", "phase": ""}
+			var stage: Control = player.stage
+			if is_instance_valid(stage) and player.size.x > 0.0 and player.size.y > 0.0:
+				var origin := stage.position / player.size
+				var unit := stage.scale / player.size
+				details.stageTransform = [origin.x, origin.y, unit.x, unit.y]
 			if is_instance_valid(runner):
 				details.beat = runner.bi
 				details.mode = runner.mode
