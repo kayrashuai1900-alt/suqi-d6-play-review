@@ -7,6 +7,7 @@ const Checkpoint := preload("res://hongyuan/checkpoint.gd")
 var review := preload("res://hongyuan/review_bridge.gd").new()
 const SceneRunner := preload("res://hongyuan/scene_runner.gd")
 const StoryCaption := preload("res://hongyuan/ui/story_caption.gd")
+const MusicCues := preload("res://hongyuan/music_cues.gd")
 const FONT := preload("res://hongyuan/fonts/dialogue_font.tres")
 const COPY_PATH := "res://hongyuan/copy.json"
 const WALK_BOUNDS := Rect2(35, 396, 290, 60)
@@ -346,7 +347,8 @@ func _enter_step(index: int, resume := false) -> void:
 	active_index = index
 	shot = playlist[index]
 	stage.shot = shot
-	_play_bgm(str(shot.get("chapterId", "")))
+	if shot.type != "scene":
+		_scene_music_at(-1)
 	_clear_movement()
 	_reset_pointer()
 	since_save = 0.0
@@ -1443,27 +1445,27 @@ func _collected_materials() -> Dictionary:
 	return applied
 
 func _scene_music_at(index: int) -> void:
-	var script: Array = shot.scene.get("beats", [])
-	for i in range(mini(index, script.size() - 1), -1, -1):
-		if script[i].has("music"):
-			_play_bgm(str(script[i].music))
-			return
+	var cue := MusicCues.at(shot, index)
+	if not _play_bgm(cue):
+		_play_bgm(str(shot.get("chapterId", "")))
 
-func _play_bgm(cue: String) -> void:
-	if cue == bgm_id: return
+func _play_bgm(cue: String) -> bool:
+	if cue == bgm_id:
+		return true
 	var stream: AudioStream
 	if cue != "silence":
 		var path := "res://hongyuan/assets/bgm/bgm_%s" % cue
-		for ext in [".ogg", ".wav"]:
+		for ext in [".ogg", ".wav", ".mp3"]:
 			if ResourceLoader.exists(path + ext):
 				stream = load(path + ext) as AudioStream
 				break
-		if stream == null: return
-		if stream is AudioStreamOggVorbis:
-			stream.loop = true
-		elif stream is AudioStreamWAV:
-			stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
-			stream.loop_end = roundi(stream.get_length() * stream.mix_rate)
+		if stream == null:
+			return false
+	if stream is AudioStreamOggVorbis or stream is AudioStreamMP3:
+		stream.loop = true
+	elif stream is AudioStreamWAV:
+		stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+		stream.loop_end = roundi(stream.get_length() * stream.mix_rate)
 	if is_instance_valid(music_fade): music_fade.kill()
 	bgm_tail.stop()
 	var old := bgm
@@ -1480,6 +1482,7 @@ func _play_bgm(cue: String) -> void:
 		music_fade.tween_property(bgm, "volume_db", MusicLevel, 0.82)
 	music_fade.tween_property(old, "volume_db", -52.0, 0.82)
 	music_fade.chain().tween_callback(old.stop)
+	return true
 
 ## 左上角「音乐」开关：只关背景乐，音效照常；设置跨章节、跨存档保留
 func _make_music_button() -> void:

@@ -5,10 +5,6 @@ const LOOKS := ["01", "02", "03", "04", "05", "06", "07", "08"]
 const DESK := preload("res://hongyuan/ui/desk_art.gd")
 const GUEST_ATLAS := "res://assets/characters/lm/guest_atlas.png"
 const GUEST_FRAME := Vector2(64, 84)
-const GRIPS := [
-	Vector2(45, 55), Vector2(32, 51), Vector2(29, 55), Vector2(44, 55),
-	Vector2(46, 57), Vector2(28, 54), Vector2(43, 57), Vector2(32, 51),
-]
 const LOOK_PANEL := Rect2(22, 114, 316, 360)
 const LOOK_CELL := Vector2(68, 121)
 const LOOK_START := Vector2(34, 169)
@@ -29,7 +25,14 @@ const SEND_TIME := 3.3   # 寄信过场：书桌窗口飞出 → 飞过江岸 �
 const LETTER := "w2/finale/invite_card.png|w2/finale/letter_closeup.png"
 ## GPT 重画的邀请函到位后，字写在中间留白处（顶部是插画）
 const GUEST_DESK := "w2/finale/guest_first_person.png"
-const ESTATE_GATE := preload("res://hongyuan/ui/travel_arrival.gd").WEDDING_ART
+const RECIPIENT_ART := "round1/finale/recipient_%s.jpg"
+const READ_CARD := Rect2(112, 455, 136, 36)
+const RECIPIENT_PAPER := [
+	Rect2(194, 278, 55, 32), Rect2(195, 278, 56, 31),
+	Rect2(195, 279, 54, 32), Rect2(194, 278, 55, 32),
+	Rect2(193, 277, 55, 32), Rect2(196, 278, 52, 32),
+	Rect2(195, 276, 55, 32), Rect2(195, 279, 56, 31),
+]
 const TRAVEL_CHOICES := [
 	{"label": "前往罗曼山庄", "scene": "res://hongyuan/world_entry.tscn"},
 	{"label": "先去裳泓村", "scene": "res://hongyuan/village_entry.tscn"},
@@ -46,6 +49,7 @@ var name_confirmed := false
 var guest_sheet: Texture2D
 var keyboard_callback: JavaScriptObject
 var keyboard_open := false
+var letter_open := false
 
 
 func start(runner, _beat: Dictionary) -> void:
@@ -166,6 +170,13 @@ func input(kind: String, pos: Vector2) -> void:
 				_accept_invitation()
 		"destination":
 			if kind != "tap" or t < 0.35: return
+			if letter_open:
+				if _ok_rect().has_point(pos):
+					letter_open = false
+				return
+			if READ_CARD.has_point(pos):
+				letter_open = true
+				return
 			for i in range(TRAVEL_CHOICES.size()):
 				if _route_rect(i).has_point(pos):
 					r.scene_requested.emit(TRAVEL_CHOICES[i].scene)
@@ -310,7 +321,11 @@ func draw(ci) -> void:
 		_send_frames(ci)
 		return
 	if phase in ["destination", "welcome"]:
-		DESK.cover(ci, ci.texture(ESTATE_GATE), r.view_rect)
+		var index := clampi(look, 0, LOOKS.size() - 1)
+		var portrait: Texture2D = ci.texture(RECIPIENT_ART % LOOKS[index])
+		DESK.cover(ci, portrait if portrait else ci.texture(GUEST_DESK), r.view_rect)
+		if portrait and not letter_open:
+			_draw_held_letter(ci, portrait, RECIPIENT_PAPER[index])
 	elif phase in ["receive", "opening", "read_received", "name", "look"]:
 		DESK.cover(ci, ci.texture(GUEST_DESK), r.view_rect)
 	else:
@@ -369,7 +384,11 @@ func draw(ci) -> void:
 		"look":
 			_draw_look(ci)
 		"destination", "welcome":
-			_draw_coda(ci)
+			if letter_open:
+				_draw_invitation(ci, Rect2(Vector2.ZERO, INVITE_SIZE))
+				ci.pill(_ok_rect(), "合上请帖", 18, ci.RED, ci.PAPER)
+			else:
+				_draw_coda(ci)
 
 func _draw_plaque(ci, rect: Rect2) -> void:
 	ci.draw_rect(rect, Color("#381e18", 0.94))
@@ -391,32 +410,27 @@ func _draw_look(ci) -> void:
 	ci.pill(_ok_rect("look"), "确认形象", 17, ci.RED if look >= 0 else Color("#57433a"), ci.PAPER)
 
 func _draw_coda(ci) -> void:
-	var index := clampi(look, 0, LOOKS.size() - 1)
-	var guest := Rect2(Vector2(62, 82), GUEST_FRAME * 3.68)
-	ci.draw_rect(r.view_rect, Color("#301c1a", 0.14))
-	_draw_plaque(ci, Rect2(103, 35, 154, 38))
-	ci.text_at(Vector2(106, 60), "爱情篇 · 完", 18, ci.PAPER, 148)
-	_draw_guest(ci, index, guest)
-	var grip: Vector2 = GRIPS[index]
-	var hand := guest.position + grip * guest.size / GUEST_FRAME
-	var paper_size := INVITE_SIZE * 0.17
-	var paper_at := hand - Vector2(8.0 if grip.x > 36.0 else paper_size.x * 0.5, 8.0)
-	ci.draw_rect(Rect2(paper_at + Vector2(3, 4), paper_size), Color(ci.INK, 0.32))
-	_draw_invitation(ci, Rect2(paper_at, paper_size))
-	# The pixels around the original grip sit in front of the paper.
-	if guest_sheet:
-		var patch := Rect2(grip - Vector2(2, 1), Vector2(5, 4))
-		var zoom := guest.size / GUEST_FRAME
-		ci.draw_texture_rect_region(guest_sheet, Rect2(guest.position + patch.position * zoom, patch.size * zoom),
-			Rect2(_guest_frame(index).position + patch.position, patch.size))
-	_draw_plaque(ci, Rect2(26, 406, 308, 69))
-	ci.text_at(Vector2(34, 433), closing_caption, 16, ci.PAPER, 292)
+	_draw_plaque(ci, Rect2(26, 389, 308, 64))
+	ci.text_at(Vector2(34, 414), closing_caption, 16, ci.PAPER, 292)
+	ci.pill(READ_CARD, "再读一遍请帖", 14, Color(ci.INK, 0.92), ci.PAPER)
 	for i in range(TRAVEL_CHOICES.size()):
 		ci.pill(_route_rect(i), TRAVEL_CHOICES[i].label, 17 if i == 0 else 15,
 			ci.RED if i == 0 else Color(ci.INK, 0.91), ci.PAPER)
 	var curtain := 1.0 - smoothstep(0.0, 0.35, t)
 	if curtain > 0.0:
 		ci.draw_rect(r.view_rect, Color(ci.INK, 0.40 * curtain))
+
+func _draw_held_letter(ci, portrait: Texture2D, paper: Rect2) -> void:
+	var cover_size := portrait.get_size() * maxf(r.view_rect.size.x / portrait.get_width(), r.view_rect.size.y / portrait.get_height())
+	var cover_top_left: Vector2 = r.view_rect.get_center() - cover_size * 0.5
+	var printed_size := Vector2(152, 78)
+	var scale := paper.size * cover_size / INVITE_SIZE / printed_size
+	ci.draw_set_transform(cover_top_left + paper.position * cover_size / INVITE_SIZE, -0.025, scale)
+	ci.draw_rect(Rect2(Vector2.ZERO, printed_size), Color("#f7dca7"))
+	var excerpt := ["亲爱的朋友：", "我们要在苏七镇办婚礼了。", "想请你来罗曼山庄喝杯喜酒。", "这份邀请一直有效。"]
+	for i in range(excerpt.size()):
+		ci.draw_string(ci.FONT, Vector2(4, 15 + i * 18), excerpt[i], HORIZONTAL_ALIGNMENT_LEFT, 144, 11, ci.INK)
+	ci.draw_set_transform(Vector2.ZERO)
 
 const LETTER_WORDS := ["四川乐山", "苏七镇", "罗曼山庄", "幸福的日子"]
 const LETTER_TRAILING := "，。！？、；：）」』…"

@@ -26,6 +26,7 @@ const PROFILES := {
 	"cabin": [250.0, 78.0, 620.0, 180.0],
 	"boarding": [420.0, 78.0, 620.0, 144.0],
 	"pool": [290.0, 72.0, 580.0, 165.0],
+	"wanning_stall": [230.0, 34.0, 270.0, 45.0, 415.0, 109.0, 600.0, 120.0],
 	"beach": [170.0, 46.0, 310.0, 72.0, 450.0, 95.0, 620.0, 170.0],
 	"beach_memory": [430.0, 44.0, 600.0, 128.0],
 	"airport_departure": [380.0, 78.0, 590.0, 116.0],
@@ -46,6 +47,7 @@ static func profile(scene_id: String, background := "") -> String:
 	if "bg_pier" in background or "shizuoka_pier" in background: return "pier"
 	if "bg_boat" in background or "boat_cabin" in background: return "boat"
 	if "bg_wanning" in background: return "pool"
+	if background.get_file() == "wanning_stall.png": return "wanning_stall"
 	if "bg_wenchang" in background: return "beach"
 	if "bg_departure_pvg" in background: return "airport_departure"
 	if "bg_arrival" in background or "arrivals_sunset" in background: return "airport"
