@@ -95,15 +95,27 @@ body {
 <meta name='viewport' content='width=device-width, initial-scale=1, viewport-fit=cover'><style>body{--hy-top:env(safe-area-inset-top,0px);--hy-right:env(safe-area-inset-right,0px);--hy-bottom:env(safe-area-inset-bottom,0px);--hy-left:env(safe-area-inset-left,0px)}</style>
 	<!-- hongyuan-splash --><style>
 body{background-color:#2c201b}
-#status{visibility:visible;background-color:#48223a}
-#hy-cover{position:absolute;inset:0;margin:auto;width:min(100vw,56.25vh);height:min(100vh,177.7778vw);pointer-events:none}
-#hy-cover #status-splash{position:absolute;inset:0;margin:0;width:100%;height:100%;object-fit:fill;image-rendering:pixelated}
-#hy-inscription{position:absolute;top:6.875%;left:0;width:100%;height:auto;image-rendering:pixelated}
-body:has(#status) #suqi-review.feedback-only{top:auto;bottom:max(18%,env(safe-area-inset-bottom,0px))}
+#status{visibility:visible;background-color:#321e2b}
+#hy-cover{position:absolute;inset:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px);margin:auto;width:min(100vw,56.25vh);height:min(100%,227.78vw);overflow:hidden;pointer-events:none;container-type:inline-size}
+#hy-photo{position:absolute;top:clamp(0px,calc((100% - 177.78cqw)*.49),22.78cqw);width:100%;height:112.78cqw;overflow:hidden;mask-image:linear-gradient(to bottom,transparent,#000 14%,#000 95%,transparent)}
+#hy-cover #status-splash{position:static;display:block;margin:0;width:100%;height:auto;object-fit:fill;image-rendering:pixelated}
+.hy-cover-type{position:absolute;left:0;width:100%;height:26.111cqw;overflow:hidden}
+.hy-cover-type img{position:absolute;left:0;width:100%;height:auto}
+#hy-heading{top:calc(clamp(0px,calc((100% - 177.78cqw)*.49),22.78cqw) + 20cqw)}
+#hy-inscription{top:0}
+#hy-dedication{top:calc(clamp(0px,calc((100% - 177.78cqw)*.49),22.78cqw) + 117cqw)}
+#hy-dedication img{bottom:0}
+body:has(#status) #suqi-review.feedback-only{top:max(6px,env(safe-area-inset-top,0px));bottom:auto}
+body:has(#status) #suqi-review.feedback-only header{padding:0}
+@media(max-width:350px){
+  .hy-return-menu #suqi-review.feedback-only{top:max(4px,env(safe-area-inset-top,0px));left:max(4px,env(safe-area-inset-left,0px))}
+  .hy-return-menu #suqi-review.feedback-only header{padding:0}
+  .hy-return-menu #review-mark{box-sizing:border-box;width:54px;padding:3px 5px;white-space:normal;font-size:12px;line-height:1.35}
+}
 #status-progress{bottom:calc(4% + env(safe-area-inset-bottom,0px));width:min(60vw,320px);accent-color:#e7b65c}
 #hy-loading{position:absolute;left:0;right:0;bottom:calc(4% + env(safe-area-inset-bottom,0px) + 26px);text-align:center;color:#f3dfc8;font:16px/1.4 "PingFang SC","Noto Sans SC",sans-serif;letter-spacing:.08em}
 </style>
-<meta name="review-build" content="D6-f4e1929edcc4"><meta name="review-issues" content="https://github.com/kayrashuai1900-alt/suqi-d6-play-review/issues/new"><meta name="robots" content="noindex"><meta name="review-mode" content="feedback"></head>
+<meta name="review-build" content="D6-8ca10038d643"><meta name="review-issues" content="https://github.com/kayrashuai1900-alt/suqi-d6-play-review/issues/new"><meta name="robots" content="noindex"><meta name="review-mode" content="feedback"></head>
 	<body>
 		<canvas id="canvas">
 			Your browser does not support the canvas tag.
@@ -114,7 +126,7 @@ body:has(#status) #suqi-review.feedback-only{top:auto;bottom:max(18%,env(safe-ar
 		</noscript>
 
 		<div id="status">
-			<div id="hy-cover"><img id="status-splash" class="show-image--true fullsize--true use-filter--true" src="index.png?v=6b90517abd7e" alt=""><img id="hy-inscription" src="index.title.png?v=088e50e4faa2" alt="苏七镇奇缘。谨以此篇献给所有爱我和我爱的人们，来日并不方长，愿各位都珍惜当下。"></div>
+			<div id="hy-cover"><div id="hy-photo"><img id="status-splash" class="show-image--true fullsize--true use-filter--true" src="index.png?v=6b90517abd7e" alt=""></div><div class="hy-cover-type" id="hy-heading"><img id="hy-inscription" src="index.title.png?v=d11094eea16b" alt="苏七镇奇缘。爱情篇、宴席篇、裳泓篇。"></div><div class="hy-cover-type" id="hy-dedication"><img src="index.title.png?v=d11094eea16b" alt="谨以此篇献给所有爱我和我爱的人们，来日并不方长，愿各位都珍惜当下。OPC制作人 @阿鱼ayu_，抖音和小红书唯一 ID。"></div></div>
 			<div id="hy-loading">阿鱼和 Toretto 的故事，正在加载…</div>
 			<progress id="status-progress"></progress>
 			<div id="status-notice"></div>
@@ -122,7 +134,7 @@ body:has(#status) #suqi-review.feedback-only{top:auto;bottom:max(18%,env(safe-ar
 
 		<script src="review_client.js?v=cdaa9a817cf4"></script><script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":false,"fileSizes":{"love-f4e1929edcc4.pck":3963792,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":false,"fileSizes":{"love-8ca10038d643.pck":4433740,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 
@@ -218,7 +230,7 @@ const engine = new Engine(GODOT_CONFIG);
 		}
 	} else {
 		setStatusMode('progress');
-		engine.startGame({mainPack:"love-f4e1929edcc4.pck",
+		engine.startGame({mainPack:"love-8ca10038d643.pck",
 			'onProgress': function (current, total) {
 				if (current > 0 && total > 0) {
 					statusProgress.value = current;
