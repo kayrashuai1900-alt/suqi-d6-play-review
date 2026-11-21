@@ -19,6 +19,8 @@ var jumping := false
 func attach(player: Control) -> void:
 	if not OS.has_feature("web") or OS.has_feature("hongyuan_wechat"):
 		return
+	if JavaScriptBridge.eval("!!window.suqiReview", true) != true:
+		return
 	api = JavaScriptBridge.get_interface("suqiReview")
 	if api == null:
 		return

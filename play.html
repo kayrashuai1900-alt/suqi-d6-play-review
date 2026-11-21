@@ -112,10 +112,20 @@ body:has(#status) #suqi-review.feedback-only header{padding:0}
   .hy-return-menu #suqi-review.feedback-only header{padding:0}
   .hy-return-menu #review-mark{box-sizing:border-box;width:54px;padding:3px 5px;white-space:normal;font-size:12px;line-height:1.35}
 }
+.hy-completion-menu #suqi-review.feedback-only{top:max(16vh,env(safe-area-inset-top,0px))}
+.hy-completion-menu #suqi-review.feedback-only header{padding:0}
+.hy-share-dialog{width:min(365px,calc(100vw - 36px));max-height:calc(100dvh - 34px);box-sizing:border-box;overflow:auto;background:#f6ead4;color:#4a3029;border:1px solid #a68064;padding:14px;font:14px/1.5 system-ui,sans-serif}
+.hy-share-dialog::backdrop{background:#221925c7}
+.hy-share-dialog header,.hy-share-actions{display:flex;align-items:center;justify-content:space-between;gap:7px}
+.hy-share-dialog h2{margin:0;font-size:17px}
+.hy-share-dialog img{display:block;margin:8px auto 12px;width:auto;max-width:100%;max-height:57dvh;object-fit:contain}
+.hy-share-dialog button,.hy-share-dialog a{box-sizing:border-box;min-height:44px;padding:8px;color:#56382d;background:#fff6e4;border:1px solid #ad8a6f;font:inherit;cursor:pointer;text-decoration:none}
+.hy-share-dialog [download]{display:inline-flex;align-items:center;color:#fff0d6;background:#843a3b}
+.hy-share-dialog p{margin:6px 0 0;color:#704638}
 #status-progress{bottom:calc(4% + env(safe-area-inset-bottom,0px));width:min(60vw,320px);accent-color:#e7b65c}
 #hy-loading{position:absolute;left:0;right:0;bottom:calc(4% + env(safe-area-inset-bottom,0px) + 26px);text-align:center;color:#f3dfc8;font:16px/1.4 "PingFang SC","Noto Sans SC",sans-serif;letter-spacing:.08em}
 </style>
-<meta name="review-build" content="D6-8ca10038d643"><meta name="review-issues" content="https://github.com/kayrashuai1900-alt/suqi-d6-play-review/issues/new"><meta name="robots" content="noindex"><meta name="review-mode" content="feedback"></head>
+<script src="index.completion-share.js?v=498540491908" defer></script><meta name="review-build" content="D6-f39459c7f3b0"><meta name="review-issues" content="https://github.com/kayrashuai1900-alt/suqi-d6-play-review/issues/new"><meta name="robots" content="noindex"><meta name="review-mode" content="feedback"></head>
 	<body>
 		<canvas id="canvas">
 			Your browser does not support the canvas tag.
@@ -134,7 +144,7 @@ body:has(#status) #suqi-review.feedback-only header{padding:0}
 
 		<script src="review_client.js?v=cdaa9a817cf4"></script><script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":false,"fileSizes":{"love-8ca10038d643.pck":4433740,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":false,"fileSizes":{"love-f39459c7f3b0.pck":5541508,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 
@@ -230,7 +240,7 @@ const engine = new Engine(GODOT_CONFIG);
 		}
 	} else {
 		setStatusMode('progress');
-		engine.startGame({mainPack:"love-8ca10038d643.pck",
+		engine.startGame({mainPack:"love-f39459c7f3b0.pck",
 			'onProgress': function (current, total) {
 				if (current > 0 && total > 0) {
 					statusProgress.value = current;

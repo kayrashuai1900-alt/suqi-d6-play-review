@@ -23,11 +23,21 @@ const TYPE_STRIP := Vector2(360, 94)
 const PRIMARY_H := 54.0
 const SECONDARY_H := 52.0
 const MARGIN := 22.0
+const ALBUM_COMPACT := "round1/common/completion_album_compact.png"
+const ALBUM_WIDE := "round1/common/completion_album_wide.png"
+const ALBUM_NOTE := "round1/common/completion_album_note.png"
+const ALBUM_PAPER := Color("#ecdbbf")
+const ALBUM_MID := Color("#e8d0ad")
+const ALBUM_BUTTON := Color("#843a3b")
 
 var menu_buttons: Dictionary = {}
 var photo_rect := Rect2()
 var title_y := 0.0
 var note_y := 0.0
+var album_art := Rect2()
+var album_note := Rect2()
+var album_status_y := 0.0
+var share_button: Button
 
 var completed := false
 var busy := false
@@ -83,6 +93,9 @@ func _ready() -> void:
 		if web_trial:
 			JavaScriptBridge.eval("document.body.classList.add('hy-return-menu')", true)
 		if completed:
+			_prepare_album()
+			if web_trial:
+				JavaScriptBridge.eval("document.body.classList.add('hy-completion-menu')", true)
 			_prefetch_village.call_deferred()
 		_fit_canvas()
 		return
@@ -91,14 +104,13 @@ func _ready() -> void:
 
 func _exit_tree() -> void:
 	if show_menu and OS.has_feature("web") and not OS.has_feature("hongyuan_wechat"):
-		JavaScriptBridge.eval("document.body.classList.remove('hy-return-menu')", true)
+		JavaScriptBridge.eval("document.body.classList.remove('hy-return-menu', 'hy-completion-menu')", true)
 
 
 func _has_review_controls() -> bool:
 	if not OS.has_feature("web") or OS.has_feature("hongyuan_wechat"):
 		return false
-	var bridge := JavaScriptBridge.get_interface("suqiReview")
-	return bridge != null and bridge.feedbackOnly != true
+	return JavaScriptBridge.eval("!!window.suqiReview && window.suqiReview.feedbackOnly !== true", true) == true
 
 
 func _prefetch_village() -> void:
@@ -155,24 +167,21 @@ func _fit_canvas() -> void:
 func _layout_menu() -> void:
 	if menu_buttons.is_empty():
 		return
+	if show_menu and completed:
+		_layout_album()
+		return
 	var height := canvas.size.y
 	var extra := maxf(0, height - CANVAS.y)
 	var retry_h := 58.0 if is_instance_valid(prefetch_notice) and prefetch_notice.visible else 0.0
 	var primary_y := height - 128.0 - minf(extra * 0.18, 33) - retry_h
 	var actions := Rect2(MARGIN, primary_y, CANVAS.x - 2 * MARGIN, PRIMARY_H)
 	var lower := Rect2(MARGIN, actions.end.y + 6, actions.size.x, SECONDARY_H)
-	var split := (lower.size.x - 10) * 0.5
 	for key: String in menu_buttons:
 		var button: Button = menu_buttons[key]
 		button.hide()
 	if show_menu:
-		if completed:
-			_place("wedding", actions)
-			_place("replay", Rect2(lower.position, Vector2(split, SECONDARY_H)))
-			_place("village", Rect2(lower.position + Vector2(split + 10, 0), Vector2(split, SECONDARY_H)))
-		else:
-			_place("cancel" if confirm_restart else "resume", actions)
-			_place("erase" if confirm_restart else "restart", lower)
+		_place("cancel" if confirm_restart else "resume", actions)
+		_place("erase" if confirm_restart else "restart", lower)
 	if is_instance_valid(prefetch_notice):
 		prefetch_notice.position = Vector2(MARGIN, lower.end.y + 7)
 		prefetch_notice.size.x = actions.size.x
@@ -194,6 +203,9 @@ func _place(key: String, rect: Rect2) -> void:
 func _draw_canvas() -> void:
 	if not show_menu:
 		return
+	if completed:
+		_draw_album()
+		return
 	canvas.draw_rect(Rect2(Vector2.ZERO, canvas.size), SPLASH_BG)
 	var splash := _texture(SPLASH)
 	if splash:
@@ -213,11 +225,108 @@ func _draw_canvas() -> void:
 	if confirm_restart:
 		_line("确定要重新开始吗？", note_y + 36, 19, PAPER)
 		_line("当前进度将被清除。", note_y + 65, 15, Color("#e2bfab"))
-	elif completed:
-		var baseline := note_y - 4
-		_line("爱情篇 · 完", baseline, 12, Color("#e7c59f"))
-		canvas.draw_line(Vector2(104, baseline - 4), Vector2(140, baseline - 4), Color("#966b57"))
-		canvas.draw_line(Vector2(220, baseline - 4), Vector2(256, baseline - 4), Color("#966b57"))
+
+
+func _prepare_album() -> void:
+	for key: String in ["wedding", "replay", "village"]:
+		var button: Button = menu_buttons[key]
+		for child in button.get_children():
+			child.hide()
+		button.text = ACTION_LABELS[key]
+		button.add_theme_font_size_override("font_size", 17 if key == "wedding" else 14)
+		if key == "wedding":
+			_style_album_button(button, ALBUM_BUTTON, PAPER, Color("#a66955"))
+		else:
+			_style_album_button(button, Color.TRANSPARENT, Color("#603d32"), Color.TRANSPARENT)
+	if OS.has_feature("web") and not OS.has_feature("hongyuan_wechat"):
+		var bridge := JavaScriptBridge.get_interface("suqiCompletionShare")
+		if bridge == null:
+			return
+		share_button = Button.new()
+		share_button.name = "share"
+		share_button.text = "分享"
+		share_button.accessibility_name = "分享并邀请朋友玩"
+		share_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		share_button.add_theme_font_override("font", FONT)
+		share_button.add_theme_font_size_override("font_size", 13)
+		_style_album_button(share_button, Color("#f8ecda"), Color("#764038"), Color("#ac8064"), 22)
+		share_button.pressed.connect(_share_album)
+		canvas.add_child(share_button)
+
+
+func _style_album_button(button: Button, fill: Color, ink: Color, edge: Color, radius := 2) -> void:
+	for state: String in ["normal", "hover", "pressed", "focus"]:
+		var box := StyleBoxFlat.new()
+		box.bg_color = fill
+		box.border_color = edge
+		box.set_corner_radius_all(radius)
+		box.set_border_width_all(1)
+		if state == "hover":
+			box.bg_color = Color("#c9806625") if fill.a == 0.0 else fill.lightened(0.07)
+		elif state == "pressed":
+			box.bg_color = Color("#8e473934") if fill.a == 0.0 else fill.darkened(0.12)
+		elif state == "focus":
+			box.draw_center = false
+			box.set_border_width_all(2)
+			box.border_color = Color("#a76a50")
+		button.add_theme_stylebox_override(state, box)
+	for key in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color"]:
+		button.add_theme_color_override(key, ink)
+
+
+func _layout_album() -> void:
+	var height := canvas.size.y
+	var retry := 55.0 if prefetch_notice.visible else 0.0
+	var note_top := height - 128.0
+	var action_y := minf(height * 0.643, note_top - 106.0 - retry)
+	var drawing_height := lerpf(375.0, 475.0, clampf(inverse_lerp(640.0, 779.0, height), 0.0, 1.0))
+	album_art = Rect2(0, 0, CANVAS.x, minf(drawing_height, action_y - 25.0))
+	album_note = Rect2(0, note_top, CANVAS.x, 128)
+	album_status_y = action_y - 10
+	for key: String in menu_buttons:
+		menu_buttons[key].hide()
+	var width := 260.0
+	var left := (CANVAS.x - width) * 0.5
+	_place("wedding", Rect2(left, action_y, width, 49))
+	_place("replay", Rect2(left, action_y + 49.0, width * 0.5, 50))
+	_place("village", Rect2(left + width * 0.5, action_y + 49.0, width * 0.5, 50))
+	prefetch_notice.position = Vector2(MARGIN, action_y + 101.0)
+	prefetch_notice.size.x = CANVAS.x - 2.0 * MARGIN
+	if is_instance_valid(share_button):
+		share_button.position = Vector2(285, 10 if height < 700 else 23)
+		share_button.size = Vector2(53, 50)
+
+
+func _draw_album() -> void:
+	canvas.draw_rect(Rect2(Vector2.ZERO, canvas.size), ALBUM_PAPER)
+	_fade(album_art.end.y - 9, canvas.size.y, ALBUM_MID, ALBUM_PAPER)
+	var art := _texture(ALBUM_COMPACT if canvas.size.y < 710 else ALBUM_WIDE)
+	if art:
+		canvas.draw_texture_rect(art, album_art, false)
+	var note := _texture(ALBUM_NOTE)
+	if note:
+		canvas.draw_texture_rect(note, album_note, false)
+	_line("爱情篇已通关", album_status_y, 12, Color("#745447"))
+
+
+func _share_album() -> void:
+	if busy or overlay.visible:
+		return
+	var bridge := JavaScriptBridge.get_interface("suqiCompletionShare")
+	if bridge == null:
+		return
+	# Read Godot's already-rendered frame. Browser review controls and dialogs
+	# are outside the canvas and cannot be baked into a friend's poster.
+	var viewport := get_viewport()
+	var image := viewport.get_texture().get_image()
+	if image == null or image.is_empty():
+		return
+	var scale_to_image := Vector2(image.get_size()) / viewport.get_visible_rect().size
+	var menu_rect := canvas.get_global_rect()
+	var region := Rect2i(Rect2(menu_rect.position * scale_to_image, menu_rect.size * scale_to_image))
+	region = region.intersection(Rect2i(Vector2i.ZERO, image.get_size()))
+	if region.has_area():
+		bridge.open(Marshalls.raw_to_base64(image.get_region(region).save_png_to_buffer()))
 
 
 func _line(value: String, baseline: float, font_size: int, color: Color) -> void:
