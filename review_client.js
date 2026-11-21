@@ -109,6 +109,7 @@
     const saveStatus = byId("review-save-status");
     const textarea = dialog.querySelector("textarea");
     const save = dialog.querySelector("button[type=submit]");
+    const cancel = dialog.querySelector("button[type=button]");
     const form = dialog.querySelector("form");
     const version = document.querySelector('meta[name="review-build"]')?.content || location.pathname.split("/").filter(Boolean).pop() || "D6";
     if (feedbackOnly) {
@@ -118,6 +119,7 @@
     if (issueUrl) {
         notes.hidden = true;
         save.textContent = "发送";
+        cancel.textContent = "标注结束";
         textarea.enterKeyHint = "send";
         if (!feedbackOnly) {
             const source = document.createElement("a");
@@ -199,7 +201,7 @@
         armed = value;
         layer.hidden = !value;
         mark.setAttribute("aria-pressed", String(value));
-        mark.textContent = value ? "取消标注" : "点画面记问题";
+        mark.textContent = value ? (delivery ? "标注结束" : "取消标注") : "点画面记问题";
         if (value) {
             setPanel(panel, scenes, false);
             setPanel(inbox, notes, false);
@@ -212,9 +214,9 @@
     function endNote() {
         draft = undefined;
         pin.hidden = true;
+        textarea.value = "";
         if (continueMarking) {
             continueMarking = false;
-            mark.textContent = "结束标注";
             return;
         }
         arm(false);
@@ -326,7 +328,7 @@
         dialog.showModal();
         textarea.focus();
     });
-    dialog.querySelector("button[type=button]").addEventListener("click", () => dialog.close());
+    cancel.addEventListener("click", () => dialog.close());
     dialog.addEventListener("close", endNote);
     document.addEventListener("keydown", event => {
         if (event.key === "Escape" && armed && !dialog.open) arm(false);
