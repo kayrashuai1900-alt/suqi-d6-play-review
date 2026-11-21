@@ -24,6 +24,9 @@ func attach(player: Control) -> void:
 		return
 	player_ref = weakref(player)
 	callback = JavaScriptBridge.create_callback(_command)
+	if api.feedbackOnly == true:
+		api.attachPlayer(callback, "[]")
+		return
 	var scenes: Array[Dictionary] = []
 	for step: Dictionary in player.playlist:
 		if step.type == "terminal":
@@ -89,8 +92,11 @@ func _command(args: Array) -> void:
 				froze_tree = false
 				player.get_tree().paused = false
 		"next":
-			_skip_current(player)
+			if api.feedbackOnly != true:
+				_skip_current(player)
 		"jump":
+			if api.feedbackOnly == true:
+				return
 			if jumping or player.loading_content or player.fading or player.get_tree().paused:
 				api.jumpDone(false, "此时正在转场，请等画面稳定后再跳转。")
 				return

@@ -1,11 +1,14 @@
 (() => {
     "use strict";
     const canvas = document.getElementById("canvas");
-    const getContext = canvas.getContext.bind(canvas);
-    // Keep the displayed frame readable only in this local review session.
-    canvas.getContext = (name, options) => getContext(name, name.startsWith("webgl")
-        ? { ...options, preserveDrawingBuffer: true }
-        : options);
+    const issueUrl = document.querySelector('meta[name="review-issues"]')?.content;
+    const feedbackOnly = document.querySelector('meta[name="review-mode"]')?.content === "feedback";
+    if (!issueUrl) {
+        const getContext = canvas.getContext.bind(canvas);
+        canvas.getContext = (name, options) => getContext(name, name.startsWith("webgl")
+            ? { ...options, preserveDrawingBuffer: true }
+            : options);
+    }
 
     const style = document.createElement("style");
     style.textContent = `
@@ -16,6 +19,7 @@
           border: 1px solid #bca182; padding: 8px 10px; color: #fff6e6; background: #352822; cursor: pointer; }
         #suqi-review button[aria-pressed="true"], #suqi-note button[type="submit"] { background: #85424a; }
         #suqi-review button:disabled, #suqi-review select:disabled { opacity: .55; cursor: default; }
+        #suqi-review.feedback-only button { min-height: 44px; }
         #suqi-review header { display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
           border-radius: 9px; padding: 6px; background: #211916f5; box-shadow: 0 2px 12px #120b08bb; }
         #suqi-review section { margin-top: 6px; max-height: min(55vh, 400px); overflow: auto;
@@ -45,7 +49,8 @@
 
     const toolbar = document.createElement("aside");
     toolbar.id = "suqi-review";
-    toolbar.setAttribute("aria-label", "走查模式");
+    toolbar.classList.toggle("feedback-only", feedbackOnly);
+    toolbar.setAttribute("aria-label", feedbackOnly ? "试玩反馈" : "走查模式");
     toolbar.innerHTML = `
       <header>
         <button type="button" id="review-mark" aria-pressed="false">点画面记问题</button>
@@ -94,14 +99,19 @@
     const textarea = dialog.querySelector("textarea");
     const save = dialog.querySelector("button[type=submit]");
     const version = document.querySelector('meta[name="review-build"]')?.content || location.pathname.split("/").filter(Boolean).pop() || "D6";
-    const issueUrl = document.querySelector('meta[name="review-issues"]')?.content;
+    if (feedbackOnly) {
+        byId("review-next").hidden = true;
+        scenes.hidden = true;
+    }
     if (issueUrl) {
         notes.hidden = true;
         save.textContent = "去 GitHub 确认";
-        const source = document.createElement("a");
-        source.href = "gameplay-source.zip";
-        source.textContent = "玩法源码";
-        toolbar.querySelector("header").append(source);
+        if (!feedbackOnly) {
+            const source = document.createElement("a");
+            source.href = "gameplay-source.zip";
+            source.textContent = "玩法源码";
+            toolbar.querySelector("header").append(source);
+        }
     }
     let player;
     let catalog = [];
@@ -115,8 +125,13 @@
         entry.replaceChildren(...options.map(item => new Option(item.label, item.beat)));
     };
     window.suqiReview = {
+        feedbackOnly,
         attachPlayer(callback, serialized) {
             player = callback;
+            if (feedbackOnly) {
+                if (armed) command({ action: "freeze" });
+                return;
+            }
             byId("review-next").disabled = false;
             catalog = JSON.parse(serialized);
             scene.replaceChildren(...catalog.map(item => new Option(item.label && item.label !== item.chapter
@@ -165,7 +180,7 @@
         armed = value;
         layer.hidden = !value;
         mark.setAttribute("aria-pressed", String(value));
-        mark.textContent = value ? "取消标注（已暂停）" : "点画面记问题";
+        mark.textContent = value ? "取消标注" : "点画面记问题";
         if (value) {
             setPanel(panel, scenes, false);
             setPanel(inbox, notes, false);
@@ -254,26 +269,29 @@
         const x = (event.clientX - bounds.left) / bounds.width;
         const y = (event.clientY - bounds.top) / bounds.height;
         if (!armed || !(x >= 0 && x <= 1 && y >= 0 && y <= 1)) return;
-        // Resize only the evidence. The actual game canvas remains untouched.
-        const screenshot = document.createElement("canvas");
-        const ratio = Math.min(1, 1000 / Math.max(canvas.width, canvas.height));
-        screenshot.width = Math.round(canvas.width * ratio);
-        screenshot.height = Math.round(canvas.height * ratio);
-        const graphics = screenshot.getContext("2d");
-        graphics.drawImage(canvas, 0, 0, screenshot.width, screenshot.height);
-        const px = x * screenshot.width, py = y * screenshot.height;
-        graphics.strokeStyle = "#ffe1a8";
-        graphics.lineWidth = 3;
-        graphics.beginPath();
-        graphics.arc(px, py, 11, 0, 2 * Math.PI);
-        graphics.stroke();
-        draft = { id: crypto.randomUUID(), version, ...context, x, y, image: screenshot.toDataURL("image/jpeg", .88) };
+        draft = { version, ...context, x, y };
+        if (!issueUrl) {
+            const screenshot = document.createElement("canvas");
+            const ratio = Math.min(1, 1000 / Math.max(canvas.width, canvas.height));
+            screenshot.width = Math.round(canvas.width * ratio);
+            screenshot.height = Math.round(canvas.height * ratio);
+            const graphics = screenshot.getContext("2d");
+            graphics.drawImage(canvas, 0, 0, screenshot.width, screenshot.height);
+            graphics.strokeStyle = "#ffe1a8";
+            graphics.lineWidth = 3;
+            graphics.beginPath();
+            graphics.arc(x * screenshot.width, y * screenshot.height, 11, 0, 2 * Math.PI);
+            graphics.stroke();
+            draft.id = crypto.randomUUID();
+            draft.image = screenshot.toDataURL("image/jpeg", .88);
+        }
         pin.style.left = `${event.clientX}px`;
         pin.style.top = `${event.clientY}px`;
         pin.hidden = false;
         textarea.value = "";
         saveStatus.textContent = "";
-        locationText.textContent = issueUrl ? "公开反馈：将带上当前环节、位置和你的意见，不自动上传截图。下一页确认提交。" : `${context.chapter || "游戏画面"} · 将附上截图与点击位置`;
+        const chapter = context.chapter || "游戏画面";
+        locationText.textContent = issueUrl ? `${chapter} · 将附上环节和位置。登录 GitHub 并提交后，反馈才会送达。` : `${chapter} · 将附上截图与点击位置`;
         dialog.showModal();
         textarea.focus();
     });

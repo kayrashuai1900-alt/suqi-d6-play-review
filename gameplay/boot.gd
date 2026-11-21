@@ -57,7 +57,7 @@ func _ready() -> void:
 	overlay.retry.connect(_retry_route)
 	overlay.return_to_desk.connect(func() -> void: overlay.hide())
 	saved = Checkpoint.read()
-	if OS.has_feature("web") and not OS.has_feature("hongyuan_wechat") and JavaScriptBridge.get_interface("suqiReview") != null:
+	if _has_review_controls():
 		if not str(saved.get("worldRoute", "")).is_empty() or bool(saved.get("loveCompleted", false)):
 			Checkpoint.clear_save()
 		_launch()
@@ -80,6 +80,13 @@ func _ready() -> void:
 		canvas.queue_redraw()
 		return
 	_launch()
+
+
+func _has_review_controls() -> bool:
+	if not OS.has_feature("web") or OS.has_feature("hongyuan_wechat"):
+		return false
+	var bridge := JavaScriptBridge.get_interface("suqiReview")
+	return bridge != null and bridge.feedbackOnly != true
 
 
 func _prefetch_village() -> void:
