@@ -96,11 +96,14 @@ body {
 	<!-- hongyuan-splash --><style>
 body{background-color:#2c201b}
 #status{visibility:visible;background-color:#48223a}
-#status-splash{top:0;bottom:auto;left:0;right:0;margin:0 auto;width:min(100vw,56.25vh);height:auto;max-width:none;max-height:none;object-fit:contain;image-rendering:pixelated}
+#hy-cover{position:absolute;inset:0;margin:auto;width:min(100vw,56.25vh);height:min(100vh,177.7778vw);pointer-events:none}
+#hy-cover #status-splash{position:absolute;inset:0;margin:0;width:100%;height:100%;object-fit:fill;image-rendering:pixelated}
+#hy-inscription{position:absolute;top:6.875%;left:0;width:100%;height:auto;image-rendering:pixelated}
+body:has(#status) #suqi-review.feedback-only{top:auto;bottom:max(18%,env(safe-area-inset-bottom,0px))}
 #status-progress{bottom:calc(4% + env(safe-area-inset-bottom,0px));width:min(60vw,320px);accent-color:#e7b65c}
 #hy-loading{position:absolute;left:0;right:0;bottom:calc(4% + env(safe-area-inset-bottom,0px) + 26px);text-align:center;color:#f3dfc8;font:16px/1.4 "PingFang SC","Noto Sans SC",sans-serif;letter-spacing:.08em}
 </style>
-<meta name="review-build" content="D6-7fabbf2158dc"><meta name="review-issues" content="https://github.com/kayrashuai1900-alt/suqi-d6-play-review/issues/new"><meta name="robots" content="noindex"></head>
+<meta name="review-build" content="D6-f4e1929edcc4"><meta name="review-issues" content="https://github.com/kayrashuai1900-alt/suqi-d6-play-review/issues/new"><meta name="robots" content="noindex"></head>
 	<body>
 		<canvas id="canvas">
 			Your browser does not support the canvas tag.
@@ -111,7 +114,7 @@ body{background-color:#2c201b}
 		</noscript>
 
 		<div id="status">
-			<img id="status-splash" class="show-image--true fullsize--true use-filter--true" src="index.png" alt="">
+			<div id="hy-cover"><img id="status-splash" class="show-image--true fullsize--true use-filter--true" src="index.png?v=6b90517abd7e" alt=""><img id="hy-inscription" src="index.title.png?v=088e50e4faa2" alt="苏七镇奇缘。谨以此篇献给所有爱我和我爱的人们，来日并不方长，愿各位都珍惜当下。"></div>
 			<div id="hy-loading">阿鱼和 Toretto 的故事，正在加载…</div>
 			<progress id="status-progress"></progress>
 			<div id="status-notice"></div>
@@ -119,7 +122,7 @@ body{background-color:#2c201b}
 
 		<script src="review_client.js?v=cdaa9a817cf4"></script><script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":false,"fileSizes":{"love-7fabbf2158dc.pck":3913992,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":false,"fileSizes":{"love-f4e1929edcc4.pck":3963792,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 
@@ -215,7 +218,7 @@ const engine = new Engine(GODOT_CONFIG);
 		}
 	} else {
 		setStatusMode('progress');
-		engine.startGame({mainPack:"love-7fabbf2158dc.pck",
+		engine.startGame({mainPack:"love-f4e1929edcc4.pck",
 			'onProgress': function (current, total) {
 				if (current > 0 && total > 0) {
 					statusProgress.value = current;

@@ -27,11 +27,14 @@ const LETTER := "w2/finale/invite_card.png|w2/finale/letter_closeup.png"
 const GUEST_DESK := "w2/finale/guest_first_person.png"
 const RECIPIENT_ART := "round1/finale/recipient_%s.jpg"
 const READ_CARD := Rect2(112, 455, 136, 36)
+const LETTER_PRINT := "round1/finale/held_letter_print.png"
+# Interior paper, measured on the 360 × 640 composition of each portrait.
+# The lower edge shifts left to follow the way the guest is holding the card.
 const RECIPIENT_PAPER := [
-	Rect2(194, 278, 55, 32), Rect2(195, 278, 56, 31),
-	Rect2(195, 279, 54, 32), Rect2(194, 278, 55, 32),
-	Rect2(193, 277, 55, 32), Rect2(196, 278, 52, 32),
-	Rect2(195, 276, 55, 32), Rect2(195, 279, 56, 31),
+	Rect2(201, 279, 54, 38), Rect2(201, 279, 54, 38),
+	Rect2(201, 279, 55, 38), Rect2(200, 279, 54, 38),
+	Rect2(201, 279, 53, 38), Rect2(201, 279, 54, 39),
+	Rect2(201, 279, 54, 38), Rect2(200, 279, 54, 38),
 ]
 const TRAVEL_CHOICES := [
 	{"label": "前往罗曼山庄", "scene": "res://hongyuan/world_entry.tscn"},
@@ -423,14 +426,16 @@ func _draw_coda(ci) -> void:
 func _draw_held_letter(ci, portrait: Texture2D, paper: Rect2) -> void:
 	var cover_size := portrait.get_size() * maxf(r.view_rect.size.x / portrait.get_width(), r.view_rect.size.y / portrait.get_height())
 	var cover_top_left: Vector2 = r.view_rect.get_center() - cover_size * 0.5
-	var printed_size := Vector2(152, 78)
-	var scale := paper.size * cover_size / INVITE_SIZE / printed_size
-	ci.draw_set_transform(cover_top_left + paper.position * cover_size / INVITE_SIZE, -0.025, scale)
-	ci.draw_rect(Rect2(Vector2.ZERO, printed_size), Color("#f7dca7"))
-	var excerpt := ["亲爱的朋友：", "我们要在苏七镇办婚礼了。", "想请你来罗曼山庄喝杯喜酒。", "这份邀请一直有效。"]
-	for i in range(excerpt.size()):
-		ci.draw_string(ci.FONT, Vector2(4, 15 + i * 18), excerpt[i], HORIZONTAL_ALIGNMENT_LEFT, 144, 11, ci.INK)
-	ci.draw_set_transform(Vector2.ZERO)
+	var print_texture: Texture2D = ci.texture(LETTER_PRINT)
+	if not print_texture:
+		return
+	var skew := Vector2(-5, 0)
+	var points := PackedVector2Array([paper.position, Vector2(paper.end.x, paper.position.y),
+		paper.end + skew, Vector2(paper.position.x, paper.end.y) + skew])
+	for i in points.size():
+		points[i] = cover_top_left + points[i] * cover_size / INVITE_SIZE
+	ci.draw_polygon(points, PackedColorArray([Color.WHITE]),
+		PackedVector2Array([Vector2.ZERO, Vector2.RIGHT, Vector2.ONE, Vector2.DOWN]), print_texture)
 
 const LETTER_WORDS := ["四川乐山", "苏七镇", "罗曼山庄", "幸福的日子"]
 const LETTER_TRAILING := "，。！？、；：）」』…"

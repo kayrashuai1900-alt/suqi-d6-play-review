@@ -8,6 +8,7 @@ const StoryCaption := preload("res://hongyuan/ui/story_caption.gd")
 const FONT := preload("res://hongyuan/fonts/dialogue_font.tres")
 const ASSET_ROOT := "res://hongyuan/assets/"
 const SPLASH := "round1/common/splash_1108.png"
+const INSCRIPTION := "round1/common/title_inscription.png"
 
 const CANVAS := Vector2(360, 640)
 const INK := Color("#281a1a")
@@ -148,12 +149,9 @@ func _fit_canvas() -> void:
 func _draw_canvas() -> void:
 	if not show_menu:
 		return
-	var title := "苏七镇奇缘"
-	for offset: Vector2 in [Vector2(-2, 0), Vector2(2, 0), Vector2(0, -2), Vector2(0, 3)]:
-		canvas.draw_string(FONT, Vector2(0, 88) + offset, title, HORIZONTAL_ALIGNMENT_CENTER, CANVAS.x, 34, Color("#642e32"))
-	canvas.draw_string(FONT, Vector2(0, 88), title, HORIZONTAL_ALIGNMENT_CENTER, CANVAS.x, 34, WHEAT)
-	canvas.draw_string(FONT, Vector2(0, 112), "爱情篇 · 宴席篇 · 裳泓篇", HORIZONTAL_ALIGNMENT_CENTER, CANVAS.x, 15, PAPER)
-	_draw_dedication()
+	var inscription := _texture(INSCRIPTION)
+	if inscription:
+		canvas.draw_texture_rect(inscription, Rect2(0, 44, 360, 150), false)
 	if completed:
 		_pill(Rect2(48, 456, 264, MENU_H), "回顾爱情篇", 19, RED, PAPER)
 		_pill(Rect2(48, 508, 264, MENU_H), "去婚礼现场", 19, RED, PAPER)
@@ -181,14 +179,6 @@ func _draw_canvas() -> void:
 	else:
 		_pill(_primary_rect(), "继续游戏", 19, RED, PAPER)
 		_pill(_secondary_rect(), "重新开始", 19, Color(INK, 0.85), PAPER)
-
-
-func _draw_dedication() -> void:
-	canvas.draw_rect(Rect2(42, 122, 276, 68), Color(INK, 0.76))
-	canvas.draw_string(FONT, Vector2(0, 139), "谨以此篇献给所有爱我和我爱的人们，", HORIZONTAL_ALIGNMENT_CENTER, CANVAS.x, 13, PAPER)
-	canvas.draw_string(FONT, Vector2(0, 155), "来日并不方长，愿各位都珍惜当下", HORIZONTAL_ALIGNMENT_CENTER, CANVAS.x, 13, PAPER)
-	canvas.draw_string(FONT, Vector2(0, 172), "—— OPC制作人 @阿鱼ayu_", HORIZONTAL_ALIGNMENT_CENTER, CANVAS.x, 11, WHEAT)
-	canvas.draw_string(FONT, Vector2(0, 185), "抖音 & 小红书唯一 ID", HORIZONTAL_ALIGNMENT_CENTER, CANVAS.x, 10, PAPER)
 
 
 func _secondary_rect() -> Rect2:
