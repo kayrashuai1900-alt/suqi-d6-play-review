@@ -30,19 +30,29 @@
         #review-next-status:not(:empty) { background: #211916; padding: 5px 9px; border-radius: 6px; margin-top: 4px; }
         #suqi-review li { margin: 6px 0; overflow-wrap: anywhere; }
         #suqi-review a { color: #ffddb2; }
+        #review-delivery:not(:empty) { margin-top: 4px; padding: 4px 9px; border-radius: 6px; background: #211916f5;
+          display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
+        #review-delivery:empty { display: none; }
         #suqi-mark-layer { position: fixed; inset: 0; z-index: 199; cursor: crosshair; touch-action: none; }
         #suqi-pin { display: grid; place-items: center; position: fixed; z-index: 201; pointer-events: none;
           width: 26px; height: 26px; transform: translate(-50%, -50%); color: #3e171f; background: #ffd4a5;
           border-radius: 50%; border: 2px solid #6f333b; font: bold 18px system-ui; }
-        #suqi-note { position: fixed; inset: auto 0 max(12px, env(safe-area-inset-bottom)); margin-inline: auto;
+        #suqi-note, #suqi-feedback-auth { position: fixed; inset: auto 0 max(12px, env(safe-area-inset-bottom)); margin-inline: auto;
           width: min(365px, calc(100vw - 42px)); color: #fff6e6; background: #2c211c; border: 1px solid #cfad88;
-          border-radius: 10px; padding: 13px; font: 15px/1.45 system-ui, sans-serif; touch-action: auto; }
+          border-radius: 10px; padding: 13px; font: 15px/1.45 system-ui, sans-serif; touch-action: auto;
+          max-height: 70dvh; overflow: auto; }
         #suqi-note h2 { font-size: 17px; margin: 0 0 6px; }
         #suqi-note p { margin: 0 0 8px; color: #e5ccb4; }
         #suqi-note textarea { width: 100%; box-sizing: border-box; resize: vertical; min-height: 74px;
           padding: 9px; color: #251a17; background: #fff4e6; border-radius: 6px; font: inherit; touch-action: auto; }
         #suqi-note footer { display: flex; gap: 8px; justify-content: end; margin-top: 5px; }
         #suqi-note::backdrop { background: #170c0929; }
+        #suqi-feedback-auth h2 { font-size: 17px; margin: 0; }
+        #suqi-feedback-auth a { color: #ffddb2; }
+        #suqi-feedback-auth input { box-sizing: border-box; width: 100%; padding: 9px; font: 16px system-ui; }
+        #suqi-feedback-auth footer { display: flex; justify-content: end; gap: 8px; }
+        #suqi-feedback-auth button { font: inherit; border: 1px solid #bca182; border-radius: 7px;
+          padding: 9px; color: #fff6e6; background: #352822; }
         #suqi-review [hidden], #suqi-mark-layer[hidden], #suqi-pin[hidden] { display: none; }
     `;
     document.head.append(style);
@@ -59,6 +69,7 @@
         <button type="button" id="review-notes" aria-expanded="false">已记录</button>
       </header>
       <output id="review-next-status" aria-live="polite"></output>
+      <div id="review-delivery" aria-live="polite"></div>
       <section id="review-panel" hidden>
         <label>场景<select id="review-scene"></select></label>
         <label>要看的环节<select id="review-entry"></select></label>
@@ -98,6 +109,7 @@
     const saveStatus = byId("review-save-status");
     const textarea = dialog.querySelector("textarea");
     const save = dialog.querySelector("button[type=submit]");
+    const form = dialog.querySelector("form");
     const version = document.querySelector('meta[name="review-build"]')?.content || location.pathname.split("/").filter(Boolean).pop() || "D6";
     if (feedbackOnly) {
         byId("review-next").hidden = true;
@@ -105,7 +117,8 @@
     }
     if (issueUrl) {
         notes.hidden = true;
-        save.textContent = "去 GitHub 确认";
+        save.textContent = "发送";
+        textarea.enterKeyHint = "send";
         if (!feedbackOnly) {
             const source = document.createElement("a");
             source.href = "gameplay-source.zip";
@@ -118,6 +131,8 @@
     let context = {};
     let draft;
     let armed = false;
+    let continueMarking = false;
+    const delivery = issueUrl ? createDelivery(issueUrl, byId("review-delivery")) : null;
 
     const command = request => player?.(JSON.stringify(request));
     const fillEntries = () => {
@@ -197,6 +212,11 @@
     function endNote() {
         draft = undefined;
         pin.hidden = true;
+        if (continueMarking) {
+            continueMarking = false;
+            mark.textContent = "结束标注";
+            return;
+        }
         arm(false);
         canvas.focus({ preventScroll: true });
     }
@@ -302,7 +322,7 @@
         saveStatus.textContent = "";
         const chapter = context.chapter || "游戏画面";
         const point = draft.stagePoint?.join(", ") || `${Math.round(x * 100)}%, ${Math.round(y * 100)}%`;
-        locationText.textContent = issueUrl ? `${chapter} · 已记录落点（${point}）。登录 GitHub 并提交后，反馈才会送达。` : `${chapter} · 将附上截图与点击位置`;
+        locationText.textContent = issueUrl ? `${chapter} · 已记录落点（${point}）。回车发送，Shift + 回车换行。` : `${chapter} · 将附上截图与点击位置`;
         dialog.showModal();
         textarea.focus();
     });
@@ -311,12 +331,17 @@
     document.addEventListener("keydown", event => {
         if (event.key === "Escape" && armed && !dialog.open) arm(false);
     });
-    dialog.querySelector("form").addEventListener("submit", async event => {
+    textarea.addEventListener("keydown", event => {
+        if (!delivery || event.key !== "Enter" || event.shiftKey || event.isComposing || event.keyCode === 229) return;
+        event.preventDefault();
+        if (!event.repeat && textarea.value.trim()) form.requestSubmit(save);
+    });
+    form.addEventListener("submit", async event => {
         event.preventDefault();
         if (!draft || !textarea.value.trim()) return;
         if (issueUrl) {
-            const destination = new URL(issueUrl);
-            destination.searchParams.set("title", `[试玩] ${draft.chapter || draft.step || "游戏画面"} · ${textarea.value.trim().slice(0, 36)}`);
+            const text = textarea.value.trim();
+            const title = `[试玩] ${draft.chapter || draft.step || "游戏画面"} · ${text.replace(/\s+/g, " ").slice(0, 36)}`;
             const details = [
                 `版本：${version}`,
                 `章节：${draft.chapter || "开场"}`,
@@ -329,14 +354,10 @@
                 replay.hash = new URLSearchParams({ step: draft.step, beat: draft.beat }).toString();
                 details.push(`[定位复验（打开后点「前往」）](${replay.href})`);
             }
-            destination.searchParams.set("body", `${textarea.value.trim()}\n\n${details.join("\n")}`);
-            const link = document.createElement("a");
-            link.href = destination.href;
-            link.target = "_blank";
-            link.rel = "noopener noreferrer";
-            link.textContent = "打开 GitHub 反馈草稿";
-            saveStatus.replaceChildren(link);
-            link.click();
+            draft = undefined;
+            continueMarking = true;
+            dialog.close();
+            delivery.enqueue({ title, body: `${text}\n\n${details.join("\n")}` });
             return;
         }
         save.disabled = true;
@@ -356,4 +377,171 @@
             save.disabled = false;
         }
     });
+
+    function createDelivery(issuePage, statusBar) {
+        const issues = new URL(issuePage);
+        const repository = /^\/([\w.-]+)\/([\w.-]+)\/issues\/new\/?$/.exec(issues.pathname);
+        if (issues.origin !== "https://github.com" || !repository) {
+            return { enqueue() { statusBar.textContent = "GitHub 反馈地址配置有误。"; } };
+        }
+        const [, owner, repo] = repository;
+        const api = `https://api.github.com/repos/${owner}/${repo}/issues`;
+        const storageKey = `suqi-feedback-pending:${owner}/${repo}`;
+        let pending = [];
+        try {
+            const stored = JSON.parse(sessionStorage.getItem(storageKey) || "[]");
+            if (Array.isArray(stored)) pending = stored;
+        } catch { /* The queue still works in memory if storage is unavailable. */ }
+
+        let credential = "";
+        let sending = false;
+        let failure = "";
+        let lastIssue = null;
+
+        const setup = document.createElement("dialog");
+        setup.id = "suqi-feedback-auth";
+        setup.innerHTML = `<form autocomplete="off">
+            <h2>连接 GitHub 反馈</h2>
+            <p><a target="_blank" rel="noopener noreferrer">创建反馈令牌</a>时，在仓库访问权限中仅选「${repo}」，开启 Issues 的 Read and write。</p>
+            <label>反馈令牌<input type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="github_pat_…" required></label>
+            <p role="status">本次打开页面时有效，待发反馈会在连接后自动发送。</p>
+            <footer><button type="button">稍后</button><button type="submit">连接并发送</button></footer>
+        </form>`;
+        document.body.append(setup);
+        const setupLink = setup.querySelector("a");
+        const tokenUrl = new URL("https://github.com/settings/personal-access-tokens/new");
+        tokenUrl.search = new URLSearchParams({ name: "苏七镇奇缘试玩反馈", target_name: owner, issues: "write", expires_in: "7" });
+        setupLink.href = tokenUrl.href;
+        const tokenInput = setup.querySelector("input");
+        const setupStatus = setup.querySelector("[role=status]");
+        setup.querySelector("button[type=button]").addEventListener("click", () => setup.close());
+        setup.addEventListener("close", () => { tokenInput.value = ""; });
+        setup.querySelector("form").addEventListener("submit", event => {
+            event.preventDefault();
+            const token = tokenInput.value.trim();
+            if (!/^github_pat_[A-Za-z0-9_]+$/.test(token)) {
+                setupStatus.textContent = "请粘贴刚创建的细粒度令牌（以 github_pat_ 开头）。";
+                return;
+            }
+            credential = token;
+            tokenInput.value = "";
+            setup.close();
+            void sendPending();
+        });
+
+        function saveQueue() {
+            try { sessionStorage.setItem(storageKey, JSON.stringify(pending)); } catch { /* Keep the in-memory queue. */ }
+        }
+
+        function button(label, action) {
+            const control = document.createElement("button");
+            control.type = "button";
+            control.textContent = label;
+            control.addEventListener("click", action);
+            return control;
+        }
+
+        async function submitIssue(item) {
+            const controller = new AbortController();
+            const deadline = setTimeout(() => controller.abort(), 20000);
+            try {
+                return await fetch(api, {
+                    method: "POST",
+                    redirect: "error",
+                    credentials: "omit",
+                    signal: controller.signal,
+                    headers: {
+                        Accept: "application/vnd.github+json",
+                        Authorization: `Bearer ${credential}`,
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ title: item.title, body: item.body }),
+                });
+            } finally {
+                clearTimeout(deadline);
+            }
+        }
+
+        function render() {
+            statusBar.replaceChildren();
+            if (pending.length) {
+                const label = sending ? `正在发送 · ${pending.length} 条待发` : `${pending.length} 条待发`;
+                statusBar.append(failure ? `${label}，${failure}` : label);
+                if (!sending) {
+                    if (!credential) statusBar.append(button("连接 GitHub", () => setup.showModal()));
+                    else statusBar.append(button("重试", () => void sendPending(true)));
+                }
+            }
+            if (lastIssue !== null) {
+                const link = document.createElement("a");
+                link.href = new URL(`./${lastIssue}`, issues).href;
+                link.target = "_blank";
+                link.rel = "noopener noreferrer";
+                link.textContent = `已送达 #${lastIssue}`;
+                statusBar.append(link);
+            }
+        }
+
+        async function sendPending(retry = false) {
+            if (sending || !pending.length || !credential) { render(); return; }
+            if (pending[0].unconfirmed && !retry) {
+                failure = "上次发送结果未确认";
+                render();
+                return;
+            }
+            if (navigator.onLine === false) {
+                failure = "离线，联网后发送";
+                render();
+                return;
+            }
+            sending = true;
+            failure = "";
+            render();
+            try {
+                while (pending.length) {
+                    const item = pending[0];
+                    item.unconfirmed = true;
+                    saveQueue();
+                    const response = await submitIssue(item);
+                    if (response.status === 201) {
+                        pending.shift();
+                        saveQueue();
+                        const result = await response.json().catch(() => ({}));
+                        lastIssue = Number.isSafeInteger(result.number) ? result.number : null;
+                        render();
+                        if (pending.length) await new Promise(resolve => setTimeout(resolve, 1000));
+                        continue;
+                    }
+                    item.unconfirmed = response.status >= 500;
+                    saveQueue();
+                    if (response.status === 429 || response.headers.has("retry-after") || response.headers.get("x-ratelimit-remaining") === "0") {
+                        failure = "GitHub 限流，请稍后重试";
+                    } else if ([401, 403, 404].includes(response.status)) {
+                        credential = "";
+                        failure = "请检查令牌是否有该仓库的 Issues 写入权限";
+                    } else {
+                        failure = `GitHub 返回 ${response.status}`;
+                    }
+                    break;
+                }
+            } catch {
+                failure = "连接中断，发送结果未确认";
+            } finally {
+                sending = false;
+                render();
+            }
+        }
+
+        window.addEventListener("online", () => void sendPending());
+        render();
+        return {
+            enqueue(issue) {
+                pending.push(issue);
+                saveQueue();
+                render();
+                if (!credential) setup.showModal();
+                else void sendPending();
+            },
+        };
+    }
 })();
