@@ -26,9 +26,11 @@ const MARGIN := 22.0
 const ALBUM_COMPACT := "round1/common/completion_album_compact.png"
 const ALBUM_WIDE := "round1/common/completion_album_wide.png"
 const ALBUM_NOTE := "round1/common/completion_album_note.png"
-const ALBUM_PAPER := Color("#ecdbbf")
-const ALBUM_MID := Color("#e8d0ad")
-const ALBUM_BUTTON := Color("#843a3b")
+const ALBUM_BASE := Color("#261f2e")
+const ALBUM_MID := Color("#332633")
+const ALBUM_BUTTON := Color("#eed0a3")
+const ALBUM_INK := Color("#422c32")
+const ALBUM_LIGHT := Color("#f3dac1")
 
 var menu_buttons: Dictionary = {}
 var photo_rect := Rect2()
@@ -36,7 +38,6 @@ var title_y := 0.0
 var note_y := 0.0
 var album_art := Rect2()
 var album_note := Rect2()
-var album_status_y := 0.0
 var share_button: Button
 
 var completed := false
@@ -230,28 +231,51 @@ func _draw_canvas() -> void:
 func _prepare_album() -> void:
 	for key: String in ["wedding", "replay", "village"]:
 		var button: Button = menu_buttons[key]
-		for child in button.get_children():
-			child.hide()
-		button.text = ACTION_LABELS[key]
-		button.add_theme_font_size_override("font_size", 17 if key == "wedding" else 14)
-		if key == "wedding":
-			_style_album_button(button, ALBUM_BUTTON, PAPER, Color("#a66955"))
+		var primary := key == "wedding"
+		var ink := ALBUM_INK if primary else ALBUM_LIGHT
+		button.add_theme_font_size_override("font_size", 17 if primary else 14)
+		if primary:
+			_style_album_button(button, ALBUM_BUTTON, ink, Color("#c79772"))
+			for child in button.get_children():
+				if child is TextureRect:
+					child.modulate = ink
 		else:
-			_style_album_button(button, Color.TRANSPARENT, Color("#603d32"), Color.TRANSPARENT)
+			_style_album_button(button, Color.TRANSPARENT, ink, Color.TRANSPARENT)
+		button.draw.connect(_draw_album_arrow.bind(button, key, ink))
 	if OS.has_feature("web") and not OS.has_feature("hongyuan_wechat"):
 		var bridge := JavaScriptBridge.get_interface("suqiCompletionShare")
 		if bridge == null:
 			return
 		share_button = Button.new()
 		share_button.name = "share"
-		share_button.text = "分享"
 		share_button.accessibility_name = "分享并邀请朋友玩"
 		share_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-		share_button.add_theme_font_override("font", FONT)
-		share_button.add_theme_font_size_override("font_size", 13)
-		_style_album_button(share_button, Color("#f8ecda"), Color("#764038"), Color("#ac8064"), 22)
+		_style_album_button(share_button, Color.TRANSPARENT, ALBUM_LIGHT, Color.TRANSPARENT, 4)
+		share_button.draw.connect(_draw_album_share)
 		share_button.pressed.connect(_share_album)
 		canvas.add_child(share_button)
+
+
+func _draw_album_arrow(button: Button, key: String, ink: Color) -> void:
+	var primary := key == "wedding"
+	var radius := 5.0 if primary else 4.0
+	var x := button.size.x - 18.0 if primary else button.size.x * 0.5 + 51.0
+	var tip := Vector2(x, button.size.y * 0.5)
+	button.draw_polyline(PackedVector2Array([tip - Vector2(radius, radius), tip,
+		tip - Vector2(radius, -radius)]), ink, 1.5, true)
+
+
+func _draw_album_share() -> void:
+	var background := StyleBoxFlat.new()
+	background.bg_color = Color("#38242d82")
+	background.set_corner_radius_all(4)
+	share_button.draw_style_box(background, Rect2(3, 12, share_button.size.x - 6, 25))
+	share_button.draw_polyline(PackedVector2Array([Vector2(17, 20), Vector2(12, 20),
+		Vector2(12, 31), Vector2(23, 31), Vector2(23, 26)]), ALBUM_LIGHT, 1.3, true)
+	share_button.draw_line(Vector2(17, 26), Vector2(24, 19), ALBUM_LIGHT, 1.3, true)
+	share_button.draw_polyline(PackedVector2Array([Vector2(19, 19), Vector2(24, 19),
+		Vector2(24, 24)]), ALBUM_LIGHT, 1.3, true)
+	share_button.draw_string(FONT, Vector2(30, 29), "分享", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, ALBUM_LIGHT)
 
 
 func _style_album_button(button: Button, fill: Color, ink: Color, edge: Color, radius := 2) -> void:
@@ -278,35 +302,33 @@ func _layout_album() -> void:
 	var height := canvas.size.y
 	var retry := 55.0 if prefetch_notice.visible else 0.0
 	var note_top := height - 128.0
-	var action_y := minf(height * 0.643, note_top - 106.0 - retry)
-	var drawing_height := lerpf(375.0, 475.0, clampf(inverse_lerp(640.0, 779.0, height), 0.0, 1.0))
-	album_art = Rect2(0, 0, CANVAS.x, minf(drawing_height, action_y - 25.0))
+	var action_y := minf(height * 0.684, note_top - 101.0 - retry)
+	var drawing_height := lerpf(394.0, 511.0, clampf(inverse_lerp(640.0, 779.0, height), 0.0, 1.0))
+	album_art = Rect2(0, 0, CANVAS.x, minf(drawing_height, action_y - 15.0))
 	album_note = Rect2(0, note_top, CANVAS.x, 128)
-	album_status_y = action_y - 10
 	for key: String in menu_buttons:
 		menu_buttons[key].hide()
-	var width := 260.0
+	var width := 236.0
 	var left := (CANVAS.x - width) * 0.5
-	_place("wedding", Rect2(left, action_y, width, 49))
-	_place("replay", Rect2(left, action_y + 49.0, width * 0.5, 50))
-	_place("village", Rect2(left + width * 0.5, action_y + 49.0, width * 0.5, 50))
-	prefetch_notice.position = Vector2(MARGIN, action_y + 101.0)
+	_place("wedding", Rect2(left, action_y, width, 50))
+	_place("replay", Rect2(left, action_y + 50.0, width * 0.5, 50))
+	_place("village", Rect2(left + width * 0.5, action_y + 50.0, width * 0.5, 50))
+	prefetch_notice.position = Vector2(MARGIN, action_y + 103.0)
 	prefetch_notice.size.x = CANVAS.x - 2.0 * MARGIN
 	if is_instance_valid(share_button):
-		share_button.position = Vector2(285, 10 if height < 700 else 23)
-		share_button.size = Vector2(53, 50)
+		share_button.position = Vector2(279, 14 if height < 700 else 24)
+		share_button.size = Vector2(58, 50)
 
 
 func _draw_album() -> void:
-	canvas.draw_rect(Rect2(Vector2.ZERO, canvas.size), ALBUM_PAPER)
-	_fade(album_art.end.y - 9, canvas.size.y, ALBUM_MID, ALBUM_PAPER)
+	canvas.draw_rect(Rect2(Vector2.ZERO, canvas.size), ALBUM_BASE)
+	_fade(album_art.end.y - 1, canvas.size.y, ALBUM_MID, ALBUM_BASE)
 	var art := _texture(ALBUM_COMPACT if canvas.size.y < 710 else ALBUM_WIDE)
 	if art:
 		canvas.draw_texture_rect(art, album_art, false)
 	var note := _texture(ALBUM_NOTE)
 	if note:
 		canvas.draw_texture_rect(note, album_note, false)
-	_line("爱情篇已通关", album_status_y, 12, Color("#745447"))
 
 
 func _share_album() -> void:
@@ -315,18 +337,7 @@ func _share_album() -> void:
 	var bridge := JavaScriptBridge.get_interface("suqiCompletionShare")
 	if bridge == null:
 		return
-	# Read Godot's already-rendered frame. Browser review controls and dialogs
-	# are outside the canvas and cannot be baked into a friend's poster.
-	var viewport := get_viewport()
-	var image := viewport.get_texture().get_image()
-	if image == null or image.is_empty():
-		return
-	var scale_to_image := Vector2(image.get_size()) / viewport.get_visible_rect().size
-	var menu_rect := canvas.get_global_rect()
-	var region := Rect2i(Rect2(menu_rect.position * scale_to_image, menu_rect.size * scale_to_image))
-	region = region.intersection(Rect2i(Vector2i.ZERO, image.get_size()))
-	if region.has_area():
-		bridge.open(Marshalls.raw_to_base64(image.get_region(region).save_png_to_buffer()))
+	bridge.open()
 
 
 func _line(value: String, baseline: float, font_size: int, color: Color) -> void:
