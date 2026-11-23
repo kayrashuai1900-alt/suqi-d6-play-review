@@ -1,9 +1,10 @@
 (() => {
     "use strict";
     const posterName = "苏七镇奇缘-爱情篇海报.png";
-    const invitation = "来玩《苏七镇奇缘》吧，一起看看阿鱼和 Toretto 的爱情故事。";
+    const invitation = "我玩完了阿鱼一个人做的《苏七镇奇缘》爱情篇。她把自己和 Toretto 的故事做进了游戏，玩到最后，我被打动了。也想邀你来玩。";
 
     const posterUrl = document.currentScript.dataset.poster;
+    const friendsUrl = document.currentScript.dataset.friends || new URL("friends.html", location.href).href;
 
     async function loadPoster() {
         const response = await fetch(posterUrl);
@@ -15,7 +16,6 @@
 
     function shareDialog(file) {
         const url = URL.createObjectURL(file);
-        const friendsUrl = new URL("friends.html", location.href).href;
         const shareData = {files: [file], title: "苏七镇奇缘", text: invitation, url: friendsUrl};
         const dialog = document.createElement("dialog");
         dialog.className = "hy-share-dialog";
