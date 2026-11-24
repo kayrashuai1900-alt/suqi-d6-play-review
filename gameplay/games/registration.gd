@@ -3,6 +3,8 @@ extends RefCounted
 const DeskArt := preload("res://hongyuan/ui/desk_art.gd")
 const StoryCaption := preload("res://hongyuan/ui/story_caption.gd")
 const Moments := preload("res://hongyuan/games/moments.gd")
+const MOMENTS_DATA := "res://hongyuan/registry_moments.json"
+const MOMENTS_IMAGE := "w2/shizuoka/registry_moments/%s.png"
 const ENTRY := "w2/shizuoka/registry_door.png|round1/scenes/registry.png"
 const SHARE := Rect2(179, 552, 149, 46)
 const TORETTO_BACK := "w2/common/toretto_back_r2.png"
@@ -107,8 +109,14 @@ func input(kind: String, pos: Vector2) -> void:
 
 func _open_post() -> void:
 	post_view = Moments.new()
-	post_view.start(r, {"text": "A4-REG-M1", "post": {"date": "A4-REG-DATE", "location": "A4-REG-LOCATION",
-		"photos": [{"asset": memories.back().image, "caption": "A4-REG-PHOTO"}]}})
+	var published = JSON.parse_string(FileAccess.get_file_as_string(MOMENTS_DATA))
+	if published is Dictionary:
+		published.assetPattern = MOMENTS_IMAGE
+		published.photos = [{"asset": MOMENTS_IMAGE % str(published.photo).get_basename(), "caption": "A4-REG-PHOTO"}]
+	else:
+		published = {"date": "A4-REG-DATE", "location": "A4-REG-LOCATION",
+			"photos": [{"asset": memories.back().image, "caption": "A4-REG-PHOTO"}]}
+	post_view.start(r, {"text": "A4-REG-M1", "post": published})
 	_enter("share")
 
 func restore_checkpoint() -> void:

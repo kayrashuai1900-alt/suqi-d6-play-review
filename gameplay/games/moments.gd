@@ -21,6 +21,13 @@ var photos: Array = []
 var post_likes: Array = []
 var post_comments: Array = []
 var post_date := ""
+var post_location := ""
+var post_author := "阿鱼。"
+var author_avatar := "ayu_avatar.png"
+var body_size := FS
+var like_atlas: Texture2D
+var like_tiles: Array[Rect2] = []
+var authored_reactions := false
 
 const FS := 15
 const LH := 24.0
@@ -41,6 +48,13 @@ const MAX_PHOTOS := 9
 const FOOTER_Y := 570.0
 const CONTINUE := Rect2(84, 582, 192, 44)
 const VIEW_CLOSE := Rect2(6, 6, 44, 44)
+const LIKE_COLUMNS := 8
+const ATLAS_ICON := 29.0
+const ATLAS_STEP := 32.0
+const COMMENT_FONT := 13
+const COMMENT_X := TEXT_X + 41.0
+const COMMENT_WIDTH := 346.0 - COMMENT_X - 8.0
+const COMMENT_LINE := 19.0
 ## 四张生活照：GPT 出的正式图（w2/call/moments_N.png）到位就用它，没到位先用游戏里现成场景的局部
 const PHOTOS := [
 	["w2/call/moments_1.png", "w2/call/ayu_toretto_holdhands.png", Rect2(0, 820, 841, 841)],
@@ -78,13 +92,38 @@ func start(runner, beat: Dictionary) -> void:
 		toast = "上下滑动，读完她那晚写下的话"
 	else:
 		phase = "posted"
-		post_date = str(r.copy.get(post.get("date", ""), ""))
-		for who: String in post.get("likes", []):
-			post_likes.append([who + "_avatar.png", "", Color.WHITE])
-		for comment: Dictionary in post.get("comments", []):
-			post_comments.append([StoryCaption.NAMES.get(comment.who, comment.who), r.t_(comment.say)])
-	lines = StoryCaption.wrap_text(body.replace("<br>", "\n"), TEXT_W, FS).split("\n")
+		if post.has("assetPattern"):
+			body = "\n".join(post.body)
+			body_size = 14
+			_load_authored_post()
+		else:
+			post_date = str(r.copy.get(post.get("date", ""), ""))
+			post_location = r.t_(str(post.get("location", "")))
+			for who: String in post.get("likes", []):
+				post_likes.append([who + "_avatar.png", "", Color.WHITE])
+			for comment: Dictionary in post.get("comments", []):
+				post_comments.append([StoryCaption.NAMES.get(comment.who, comment.who), r.t_(comment.say)])
+	lines = StoryCaption.wrap_text(body.replace("<br>", "\n"), TEXT_W, body_size).split("\n")
 	_layout()
+
+func _load_authored_post() -> void:
+	authored_reactions = true
+	post_date = str(post.date)
+	post_location = str(post.location)
+	post_author = str(post.author)
+	author_avatar = _post_asset(post.authorAvatar)
+	like_atlas = r.texture(_post_asset(post.likes.file))
+	for item: Dictionary in post.likes.items:
+		like_tiles.append(Rect2(float(item.x), float(item.y), float(item.w), float(item.h)))
+	for comment: Dictionary in post.comments:
+		var wrapped := StoryCaption.wrap_text(comment.text, COMMENT_WIDTH, COMMENT_FONT)
+		post_comments.append({
+			"name": comment.name, "time": comment.time, "avatar": _post_asset(comment.avatar),
+			"lines": wrapped.split("\n"),
+		})
+
+func _post_asset(file: String) -> String:
+	return str(post.assetPattern) % file.get_basename()
 
 func _layout() -> void:
 	y_body = NAV_H + 44.0
@@ -103,7 +142,8 @@ func _like_people() -> Array:
 	return [["toretto_avatar.png", "", Color.WHITE]] + FRIENDS
 
 func _like_rows() -> int:
-	return ceili(_like_people().size() / 8.0)
+	var count := like_tiles.size() if authored_reactions else _like_people().size()
+	return ceili(float(count) / LIKE_COLUMNS)
 
 func _comments() -> Array:
 	if not post.is_empty():
@@ -114,7 +154,15 @@ func _comments() -> Array:
 	return c
 
 func _panel_h() -> float:
+	if authored_reactions:
+		var height := 12.0 + _like_rows() * ATLAS_STEP + 6.0
+		for comment: Dictionary in post_comments:
+			height += _comment_h(comment)
+		return height
 	return 12.0 + _like_rows() * 34.0 + 8.0 + _comments().size() * 24.0 + 8.0
+
+func _comment_h(comment: Dictionary) -> float:
+	return 34.0 + comment.lines.size() * COMMENT_LINE
 
 func _max_scroll() -> float:
 	return maxf(0.0, bottom - (FOOTER_Y if not post.is_empty() else 640.0))
@@ -254,14 +302,14 @@ func draw(ci) -> void:
 	ci.draw_rect(ci.view_rect, PAPER if published else Color.WHITE)
 	# 头像、名字
 	var top := NAV_H + 14 - s
-	_avatar(ci, "ayu_avatar.png", "", Color.WHITE, Rect2(12, top, 42, 42))
-	ci.text_at(Vector2(TEXT_X, top + 17), "阿鱼。", 16, BLUE, 200, HORIZONTAL_ALIGNMENT_LEFT)
+	_avatar(ci, author_avatar, "", Color.WHITE, Rect2(12, top, 42, 42))
+	ci.text_at(Vector2(TEXT_X, top + 17), post_author, 16, BLUE, 200, HORIZONTAL_ALIGNMENT_LEFT)
 	# 正文
 	for i in range(lines.size()):
 		var y := y_body + i * LH - s + 4
 		if y < NAV_H or y > content_end + 20.0:
 			continue
-		ci.text_at(Vector2(TEXT_X, y), lines[i], FS, INK, TEXT_W, HORIZONTAL_ALIGNMENT_LEFT)
+		ci.text_at(Vector2(TEXT_X, y), lines[i], body_size, INK, TEXT_W, HORIZONTAL_ALIGNMENT_LEFT)
 	for k in range(_photo_count()):
 		var rect := _photo_rect(k)
 		if rect.end.y < NAV_H or rect.position.y > content_end:
@@ -272,7 +320,7 @@ func draw(ci) -> void:
 	if not post_date.is_empty():
 		ci.text_at(Vector2(TEXT_X, my), post_date, 14, Color("#736c66"), TEXT_W, HORIZONTAL_ALIGNMENT_LEFT)
 		my += DATE_LINE
-	var metadata := str(ci.t_(post.location)) if published else "深夜 · 异地的最后一段日子"
+	var metadata := post_location if published else "深夜 · 异地的最后一段日子"
 	ci.text_at(Vector2(TEXT_X, my), metadata, 14 if published else 12, BLUE if published else GRAY, 240, HORIZONTAL_ALIGNMENT_LEFT)
 	var d := _dots_rect()
 	if phase == "read" and not menu and scroll >= _max_scroll() - 30:
@@ -361,6 +409,9 @@ func _photo_count() -> int:
 	return photos.size()
 
 func _draw_panel(ci, y: float) -> void:
+	if authored_reactions:
+		_draw_authored_panel(ci, y)
+		return
 	var people := _like_people()
 	var comments := _comments()
 	if people.is_empty() and comments.is_empty(): return
@@ -388,6 +439,39 @@ func _draw_panel(ci, y: float) -> void:
 			nw += 7.5 if ch.unicode_at(0) < 128 else 13.0
 		ci.text_at(Vector2(TEXT_X + 10, cy - 6), name, 13, BLUE, nw + 4, HORIZONTAL_ALIGNMENT_LEFT)
 		ci.text_at(Vector2(TEXT_X + 10 + nw, cy - 6), str(c[1]), 13, INK, rect.size.x - nw - 14, HORIZONTAL_ALIGNMENT_LEFT)
+
+func _draw_authored_panel(ci, y: float) -> void:
+	var rect := Rect2(TEXT_X, y, 346 - TEXT_X, _panel_h())
+	if rect.end.y <= NAV_H or y >= FOOTER_Y:
+		return
+	ci.draw_style_box(_box(Color("#eeeeed"), 4), rect)
+	var grid_top := y + 10.0
+	if grid_top + ATLAS_ICON > NAV_H and grid_top < FOOTER_Y:
+		_heart(ci, Vector2(TEXT_X + 12, grid_top + 12), 7.0, BLUE)
+	if like_atlas:
+		var first := clampi(floori((NAV_H - grid_top) / ATLAS_STEP), 0, _like_rows())
+		var end := clampi(ceili((FOOTER_Y - grid_top) / ATLAS_STEP), 0, _like_rows())
+		for row in range(first, end):
+			for i in range(row * LIKE_COLUMNS, mini((row + 1) * LIKE_COLUMNS, like_tiles.size())):
+				var at := Vector2(TEXT_X + 26 + (i % LIKE_COLUMNS) * ATLAS_STEP, grid_top + row * ATLAS_STEP)
+				ci.draw_texture_rect_region(like_atlas, Rect2(at, Vector2.ONE * ATLAS_ICON), like_tiles[i])
+	var comment_top := y + 12.0 + _like_rows() * ATLAS_STEP + 6.0
+	for comment: Dictionary in post_comments:
+		var height := _comment_h(comment)
+		if comment_top >= FOOTER_Y:
+			break
+		if comment_top + height > NAV_H:
+			_draw_authored_comment(ci, comment, comment_top)
+		comment_top += height
+
+func _draw_authored_comment(ci, comment: Dictionary, y: float) -> void:
+	ci.draw_line(Vector2(TEXT_X + 7, y), Vector2(339, y), Color("#dbd5ce"), 1)
+	_avatar(ci, comment.avatar, "", Color.WHITE, Rect2(TEXT_X + 8, y + 8, 26, 26))
+	ci.text_at(Vector2(COMMENT_X, y + 20), comment.name, COMMENT_FONT, BLUE, COMMENT_WIDTH - 48, HORIZONTAL_ALIGNMENT_LEFT)
+	ci.text_at(Vector2(291, y + 20), comment.time, 10, Color("#736c66"), 47, HORIZONTAL_ALIGNMENT_RIGHT)
+	for index in range(comment.lines.size()):
+		ci.text_at(Vector2(COMMENT_X, y + 39 + index * COMMENT_LINE), comment.lines[index], COMMENT_FONT, INK,
+			COMMENT_WIDTH, HORIZONTAL_ALIGNMENT_LEFT)
 
 func _avatar(ci, tex_name: String, letter: String, fill: Color, rect: Rect2) -> void:
 	if rect.size.x <= 1:

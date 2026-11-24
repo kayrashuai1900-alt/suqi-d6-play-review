@@ -206,7 +206,7 @@ body:has(#status) #suqi-review.feedback-only header{padding:0}
 .hy-share-dialog p{margin:0 0 5px;color:#704638;text-align:center}
 .hy-share-dialog [hidden],.hy-share-dialog p:empty{display:none}
 </style>
-<script src="index.completion-share.js?v=6930927889a3" data-posters="[{&quot;id&quot;:2,&quot;url&quot;:&quot;index.completion-poster-p2-aee5754d1f34.png&quot;},{&quot;id&quot;:3,&quot;url&quot;:&quot;index.completion-poster-p3-2a4e6b86658d.png&quot;},{&quot;id&quot;:4,&quot;url&quot;:&quot;index.completion-poster-p4-f119cba82675.png&quot;},{&quot;id&quot;:5,&quot;url&quot;:&quot;index.completion-poster-p5-b3e45e8cd125.png&quot;},{&quot;id&quot;:1,&quot;url&quot;:&quot;index.completion-poster-p1-31b61b582ac5.png&quot;}]" defer></script><meta name="review-build" content="D6-4c50f71d4462"><meta name="review-issues" content="https://github.com/kayrashuai1900-alt/suqi-d6-play-review/issues/new"><meta name="robots" content="noindex"></head>
+<script src="index.completion-share.js?v=6930927889a3" data-posters="[{&quot;id&quot;:2,&quot;url&quot;:&quot;index.completion-poster-p2-fd706a546a4f.png&quot;},{&quot;id&quot;:3,&quot;url&quot;:&quot;index.completion-poster-p3-5be4b52c287c.png&quot;},{&quot;id&quot;:4,&quot;url&quot;:&quot;index.completion-poster-p4-ef741ea969b5.png&quot;},{&quot;id&quot;:5,&quot;url&quot;:&quot;index.completion-poster-p5-8f8ad0ae0bb9.png&quot;},{&quot;id&quot;:1,&quot;url&quot;:&quot;index.completion-poster-p1-3fda3fd438cd.png&quot;}]" data-friends="https://kayrashuai1900-alt.github.io/suqi-d6-play-review/friends.html" defer></script><meta name="review-build" content="D6-772e1ed8a14e"><meta name="review-issues" content="https://github.com/kayrashuai1900-alt/suqi-d6-play-review/issues/new"><meta name="robots" content="noindex"></head>
 	<body>
 		<canvas id="canvas">
 			Your browser does not support the canvas tag.
@@ -225,7 +225,7 @@ body:has(#status) #suqi-review.feedback-only header{padding:0}
 
 		<script src="review_client.js?v=cdaa9a817cf4"></script><script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":false,"fileSizes":{"love-4c50f71d4462.pck":5775700,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":false,"fileSizes":{"love-772e1ed8a14e.pck":5859500,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 
@@ -321,7 +321,7 @@ const engine = new Engine(GODOT_CONFIG);
 		}
 	} else {
 		setStatusMode('progress');
-		engine.startGame({mainPack:"love-4c50f71d4462.pck",
+		engine.startGame({mainPack:"love-772e1ed8a14e.pck",
 			'onProgress': function (current, total) {
 				if (current > 0 && total > 0) {
 					statusProgress.value = current;
@@ -339,6 +339,7 @@ const engine = new Engine(GODOT_CONFIG);
 			},
 		}).then(() => {
 			setStatusMode('hidden');
+			document.title = "苏七镇奇缘";
 		}, displayFailureNotice);
 	}
 }());
