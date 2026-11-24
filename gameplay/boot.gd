@@ -18,11 +18,16 @@ const BUTTON_TYPE := "round1/common/menu_labels.png"
 const ACTION_LABELS := {
 	"wedding": "去婚礼现场", "replay": "回顾爱情篇", "village": "去裳泓村",
 	"resume": "继续游戏", "restart": "重新开始", "cancel": "取消", "erase": "确定重新开始",
+	"start": "进入游戏",
 }
 const TYPE_STRIP := Vector2(360, 94)
 const PRIMARY_H := 54.0
 const SECONDARY_H := 52.0
 const MARGIN := 22.0
+const RESUME_PANEL_PAD := 9.0
+const RESTART_PROMPT_H := 62.0
+const RESUME_PANEL_FILL := Color("#271d28")
+const RESUME_PANEL_EDGE := Color("#9f765d")
 const ALBUM_COMPACT := "round1/common/completion_album_compact.png"
 const ALBUM_WIDE := "round1/common/completion_album_wide.png"
 const ALBUM_NOTE := "round1/common/completion_album_note.png"
@@ -36,6 +41,7 @@ var menu_buttons: Dictionary = {}
 var photo_rect := Rect2()
 var title_y := 0.0
 var note_y := 0.0
+var resume_panel := Rect2()
 var album_art := Rect2()
 var album_note := Rect2()
 var share_button: Button
@@ -47,6 +53,7 @@ var overlay: Control
 var prefetch_notice: PrefetchNotice
 var saved: Dictionary = {}
 var show_menu := false
+var welcome := false
 var confirm_restart := false
 var canvas := Control.new()
 var tex_cache: Dictionary = {}
@@ -68,7 +75,7 @@ func _ready() -> void:
 	prefetch_notice = PrefetchNotice.new()
 	prefetch_notice.custom_minimum_size.x = CANVAS.x - MARGIN * 2
 	for key: String in ACTION_LABELS:
-		_add_action(key, key in ["wedding", "resume", "cancel"])
+		_add_action(key, key in ["wedding", "resume", "cancel", "start"])
 	canvas.add_child(prefetch_notice)
 	prefetch_notice.visibility_changed.connect(_fit_canvas)
 	overlay = ContentOverlay.new()
@@ -89,10 +96,11 @@ func _ready() -> void:
 	completed = not bool(saved.get("reviewInProgress", false)) and (
 		bool(saved.get("loveCompleted", false)) or not str(saved.get("worldRoute", "")).is_empty())
 	var web_trial := OS.has_feature("web") and not OS.has_feature("hongyuan_wechat")
-	if completed or (web_trial and Checkpoint.has_progress(saved)):
+	welcome = web_trial and not completed and not Checkpoint.has_progress(saved)
+	if completed or web_trial:
 		show_menu = true
 		if web_trial:
-			JavaScriptBridge.eval("document.body.classList.add('hy-return-menu')", true)
+			JavaScriptBridge.eval("document.body.classList.add('%s')" % ("hy-welcome-menu" if welcome else "hy-return-menu"), true)
 		if completed:
 			_prepare_album()
 			if web_trial:
@@ -105,7 +113,7 @@ func _ready() -> void:
 
 func _exit_tree() -> void:
 	if show_menu and OS.has_feature("web") and not OS.has_feature("hongyuan_wechat"):
-		JavaScriptBridge.eval("document.body.classList.remove('hy-return-menu', 'hy-completion-menu')", true)
+		JavaScriptBridge.eval("document.body.classList.remove('hy-welcome-menu', 'hy-return-menu', 'hy-completion-menu')", true)
 
 
 func _has_review_controls() -> bool:
@@ -172,26 +180,29 @@ func _layout_menu() -> void:
 		_layout_album()
 		return
 	var height := canvas.size.y
-	var extra := maxf(0, height - CANVAS.y)
-	var retry_h := 58.0 if is_instance_valid(prefetch_notice) and prefetch_notice.visible else 0.0
-	var primary_y := height - 128.0 - minf(extra * 0.18, 33) - retry_h
-	var actions := Rect2(MARGIN, primary_y, CANVAS.x - 2 * MARGIN, PRIMARY_H)
-	var lower := Rect2(MARGIN, actions.end.y + 6, actions.size.x, SECONDARY_H)
+	var primary_y := height * (0.58 if welcome else 0.555)
+	var button_margin := MARGIN + RESUME_PANEL_PAD
+	var actions := Rect2(button_margin, primary_y, CANVAS.x - 2 * button_margin, PRIMARY_H)
+	var lower := Rect2(button_margin, actions.end.y + 6, actions.size.x, SECONDARY_H)
+	resume_panel = actions.merge(lower).grow(RESUME_PANEL_PAD)
+	if confirm_restart:
+		resume_panel = resume_panel.grow_side(SIDE_TOP, RESTART_PROMPT_H)
 	for key: String in menu_buttons:
 		var button: Button = menu_buttons[key]
 		button.hide()
 	if show_menu:
-		_place("cancel" if confirm_restart else "resume", actions)
-		_place("erase" if confirm_restart else "restart", lower)
+		if welcome:
+			_place("start", actions)
+		else:
+			_place("cancel" if confirm_restart else "resume", actions)
+			_place("erase" if confirm_restart else "restart", lower)
 	if is_instance_valid(prefetch_notice):
-		prefetch_notice.position = Vector2(MARGIN, lower.end.y + 7)
-		prefetch_notice.size.x = actions.size.x
-	# Make room for a retry notice by taking space from the sky, never from the touch targets.
-	var sky_pad := minf(extra * 0.49, 82)
-	var picture_bottom := minf(PHOTO_HEIGHT + sky_pad, primary_y - 130.0)
+		prefetch_notice.position = Vector2(MARGIN, resume_panel.end.y + 7)
+		prefetch_notice.size.x = resume_panel.size.x
+	var picture_bottom := primary_y - 18.0
 	photo_rect = Rect2(0, picture_bottom - PHOTO_HEIGHT, CANVAS.x, PHOTO_HEIGHT)
-	title_y = maxf(12, photo_rect.position.y + 72)
-	note_y = (picture_bottom + primary_y - TYPE_STRIP.y) * 0.5 + 2
+	title_y = picture_bottom * 0.15
+	note_y = height - TYPE_STRIP.y - 20.0
 
 
 func _place(key: String, rect: Rect2) -> void:
@@ -223,9 +234,12 @@ func _draw_canvas() -> void:
 		canvas.draw_texture_rect_region(type_art, Rect2(Vector2(0, title_y), TYPE_STRIP), Rect2(Vector2.ZERO, strip))
 		if not confirm_restart:
 			canvas.draw_texture_rect_region(type_art, Rect2(Vector2(0, note_y), TYPE_STRIP), Rect2(Vector2(0, strip.y), strip))
+	if not welcome:
+		canvas.draw_rect(resume_panel, RESUME_PANEL_FILL)
+		canvas.draw_rect(resume_panel, RESUME_PANEL_EDGE, false, 1.0)
 	if confirm_restart:
-		_line("确定要重新开始吗？", note_y + 36, 19, PAPER)
-		_line("当前进度将被清除。", note_y + 65, 15, Color("#e2bfab"))
+		_line("确定要重新开始吗？", resume_panel.position.y + 31, 19, PAPER)
+		_line("当前进度将被清除。", resume_panel.position.y + 54, 15, Color("#e2bfab"))
 
 
 func _prepare_album() -> void:
@@ -355,7 +369,7 @@ func _add_action(key: String, primary: bool) -> void:
 	button.name = key
 	button.accessibility_name = label
 	var labels := _texture(BUTTON_TYPE)
-	if labels:
+	if labels and key != "start":
 		var artwork := AtlasTexture.new()
 		artwork.atlas = labels
 		artwork.region = Rect2(0, ACTION_LABELS.keys().find(key) * 96, 432, 96)
@@ -416,7 +430,8 @@ func _act(key: String) -> void:
 			saved.revision = int(saved.get("revision", 0)) + 1
 			Checkpoint.write(saved)
 			get_tree().change_scene_to_file.call_deferred("res://hongyuan/player.tscn")
-		"resume":
+		"start", "resume":
+			busy = true
 			_launch()
 		"restart", "cancel":
 			confirm_restart = key == "restart"

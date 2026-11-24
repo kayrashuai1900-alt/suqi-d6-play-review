@@ -12,7 +12,8 @@ var mounted: Dictionary = {}
 var jobs: Dictionary = {}
 var last_error := ""
 var timeout_seconds := 900.0
-var stall_seconds := 15.0
+var stall_seconds := 45.0 if OS.has_feature("web") else 15.0
+var transfer_retries := 1 if OS.has_feature("web") else 0
 var requests: Array[Dictionary] = []
 var next_id := 0
 var prefetch_tickets: Dictionary = {}
@@ -255,43 +256,24 @@ func _download_and_mount(entry: Dictionary, job: Dictionary) -> bool:
 		job.error = "网络未连接，请稍后重试"
 		return false
 	var temporary := cached + ".part"
-	var request := HTTPRequest.new()
-	request.timeout = timeout_seconds
-	request.body_size_limit = int(entry.bytes)
-	request.accept_gzip = false
-	if not OS.has_feature("web"):
-		request.download_file = temporary
-	add_child(request)
-	var response: Array = []
-	request.request_completed.connect(func(result: int, code: int, _headers: PackedStringArray, body: PackedByteArray):
-		response.append([result, code, body]))
 	job.trace["url"] = base.trim_suffix("/") + "/" + filename
 	job.trace["cache"] = "network"
-	var error := request.request(str(job.trace.url))
-	if error != OK:
-		request.queue_free()
-		job.trace["request_error"] = error
-		job.error = "网络未连接，请稍后重试"
-		return false
-	var last_change := Time.get_ticks_msec()
-	while response.is_empty():
-		var received := request.get_downloaded_bytes()
-		if received != job.received:
-			job.received = received
-			last_change = Time.get_ticks_msec()
-		if Time.get_ticks_msec() - last_change > stall_seconds * 1000.0:
-			job.trace["timeout"] = "no_progress"
-			request.cancel_request()
+	var response: Array
+	for attempt: int in range(transfer_retries + 1):
+		job.trace["attempt"] = attempt + 1
+		response = await _request_pack(entry, job, temporary)
+		if attempt >= transfer_retries or not _transient_error(response):
 			break
-		await get_tree().process_frame
-	request.queue_free()
-	if not response.is_empty():
-		job.trace["http_status"] = int(response[0][1])
-		job.trace["http_result"] = int(response[0][0])
-	if response.is_empty() or int(response[0][0]) != HTTPRequest.RESULT_SUCCESS or int(response[0][1]) != 200:
+		DirAccess.remove_absolute(temporary)
+		print("CONTENT_RETRY ", JSON.stringify(job.trace))
+		await get_tree().create_timer(1.0).timeout
+	if response.is_empty() or int(response[0]) != HTTPRequest.RESULT_SUCCESS or int(response[1]) != 200:
 		DirAccess.remove_absolute(temporary)
 		var code := int(job.trace.get("http_status", 0))
-		job.error = "下载暂时中断，请重试" if code == 0 else ("这段内容暂未送达（%d）" % code)
+		if job.trace.has("request_error"):
+			job.error = "网络未连接，请稍后重试"
+		else:
+			job.error = "下载暂时中断，请重试" if code == 0 else ("这段内容暂未送达（%d）" % code)
 		return false
 	job.received = int(entry.bytes)
 	if OS.has_feature("web"):
@@ -299,7 +281,7 @@ func _download_and_mount(entry: Dictionary, job: Dictionary) -> bool:
 		if writer == null:
 			job.error = "设备无法保存数据，请检查可用空间"
 			return false
-		var written := writer.store_buffer(response[0][2])
+		var written := writer.store_buffer(response[2])
 		writer.close()
 		if not written:
 			DirAccess.remove_absolute(temporary)
@@ -323,6 +305,51 @@ func _download_and_mount(entry: Dictionary, job: Dictionary) -> bool:
 	if OS.has_feature("web"):
 		JavaScriptBridge.force_fs_sync()
 	return true
+
+
+func _request_pack(entry: Dictionary, job: Dictionary, temporary: String) -> Array:
+	job.received = 0
+	for key in ["http_status", "http_result", "timeout", "request_error"]:
+		job.trace.erase(key)
+	var request := HTTPRequest.new()
+	request.timeout = timeout_seconds
+	request.body_size_limit = int(entry.bytes)
+	request.accept_gzip = false
+	if not OS.has_feature("web"):
+		request.download_file = temporary
+	add_child(request)
+	var response: Array = []
+	request.request_completed.connect(func(result: int, code: int, _headers: PackedStringArray, body: PackedByteArray):
+		response.append([result, code, body]))
+	var error := request.request(str(job.trace.url))
+	if error != OK:
+		request.queue_free()
+		job.trace["request_error"] = error
+		return []
+	var last_change := Time.get_ticks_msec()
+	while response.is_empty():
+		var received := request.get_downloaded_bytes()
+		if received != job.received:
+			job.received = received
+			last_change = Time.get_ticks_msec()
+		if Time.get_ticks_msec() - last_change > stall_seconds * 1000.0:
+			job.trace["timeout"] = "no_progress"
+			request.cancel_request()
+			break
+		await get_tree().process_frame
+	request.queue_free()
+	if response.is_empty():
+		return []
+	job.trace["http_status"] = int(response[0][1])
+	job.trace["http_result"] = int(response[0][0])
+	return response[0]
+
+
+func _transient_error(response: Array) -> bool:
+	if response.is_empty():
+		return true
+	var code := int(response[1])
+	return code in [0, 408, 429] or (code >= 500 and code <= 599)
 
 func _wechat(entry: Dictionary, job: Dictionary) -> bool:
 	var bridge := _bridge()
