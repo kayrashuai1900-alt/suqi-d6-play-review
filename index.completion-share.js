@@ -1,53 +1,112 @@
 (() => {
     "use strict";
-    const posterName = "苏七镇奇缘-爱情篇海报.png";
     const invitation = "我玩完了阿鱼一个人做的《苏七镇奇缘》爱情篇。她把自己和 Toretto 的故事做进了游戏，玩到最后，我被打动了。也想邀你来玩。";
+    const script = document.currentScript.dataset;
+    const posters = script.posters ? JSON.parse(script.posters) : [{url: script.poster}];
+    const friendsUrl = script.friends || new URL("friends.html", location.href).href;
+    const files = new Map();
 
-    const posterUrl = document.currentScript.dataset.poster;
-    const friendsUrl = document.currentScript.dataset.friends || new URL("friends.html", location.href).href;
-
-    async function loadPoster() {
-        const response = await fetch(posterUrl);
-        if (!response.ok) throw new Error("Poster is unavailable");
-        const blob = await response.blob();
-        if (blob.type !== "image/png" || !blob.size) throw new Error("Poster is not a PNG");
-        return new File([blob], posterName, {type: "image/png"});
+    function loadPoster({url, id}) {
+        if (!files.has(url)) {
+            const request = (async () => {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error("Poster is unavailable");
+                const blob = await response.blob();
+                if (blob.type !== "image/png" || !blob.size) throw new Error("Poster is not a PNG");
+                const suffix = id ? `-P${id}` : "";
+                return new File([blob], `苏七镇奇缘-爱情篇海报${suffix}.png`, {type: "image/png"});
+            })().catch(error => {
+                files.delete(url);
+                throw error;
+            });
+            files.set(url, request);
+        }
+        return files.get(url);
     }
 
-    function shareDialog(file) {
-        const url = URL.createObjectURL(file);
-        const shareData = {files: [file], title: "苏七镇奇缘", text: invitation, url: friendsUrl};
+    function open() {
+        if (document.querySelector(".hy-share-dialog")) return;
         const dialog = document.createElement("dialog");
         dialog.className = "hy-share-dialog";
         dialog.setAttribute("aria-labelledby", "hy-share-title");
         dialog.innerHTML = `
             <header><h2 id="hy-share-title">分享并邀请朋友玩</h2>
-                <form method="dialog"><button type="submit">关闭</button></form>
+                <form method="dialog"><button type="submit" autofocus>关闭</button></form>
             </header>
-            <img alt="爱情篇邀请海报，扫码打开朋友试玩入口">
+            <img alt="爱情篇分享海报" hidden>
+            <div class="hy-share-gallery">
+                <span data-position aria-live="polite"></span>
+                <button type="button" data-next>换一张</button>
+            </div>
             <div class="hy-share-actions">
                 <button type="button" data-share hidden>分享海报</button>
-                <a download>保存海报</a>
+                <a download hidden>保存海报</a>
                 <button type="button" data-copy>复制试玩链接</button>
             </div>
             <p role="status"></p>
         `;
-        dialog.querySelector("img").src = url;
-        const download = dialog.querySelector("a");
-        download.href = url;
-        download.download = posterName;
+        const image = dialog.querySelector("img");
+        const gallery = dialog.querySelector(".hy-share-gallery");
+        const next = dialog.querySelector("[data-next]");
+        const position = dialog.querySelector("[data-position]");
+        const download = dialog.querySelector("a[download]");
         const status = dialog.querySelector("[role=status]");
         const systemShare = dialog.querySelector("[data-share]");
-        if (typeof navigator.share === "function" && navigator.canShare?.(shareData)) {
-            systemShare.hidden = false;
-            systemShare.onclick = async () => {
-                try {
-                    await navigator.share(shareData);
-                } catch (error) {
-                    if (error.name !== "AbortError") status.textContent = "可以保存海报后发给朋友。";
+        let index = -1;
+        let activeUrl;
+        let shareData;
+
+        async function showPoster(target) {
+            next.disabled = true;
+            status.textContent = "海报加载中…";
+            let imageUrl;
+            try {
+                const file = await loadPoster(posters[target]);
+                if (!dialog.open) return;
+                imageUrl = URL.createObjectURL(file);
+                const loaded = new Image();
+                loaded.src = imageUrl;
+                await loaded.decode();
+                if (!dialog.open) return;
+
+                const selection = {files: [file], title: "苏七镇奇缘", text: invitation, url: friendsUrl};
+                const canShare = typeof navigator.share === "function" && navigator.canShare?.(selection);
+                image.src = imageUrl;
+                image.alt = `爱情篇分享海报，第 ${target + 1} 张，共 ${posters.length} 张`;
+                image.hidden = false;
+                download.href = imageUrl;
+                download.download = file.name;
+                download.hidden = false;
+                shareData = selection;
+                systemShare.hidden = !canShare;
+                if (activeUrl) URL.revokeObjectURL(activeUrl);
+                activeUrl = imageUrl;
+                imageUrl = undefined;
+                index = target;
+                position.textContent = `${index + 1} / ${posters.length}`;
+                gallery.hidden = posters.length === 1;
+                next.textContent = "换一张";
+                status.textContent = "";
+            } catch {
+                if (dialog.open) {
+                    files.delete(posters[target].url);
+                    if (index < 0) next.textContent = "重试";
+                    status.textContent = "海报加载失败，请重试。";
                 }
-            };
+            } finally {
+                if (imageUrl) URL.revokeObjectURL(imageUrl);
+                next.disabled = false;
+            }
         }
+
+        next.onclick = () => showPoster((index + 1) % posters.length);
+        systemShare.onclick = async () => {
+            try {
+                await navigator.share(shareData);
+            } catch (error) {
+                if (error.name !== "AbortError") status.textContent = "可以保存海报后发给朋友。";
+            }
+        };
         dialog.querySelector("[data-copy]").onclick = async () => {
             try {
                 await navigator.clipboard.writeText(friendsUrl);
@@ -63,25 +122,13 @@
         };
         dialog.addEventListener("close", () => {
             dialog.remove();
-            URL.revokeObjectURL(url);
+            if (activeUrl) URL.revokeObjectURL(activeUrl);
             document.getElementById("canvas")?.focus();
         }, {once: true});
         document.body.appendChild(dialog);
         dialog.showModal();
+        showPoster(0);
     }
 
-    let generating = false;
-    window.suqiCompletionShare = {
-        async open() {
-            if (generating || document.querySelector(".hy-share-dialog")) return;
-            generating = true;
-            try {
-                shareDialog(await loadPoster());
-            } catch {
-                window.alert("海报暂时没生成成功，轻点分享再试一次。");
-            } finally {
-                generating = false;
-            }
-        }
-    };
+    window.suqiCompletionShare = {open};
 })();

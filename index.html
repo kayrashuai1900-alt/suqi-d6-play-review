@@ -114,18 +114,29 @@ body:has(#status) #suqi-review.feedback-only header{padding:0}
 }
 .hy-completion-menu #suqi-review.feedback-only{top:max(16vh,env(safe-area-inset-top,0px))}
 .hy-completion-menu #suqi-review.feedback-only header{padding:0}
-.hy-share-dialog{width:min(365px,calc(100vw - 36px));max-height:calc(100dvh - 34px);box-sizing:border-box;overflow:auto;background:#f6ead4;color:#4a3029;border:1px solid #a68064;padding:14px;font:14px/1.5 system-ui,sans-serif}
-.hy-share-dialog::backdrop{background:#221925c7}
-.hy-share-dialog header,.hy-share-actions{display:flex;align-items:center;justify-content:space-between;gap:7px}
-.hy-share-dialog h2{margin:0;font-size:17px}
-.hy-share-dialog img{display:block;margin:8px auto 12px;width:auto;max-width:100%;max-height:57dvh;object-fit:contain}
-.hy-share-dialog button,.hy-share-dialog a{box-sizing:border-box;min-height:44px;padding:8px;color:#56382d;background:#fff6e4;border:1px solid #ad8a6f;font:inherit;cursor:pointer;text-decoration:none}
-.hy-share-dialog [download]{display:inline-flex;align-items:center;color:#fff0d6;background:#843a3b}
-.hy-share-dialog p{margin:6px 0 0;color:#704638}
 #status-progress{bottom:calc(4% + env(safe-area-inset-bottom,0px));width:min(60vw,320px);accent-color:#e7b65c}
 #hy-loading{position:absolute;left:0;right:0;bottom:calc(4% + env(safe-area-inset-bottom,0px) + 26px);text-align:center;color:#f3dfc8;font:16px/1.4 "PingFang SC","Noto Sans SC",sans-serif;letter-spacing:.08em}
 </style>
-<script src="index.completion-share.js?v=059a1d712891" data-poster="index.completion-poster-1a93a042cd70.png" defer></script><meta name="review-build" content="D6-4c50f71d4462"><meta name="review-issues" content="https://github.com/kayrashuai1900-alt/suqi-d6-play-review/issues/new"><meta name="robots" content="noindex"></head>
+<style id="hy-share-style">
+.hy-share-dialog{width:min(365px,calc(100vw - 36px));max-height:calc(100dvh - 34px);box-sizing:border-box;overflow:auto;background:#f6ead4;color:#4a3029;border:1px solid #a68064;padding:14px;font:14px/1.5 system-ui,sans-serif}
+.hy-share-dialog::backdrop{background:#221925c7}
+.hy-share-dialog header,.hy-share-gallery,.hy-share-actions{display:flex;align-items:center;justify-content:space-between;gap:7px}
+.hy-share-dialog h2{margin:0;font-size:17px}
+.hy-share-dialog img{display:block;margin:8px auto;width:auto;max-width:100%;max-height:min(57dvh,max(140px,calc(100dvh - 210px)));object-fit:contain}
+.hy-share-dialog button,.hy-share-dialog a{box-sizing:border-box;min-height:44px;padding:8px;color:#56382d;background:#fff6e4;border:1px solid #ad8a6f;font:inherit;cursor:pointer;text-decoration:none}
+.hy-share-dialog [download]{display:inline-flex;align-items:center;color:#fff0d6;background:#843a3b}
+.hy-share-dialog p{margin:6px 0 0;color:#704638}
+.hy-share-gallery{margin-bottom:8px}
+.hy-share-gallery [data-position]{color:#704638;font-variant-numeric:tabular-nums}
+.hy-share-actions{flex-wrap:wrap}
+@media(max-width:350px){
+  .hy-share-actions{gap:5px}
+  .hy-share-actions button,.hy-share-actions a{padding-inline:6px}
+}
+.hy-share-dialog button:disabled{opacity:.65;cursor:wait}
+.hy-share-dialog [hidden],.hy-share-dialog p:empty{display:none}
+</style>
+<script src="index.completion-share.js?v=16217c65d1ed" data-posters="[{&quot;id&quot;:2,&quot;url&quot;:&quot;index.completion-poster-p2-aee5754d1f34.png&quot;},{&quot;id&quot;:3,&quot;url&quot;:&quot;index.completion-poster-p3-2a4e6b86658d.png&quot;},{&quot;id&quot;:4,&quot;url&quot;:&quot;index.completion-poster-p4-f119cba82675.png&quot;},{&quot;id&quot;:5,&quot;url&quot;:&quot;index.completion-poster-p5-b3e45e8cd125.png&quot;},{&quot;id&quot;:1,&quot;url&quot;:&quot;index.completion-poster-p1-31b61b582ac5.png&quot;}]" defer></script><meta name="review-build" content="D6-4c50f71d4462"><meta name="review-issues" content="https://github.com/kayrashuai1900-alt/suqi-d6-play-review/issues/new"><meta name="robots" content="noindex"></head>
 	<body>
 		<canvas id="canvas">
 			Your browser does not support the canvas tag.
