@@ -31,9 +31,9 @@
         dialog.setAttribute("aria-labelledby", "hy-share-title");
         dialog.innerHTML = `
             <header>
-                <h2 id="hy-share-title">分享海报</h2>
+                <h2 id="hy-share-title" tabindex="-1" autofocus>分享海报</h2>
                 <form method="dialog">
-                    <button class="hy-share-close" type="submit" aria-label="关闭" autofocus>
+                    <button class="hy-share-close" type="submit" aria-label="关闭">
                         <span aria-hidden="true">×</span>
                     </button>
                 </form>
