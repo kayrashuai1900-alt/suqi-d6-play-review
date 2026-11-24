@@ -30,24 +30,32 @@
         dialog.className = "hy-share-dialog";
         dialog.setAttribute("aria-labelledby", "hy-share-title");
         dialog.innerHTML = `
-            <header><h2 id="hy-share-title">分享并邀请朋友玩</h2>
-                <form method="dialog"><button type="submit" autofocus>关闭</button></form>
+            <header>
+                <h2 id="hy-share-title">分享海报</h2>
+                <form method="dialog">
+                    <button class="hy-share-close" type="submit" aria-label="关闭" autofocus>
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </form>
             </header>
             <img alt="爱情篇分享海报" hidden>
             <div class="hy-share-gallery">
                 <span data-position aria-live="polite"></span>
-                <button type="button" data-next>换一张</button>
+                <button type="button" data-next>
+                    <span aria-hidden="true">↻</span><span data-next-label>换一张</span>
+                </button>
             </div>
             <div class="hy-share-actions">
-                <button type="button" data-share hidden>分享海报</button>
                 <a download hidden>保存海报</a>
-                <button type="button" data-copy>复制试玩链接</button>
+                <button type="button" data-share hidden>分享海报</button>
             </div>
+            <button class="hy-share-copy" type="button" data-copy>复制试玩链接</button>
             <p role="status"></p>
         `;
         const image = dialog.querySelector("img");
         const gallery = dialog.querySelector(".hy-share-gallery");
         const next = dialog.querySelector("[data-next]");
+        const nextLabel = next.querySelector("[data-next-label]");
         const position = dialog.querySelector("[data-position]");
         const download = dialog.querySelector("a[download]");
         const status = dialog.querySelector("[role=status]");
@@ -85,12 +93,12 @@
                 index = target;
                 position.textContent = `${index + 1} / ${posters.length}`;
                 gallery.hidden = posters.length === 1;
-                next.textContent = "换一张";
+                nextLabel.textContent = "换一张";
                 status.textContent = "";
             } catch {
                 if (dialog.open) {
                     files.delete(posters[target].url);
-                    if (index < 0) next.textContent = "重试";
+                    if (index < 0) nextLabel.textContent = "重试";
                     status.textContent = "海报加载失败，请重试。";
                 }
             } finally {

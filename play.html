@@ -118,25 +118,94 @@ body:has(#status) #suqi-review.feedback-only header{padding:0}
 #hy-loading{position:absolute;left:0;right:0;bottom:calc(4% + env(safe-area-inset-bottom,0px) + 26px);text-align:center;color:#f3dfc8;font:16px/1.4 "PingFang SC","Noto Sans SC",sans-serif;letter-spacing:.08em}
 </style>
 <style id="hy-share-style">
-.hy-share-dialog{width:min(365px,calc(100vw - 36px));max-height:calc(100dvh - 34px);box-sizing:border-box;overflow:auto;background:#f6ead4;color:#4a3029;border:1px solid #a68064;padding:14px;font:14px/1.5 system-ui,sans-serif}
-.hy-share-dialog::backdrop{background:#221925c7}
-.hy-share-dialog header,.hy-share-gallery,.hy-share-actions{display:flex;align-items:center;justify-content:space-between;gap:7px}
-.hy-share-dialog h2{margin:0;font-size:17px}
-.hy-share-dialog img{display:block;margin:8px auto;width:auto;max-width:100%;max-height:min(57dvh,max(140px,calc(100dvh - 210px)));object-fit:contain}
-.hy-share-dialog button,.hy-share-dialog a{box-sizing:border-box;min-height:44px;padding:8px;color:#56382d;background:#fff6e4;border:1px solid #ad8a6f;font:inherit;cursor:pointer;text-decoration:none}
-.hy-share-dialog [download]{display:inline-flex;align-items:center;color:#fff0d6;background:#843a3b}
-.hy-share-dialog p{margin:6px 0 0;color:#704638}
-.hy-share-gallery{margin-bottom:8px}
-.hy-share-gallery [data-position]{color:#704638;font-variant-numeric:tabular-nums}
-.hy-share-actions{flex-wrap:wrap}
-@media(max-width:350px){
-  .hy-share-actions{gap:5px}
-  .hy-share-actions button,.hy-share-actions a{padding-inline:6px}
+.hy-share-dialog {
+  box-sizing:border-box;
+  width:min(372px,calc(100vw - 32px));
+  max-height:calc(100dvh - 28px);
+  padding:9px 15px 6px;
+  overflow:auto;
+  border:1px solid #bb9875;
+  border-radius:16px;
+  background:#fbf1df;
+  color:#3c292a;
+  box-shadow:0 16px 56px #160d1aa6;
+  font:14px/1.4 system-ui,sans-serif;
 }
-.hy-share-dialog button:disabled{opacity:.65;cursor:wait}
+.hy-share-dialog::backdrop{background:#221925cf}
+.hy-share-dialog header,.hy-share-gallery,.hy-share-actions {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+}
+.hy-share-dialog h2{margin:0;font-size:18px;letter-spacing:.04em}
+.hy-share-dialog form{margin:0}
+.hy-share-dialog img {
+  display:block;
+  width:auto;
+  max-width:100%;
+  max-height:min(57dvh,max(96px,calc(100dvh - 263px)));
+  margin:4px auto 2px;
+  border-radius:7px;
+  object-fit:contain;
+  box-shadow:0 3px 12px #58352d39;
+}
+.hy-share-dialog button,.hy-share-dialog a {
+  box-sizing:border-box;
+  min-height:44px;
+  padding:0 10px;
+  border:0;
+  background:transparent;
+  color:inherit;
+  cursor:pointer;
+  font:inherit;
+  text-decoration:none;
+}
+.hy-share-dialog button:focus-visible,.hy-share-dialog a:focus-visible {
+  outline:2px solid #a45a43;
+  outline-offset:2px;
+}
+.hy-share-dialog .hy-share-close{width:44px;padding:0;display:grid;place-items:center}
+.hy-share-close span {
+  display:grid;
+  place-items:center;
+  width:30px;
+  height:30px;
+  border-radius:50%;
+  background:#eddfca;
+  color:#69494a;
+  font:23px/1 system-ui,sans-serif;
+}
+.hy-share-gallery{padding:0 1px}
+.hy-share-gallery [data-position]{color:#76584e;font-size:13px;font-variant-numeric:tabular-nums}
+.hy-share-gallery [data-next]{display:inline-flex;align-items:center;gap:5px;padding:0 5px;color:#803c41;font-weight:650}
+.hy-share-gallery [aria-hidden]{font-size:17px;line-height:1}
+.hy-share-gallery [data-next]:disabled{opacity:.6;cursor:wait}
+.hy-share-actions{gap:8px}
+.hy-share-actions [download],.hy-share-actions [data-share] {
+  display:inline-flex;
+  flex:1;
+  align-items:center;
+  justify-content:center;
+  border:1px solid #ac7f70;
+  border-radius:8px;
+  font-weight:650;
+  white-space:nowrap;
+}
+.hy-share-actions [download]{background:#813d43;border-color:#813d43;color:#fff2db}
+.hy-share-actions [data-share]{color:#713f44}
+.hy-share-dialog .hy-share-copy {
+  display:block;
+  margin:0 auto;
+  color:#76584e;
+  font-size:13px;
+  text-decoration:underline;
+  text-underline-offset:3px;
+}
+.hy-share-dialog p{margin:0 0 5px;color:#704638;text-align:center}
 .hy-share-dialog [hidden],.hy-share-dialog p:empty{display:none}
 </style>
-<script src="index.completion-share.js?v=16217c65d1ed" data-posters="[{&quot;id&quot;:2,&quot;url&quot;:&quot;index.completion-poster-p2-aee5754d1f34.png&quot;},{&quot;id&quot;:3,&quot;url&quot;:&quot;index.completion-poster-p3-2a4e6b86658d.png&quot;},{&quot;id&quot;:4,&quot;url&quot;:&quot;index.completion-poster-p4-f119cba82675.png&quot;},{&quot;id&quot;:5,&quot;url&quot;:&quot;index.completion-poster-p5-b3e45e8cd125.png&quot;},{&quot;id&quot;:1,&quot;url&quot;:&quot;index.completion-poster-p1-31b61b582ac5.png&quot;}]" defer></script><meta name="review-build" content="D6-4c50f71d4462"><meta name="review-issues" content="https://github.com/kayrashuai1900-alt/suqi-d6-play-review/issues/new"><meta name="robots" content="noindex"><meta name="review-mode" content="feedback"></head>
+<script src="index.completion-share.js?v=9aff44408cb9" data-posters="[{&quot;id&quot;:2,&quot;url&quot;:&quot;index.completion-poster-p2-aee5754d1f34.png&quot;},{&quot;id&quot;:3,&quot;url&quot;:&quot;index.completion-poster-p3-2a4e6b86658d.png&quot;},{&quot;id&quot;:4,&quot;url&quot;:&quot;index.completion-poster-p4-f119cba82675.png&quot;},{&quot;id&quot;:5,&quot;url&quot;:&quot;index.completion-poster-p5-b3e45e8cd125.png&quot;},{&quot;id&quot;:1,&quot;url&quot;:&quot;index.completion-poster-p1-31b61b582ac5.png&quot;}]" defer></script><meta name="review-build" content="D6-4c50f71d4462"><meta name="review-issues" content="https://github.com/kayrashuai1900-alt/suqi-d6-play-review/issues/new"><meta name="robots" content="noindex"><meta name="review-mode" content="feedback"></head>
 	<body>
 		<canvas id="canvas">
 			Your browser does not support the canvas tag.
