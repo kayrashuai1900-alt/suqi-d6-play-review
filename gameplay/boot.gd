@@ -9,25 +9,24 @@ const FONT := preload("res://hongyuan/fonts/dialogue_font.tres")
 const ASSET_ROOT := "res://hongyuan/assets/"
 const SPLASH := "round1/common/splash_1108.png"
 const INSCRIPTION := "round1/common/title_inscription.png"
+const LOVE_COVER_HEADING := "round1/common/love_cover_heading.png"
+const LOVE_COVER_NOTE := "round1/common/love_cover_note.png"
+const TOWN_TITLE_SCENE := "res://scripts/title_screen.gd"
 
 const CANVAS := Vector2(360, 640)
 const PAPER := Color("#fff0d6")
 const SPLASH_BG := Color("#321e2b")
-const PHOTO_HEIGHT := 406.0
+const OPENING_TITLE_REGION := Rect2(184, 0, 712, 270)
 const BUTTON_TYPE := "round1/common/menu_labels.png"
 const ACTION_LABELS := {
 	"wedding": "去婚礼现场", "replay": "回顾爱情篇", "village": "去裳泓村",
 	"resume": "继续游戏", "restart": "重新开始", "cancel": "取消", "erase": "确定重新开始",
-	"start": "进入游戏",
+	"start": "进入游戏", "home": "回到首页", "back_cover": "返回封面",
 }
-const TYPE_STRIP := Vector2(360, 94)
-const PRIMARY_H := 54.0
-const SECONDARY_H := 52.0
+const OPENING_ACTION_SIZE := Vector2(184, 50)
 const MARGIN := 22.0
-const RESUME_PANEL_PAD := 9.0
-const RESTART_PROMPT_H := 62.0
-const RESUME_PANEL_FILL := Color("#271d28")
-const RESUME_PANEL_EDGE := Color("#9f765d")
+const RESUME_PANEL_PAD := 10.0
+const RESTART_PROMPT_H := 57.0
 const ALBUM_COMPACT := "round1/common/completion_album_compact.png"
 const ALBUM_WIDE := "round1/common/completion_album_wide.png"
 const ALBUM_NOTE := "round1/common/completion_album_note.png"
@@ -37,10 +36,13 @@ const ALBUM_BUTTON := Color("#eed0a3")
 const ALBUM_INK := Color("#422c32")
 const ALBUM_LIGHT := Color("#f3dac1")
 
+static var entered_web_home := false
 var menu_buttons: Dictionary = {}
-var photo_rect := Rect2()
-var title_y := 0.0
-var note_y := 0.0
+var opening_art_end := 0.0
+var opening_title := Rect2()
+var opening_heading := Rect2()
+var opening_note := Rect2()
+var opening_credit := Label.new()
 var resume_panel := Rect2()
 var album_art := Rect2()
 var album_note := Rect2()
@@ -53,9 +55,10 @@ var overlay: Control
 var prefetch_notice: PrefetchNotice
 var saved: Dictionary = {}
 var show_menu := false
-var welcome := false
+var chapter_cover := false
 var confirm_restart := false
 var canvas := Control.new()
+var town_title: Control
 var tex_cache: Dictionary = {}
 
 func _ready() -> void:
@@ -72,6 +75,16 @@ func _ready() -> void:
 		get_tree().change_scene_to_file.call_deferred("res://ayu_home/v4/phone_boot.tscn")
 		return
 
+	opening_credit.text = "—— OPC制作人 @阿鱼ayu_\n抖音 & 小红书唯一 ID"
+	opening_credit.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	opening_credit.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	opening_credit.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	opening_credit.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	opening_credit.add_theme_font_override("font", FONT)
+	opening_credit.add_theme_color_override("font_color", Color("#ffe4cd"))
+	opening_credit.add_theme_constant_override("line_spacing", 4)
+	opening_credit.hide()
+	canvas.add_child(opening_credit)
 	prefetch_notice = PrefetchNotice.new()
 	prefetch_notice.custom_minimum_size.x = CANVAS.x - MARGIN * 2
 	for key: String in ACTION_LABELS:
@@ -90,30 +103,83 @@ func _ready() -> void:
 			Checkpoint.clear_save()
 		_launch()
 		return
-	if bool(saved.get("invitationOpen", false)) and str(saved.get("worldRoute", "")).is_empty():
-		_launch()
-		return
 	completed = not bool(saved.get("reviewInProgress", false)) and (
 		bool(saved.get("loveCompleted", false)) or not str(saved.get("worldRoute", "")).is_empty())
-	var web_trial := OS.has_feature("web") and not OS.has_feature("hongyuan_wechat")
-	welcome = web_trial and not completed and not Checkpoint.has_progress(saved)
-	if completed or web_trial:
+	if _is_web_play() and not entered_web_home:
+		entered_web_home = true
+		_show_town_home()
+		return
+	if _has_open_invitation():
+		_launch()
+		return
+	if completed or _is_web_play():
 		show_menu = true
-		if web_trial:
-			JavaScriptBridge.eval("document.body.classList.add('%s')" % ("hy-welcome-menu" if welcome else "hy-return-menu"), true)
+		chapter_cover = not completed
 		if completed:
-			_prepare_album()
-			if web_trial:
-				JavaScriptBridge.eval("document.body.classList.add('hy-completion-menu')", true)
-			_prefetch_village.call_deferred()
+			_show_completion()
+		else:
+			_set_web_menu_marker("hy-welcome-menu")
 		_fit_canvas()
 		return
 	_launch()
 
 
 func _exit_tree() -> void:
-	if show_menu and OS.has_feature("web") and not OS.has_feature("hongyuan_wechat"):
-		JavaScriptBridge.eval("document.body.classList.remove('hy-welcome-menu', 'hy-return-menu', 'hy-completion-menu')", true)
+	_set_web_menu_marker("")
+
+
+func _is_web_play() -> bool:
+	return OS.has_feature("web") and not OS.has_feature("hongyuan_wechat")
+
+
+func _set_web_menu_marker(marker: String) -> void:
+	if _is_web_play():
+		JavaScriptBridge.eval("document.body.classList.remove('hy-town-home', 'hy-welcome-menu', 'hy-return-menu', 'hy-completion-menu')", true)
+		if not marker.is_empty():
+			JavaScriptBridge.eval("document.body.classList.add('%s')" % marker, true)
+
+
+func _has_open_invitation() -> bool:
+	return bool(saved.get("invitationOpen", false)) and str(saved.get("worldRoute", "")).is_empty()
+
+
+func _show_town_home() -> void:
+	show_menu = false
+	canvas.hide()
+	_set_web_menu_marker("hy-town-home")
+	if is_instance_valid(town_title):
+		town_title.reopen_menu()
+	else:
+		town_title = load(TOWN_TITLE_SCENE).new()
+		add_child(town_title)
+		town_title.setup(FONT.base_font)
+		town_title.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
+		town_title.start_pressed.connect(_open_love_cover)
+		town_title.boot_done()
+	_fit_canvas()
+
+
+func _open_love_cover() -> void:
+	if busy:
+		return
+	busy = true
+	chapter_cover = true
+	confirm_restart = false
+	show_menu = true
+	canvas.show()
+	_set_web_menu_marker("hy-welcome-menu")
+	_fit_canvas()
+	await town_title.leave()
+	busy = false
+	menu_buttons["start"].grab_focus()
+
+
+func _show_completion() -> void:
+	chapter_cover = false
+	_prepare_album()
+	_set_web_menu_marker("hy-completion-menu")
+	_prefetch_village.call_deferred()
+	_fit_canvas()
 
 
 func _has_review_controls() -> bool:
@@ -132,8 +198,7 @@ func _launch() -> void:
 
 func _story_destination() -> String:
 	var destination := "res://hongyuan/player.tscn"
-	var web_trial := OS.has_feature("web") and not OS.has_feature("hongyuan_wechat")
-	if not web_trial and str(saved.get("worldRoute", "")) in ["wedding", "village"]:
+	if not _is_web_play() and str(saved.get("worldRoute", "")) in ["wedding", "village"]:
 		destination = "res://hongyuan/world_entry.tscn"
 	return destination
 
@@ -168,6 +233,11 @@ func _fit_canvas() -> void:
 	canvas.scale = Vector2.ONE * fit
 	canvas.size = Vector2(CANVAS.x, minf(safe.size.y / fit, 820))
 	canvas.position = safe.position + (safe.size - canvas.size * fit) * 0.5
+	if is_instance_valid(town_title):
+		var town_fit := fit / 1.5
+		town_title.scale = Vector2.ONE * town_fit
+		town_title.size = Vector2(540, safe.size.y / town_fit)
+		town_title.position = Vector2(canvas.position.x, safe.position.y)
 	_layout_menu()
 	canvas.queue_redraw()
 	queue_redraw()
@@ -176,33 +246,51 @@ func _fit_canvas() -> void:
 func _layout_menu() -> void:
 	if menu_buttons.is_empty():
 		return
-	if show_menu and completed:
+	if show_menu and completed and not chapter_cover:
+		opening_credit.hide()
 		_layout_album()
 		return
 	var height := canvas.size.y
-	var primary_y := height * (0.58 if welcome else 0.555)
-	var button_margin := MARGIN + RESUME_PANEL_PAD
-	var actions := Rect2(button_margin, primary_y, CANVAS.x - 2 * button_margin, PRIMARY_H)
-	var lower := Rect2(button_margin, actions.end.y + 6, actions.size.x, SECONDARY_H)
+	var compact := height < 680.0
+	opening_art_end = minf(414.0, height - 238.0)
+	var gap := 4.0 if compact else clampf((height - opening_art_end - 204.0) / 5.0, 7.0, 22.0)
+	var title_width := 236.0
+	var title_height := title_width * OPENING_TITLE_REGION.size.y / OPENING_TITLE_REGION.size.x
+	opening_title = Rect2((CANVAS.x - title_width) * 0.5, 40, title_width, title_height)
+	var heading_size := Vector2(106, 37) if compact else Vector2(120, 42)
+	opening_heading = Rect2(Vector2((CANVAS.x - heading_size.x) * 0.5, opening_art_end + gap), heading_size)
+	opening_note = Rect2(9, opening_heading.end.y + gap, 342, 55)
+	opening_credit.position = Vector2(0, opening_note.end.y + 16.0)
+	opening_credit.add_theme_font_size_override("font_size", 14 if compact else 12)
+	opening_credit.size = Vector2(CANVAS.x, maxf(34.0, opening_credit.get_combined_minimum_size().y))
+	opening_credit.visible = show_menu
+	opening_credit.modulate.a = 1.0 if chapter_cover else 0.35
+	var credit_to_buttons := 6.0 if compact else 9.0
+	var cover_buttons_y := maxf(opening_credit.get_rect().end.y + credit_to_buttons, height - 105.0 - gap)
+	if chapter_cover:
+		var upper_y := opening_credit.position.y
+		opening_credit.position.y = cover_buttons_y + 50.0 - opening_credit.size.y
+		cover_buttons_y = upper_y
+	var action_left := (CANVAS.x - OPENING_ACTION_SIZE.x) * 0.5
+	var actions := Rect2(Vector2(action_left, (height - 152.0) * 0.5), OPENING_ACTION_SIZE)
+	var lower := Rect2(Vector2(action_left, actions.end.y + 2.0), OPENING_ACTION_SIZE)
 	resume_panel = actions.merge(lower).grow(RESUME_PANEL_PAD)
 	if confirm_restart:
 		resume_panel = resume_panel.grow_side(SIDE_TOP, RESTART_PROMPT_H)
+	else:
+		resume_panel = resume_panel.grow_side(SIDE_BOTTOM, 50.0)
 	for key: String in menu_buttons:
 		var button: Button = menu_buttons[key]
 		button.hide()
 	if show_menu:
-		if welcome:
-			_place("start", actions)
+		if chapter_cover:
+			_place("start", Rect2(45, cover_buttons_y, 152, 50))
+			_place("home", Rect2(205, cover_buttons_y, 110, 50))
 		else:
 			_place("cancel" if confirm_restart else "resume", actions)
 			_place("erase" if confirm_restart else "restart", lower)
-	if is_instance_valid(prefetch_notice):
-		prefetch_notice.position = Vector2(MARGIN, resume_panel.end.y + 7)
-		prefetch_notice.size.x = resume_panel.size.x
-	var picture_bottom := primary_y - 18.0
-	photo_rect = Rect2(0, picture_bottom - PHOTO_HEIGHT, CANVAS.x, PHOTO_HEIGHT)
-	title_y = picture_bottom * 0.15
-	note_y = height - TYPE_STRIP.y - 20.0
+			if not confirm_restart:
+				_place("back_cover", Rect2(action_left, lower.end.y + 2, OPENING_ACTION_SIZE.x, 48))
 
 
 func _place(key: String, rect: Rect2) -> void:
@@ -215,31 +303,37 @@ func _place(key: String, rect: Rect2) -> void:
 func _draw_canvas() -> void:
 	if not show_menu:
 		return
-	if completed:
+	if completed and not chapter_cover:
 		_draw_album()
 		return
 	canvas.draw_rect(Rect2(Vector2.ZERO, canvas.size), SPLASH_BG)
 	var splash := _texture(SPLASH)
 	if splash:
-		var ratio := splash.get_width() / CANVAS.x
-		var top := maxf(0, photo_rect.position.y)
-		var crop := top - photo_rect.position.y
-		var area := Rect2(0, top, CANVAS.x, PHOTO_HEIGHT - crop)
-		canvas.draw_texture_rect_region(splash, area, Rect2(0, crop * ratio, splash.get_width(), area.size.y * ratio))
-		_fade(top, top + 68, SPLASH_BG if top > 0 else Color("#321e2b70"), Color("#321e2b00"))
-		_fade(photo_rect.end.y - 22, photo_rect.end.y, Color("#321e2b00"), SPLASH_BG)
+		_draw_opening_backdrop(splash)
 	var type_art := _texture(INSCRIPTION)
 	if type_art:
-		var strip := Vector2(type_art.get_width(), type_art.get_height() * 0.5)
-		canvas.draw_texture_rect_region(type_art, Rect2(Vector2(0, title_y), TYPE_STRIP), Rect2(Vector2.ZERO, strip))
-		if not confirm_restart:
-			canvas.draw_texture_rect_region(type_art, Rect2(Vector2(0, note_y), TYPE_STRIP), Rect2(Vector2(0, strip.y), strip))
-	if not welcome:
-		canvas.draw_rect(resume_panel, RESUME_PANEL_FILL)
-		canvas.draw_rect(resume_panel, RESUME_PANEL_EDGE, false, 1.0)
+		canvas.draw_texture_rect_region(type_art, opening_title, OPENING_TITLE_REGION)
+	var heading := _texture(LOVE_COVER_HEADING)
+	if heading:
+		canvas.draw_texture_rect(heading, opening_heading, false)
+	var note := _texture(LOVE_COVER_NOTE)
+	if note:
+		canvas.draw_texture_rect(note, opening_note, false)
+	if not chapter_cover:
+		canvas.draw_rect(Rect2(Vector2.ZERO, canvas.size), Color(ALBUM_BASE, 0.65))
+		canvas.draw_rect(resume_panel, Color(ALBUM_BASE, 0.91))
+		canvas.draw_rect(resume_panel, Color(ALBUM_LIGHT, 0.28), false, 1.0)
 	if confirm_restart:
-		_line("确定要重新开始吗？", resume_panel.position.y + 31, 19, PAPER)
-		_line("当前进度将被清除。", resume_panel.position.y + 54, 15, Color("#e2bfab"))
+		_line("确定要重新开始吗？", resume_panel.position.y + 27, 17, PAPER)
+		_line("当前进度将被清除。", resume_panel.position.y + 48, 14, ALBUM_LIGHT)
+
+
+func _draw_opening_backdrop(splash: Texture2D) -> void:
+	var source_width := float(splash.get_width())
+	var ratio := source_width / CANVAS.x
+	canvas.draw_texture_rect_region(splash, Rect2(0, 0, CANVAS.x, opening_art_end),
+		Rect2(0, 0, source_width, opening_art_end * ratio))
+	_fade(opening_art_end - 9.0, opening_art_end, Color(SPLASH_BG, 0.0), SPLASH_BG)
 
 
 func _prepare_album() -> void:
@@ -255,7 +349,7 @@ func _prepare_album() -> void:
 					child.modulate = ink
 		else:
 			_style_album_button(button, Color.TRANSPARENT, ink, Color.TRANSPARENT)
-		button.draw.connect(_draw_album_arrow.bind(button, key, ink))
+		button.draw.connect(_draw_button_arrow.bind(button, primary, ink))
 	if OS.has_feature("web") and not OS.has_feature("hongyuan_wechat"):
 		var bridge := JavaScriptBridge.get_interface("suqiCompletionShare")
 		if bridge == null:
@@ -270,8 +364,7 @@ func _prepare_album() -> void:
 		canvas.add_child(share_button)
 
 
-func _draw_album_arrow(button: Button, key: String, ink: Color) -> void:
-	var primary := key == "wedding"
+func _draw_button_arrow(button: Button, primary: bool, ink: Color) -> void:
 	var radius := 5.0 if primary else 4.0
 	var x := button.size.x - 18.0 if primary else button.size.x * 0.5 + 51.0
 	var tip := Vector2(x, button.size.y * 0.5)
@@ -369,7 +462,7 @@ func _add_action(key: String, primary: bool) -> void:
 	button.name = key
 	button.accessibility_name = label
 	var labels := _texture(BUTTON_TYPE)
-	if labels and key != "start":
+	if labels and key not in ["start", "home", "back_cover"]:
 		var artwork := AtlasTexture.new()
 		artwork.atlas = labels
 		artwork.region = Rect2(0, ACTION_LABELS.keys().find(key) * 96, 432, 96)
@@ -411,6 +504,16 @@ func _add_action(key: String, primary: bool) -> void:
 	focus.set_border_width_all(2)
 	focus.border_color = Color("#ffda92")
 	button.add_theme_stylebox_override("focus", focus)
+	if key in ["start", "home", "resume", "restart", "cancel", "erase", "back_cover"]:
+		var ink := ALBUM_INK if primary else ALBUM_LIGHT
+		var fill := ALBUM_BUTTON if primary else Color.TRANSPARENT
+		_style_album_button(button, fill, ink, Color("#c79772") if primary else Color.TRANSPARENT)
+		button.add_theme_font_size_override("font_size", 17 if primary else 15)
+		for child in button.get_children():
+			if child is TextureRect:
+				child.modulate = ink
+		if key in ["start", "home", "resume"]:
+			button.draw.connect(_draw_button_arrow.bind(button, true, ink))
 	button.pressed.connect(_act.bind(key))
 	canvas.add_child(button)
 	button.hide()
@@ -430,7 +533,25 @@ func _act(key: String) -> void:
 			saved.revision = int(saved.get("revision", 0)) + 1
 			Checkpoint.write(saved)
 			get_tree().change_scene_to_file.call_deferred("res://hongyuan/player.tscn")
-		"start", "resume":
+		"home":
+			_show_town_home()
+		"back_cover":
+			chapter_cover = true
+			_set_web_menu_marker("hy-welcome-menu")
+			_fit_canvas()
+			menu_buttons["start"].grab_focus()
+		"start":
+			if _has_open_invitation() or not Checkpoint.has_progress(saved) and not completed:
+				busy = true
+				_launch()
+			elif completed:
+				_show_completion()
+			else:
+				chapter_cover = false
+				_set_web_menu_marker("hy-return-menu")
+				_fit_canvas()
+				menu_buttons["resume"].grab_focus()
+		"resume":
 			busy = true
 			_launch()
 		"restart", "cancel":

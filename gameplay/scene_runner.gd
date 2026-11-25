@@ -78,6 +78,7 @@ var camera_drag := false
 var camera_start := 0.0
 var pending_setup: Dictionary = {}
 var transition_applied := false
+var transition_via_dark := false
 var bg := ""
 var bg_fit := false
 var player_role := "ayu"
@@ -367,6 +368,7 @@ func _next() -> void:
 		if beat.has("bg") and str(beat.bg) != bg:
 			pending_setup = beat
 			transition_applied = false
+			transition_via_dark = beat.bg in spec.get("fadeThroughDarkBefore", [])
 			mode = "transition"
 			transition_frame = SceneWipe.capture(self)
 			beat_reached.emit(bi)
@@ -447,9 +449,12 @@ func _process(dt: float) -> void:
 	var beat: Dictionary = beats[bi] if bi >= 0 and bi < beats.size() else {}
 	match mode:
 		"transition":
-			if not transition_applied:
+			var switch_at := WIPE_OUT * 0.5 if transition_via_dark else 0.0
+			if not transition_applied and t >= switch_at:
 				_run_setup(pending_setup)
 				transition_applied = true
+				if transition_via_dark:
+					transition_frame = null
 			if t >= WIPE_OUT:
 				transition_frame = null
 				_next()
@@ -798,8 +803,7 @@ func _draw() -> void:
 		draw_set_transform(Vector2.ZERO)
 		_draw_walk_stick()
 	if badge != "":
-		var badge_top := maxf(StoryCaption.safe_top + 8.0, minf(12.0, StoryCaption.narration_top - 30.0))
-		_pill(Rect2(250, badge_top, 100, 22), badge, 12, Color(RED, 0.85), PAPER)
+		_pill(Rect2(250, StoryCaption.perspective_badge_top(), 100, 22), badge, 12, Color(RED, 0.85), PAPER)
 	if hint != "" and mode in ["go", "game"]:
 		var hot: Dictionary = hotspots.get(go_id, {}) if mode == "go" else {}
 		var hint_top := clampf(_icon_rect(go_id).end.y + camera_y + 49.0, 100.0, 515.0) if hot.get("guideBelow", false) else 46.0
@@ -876,14 +880,18 @@ func _draw_hud() -> void:
 		draw_string(FONT, Vector2(16, y), ("✓ " if done else "· ") + str(row[0]), HORIZONTAL_ALIGNMENT_LEFT, 120, 13, color)
 		draw_string(FONT, Vector2(panel.end.x - 8 - 44, y), "%d/%d" % [row[1], row[2]], HORIZONTAL_ALIGNMENT_RIGHT, 44, 13, color)
 
-## A remembered frame dissolves into the new artwork.
+## Some location changes fade through a solid shade to keep both pictures distinct.
 func _draw_wipe() -> void:
 	var alpha := 1.0 - smoothstep(0.0, WIPE_OUT, t)
 	if transition_frame:
 		draw_set_transform_matrix(get_global_transform_with_canvas().affine_inverse())
-		SceneWipe.paint(self, get_viewport_rect(), alpha, transition_frame)
+		SceneWipe.paint(self, get_viewport_rect(), 1.0 if transition_via_dark else alpha, transition_frame)
 		draw_set_transform(Vector2.ZERO)
-	else:
+	if transition_via_dark:
+		var position_in_fade := clampf(t / WIPE_OUT, 0.0, 1.0)
+		var shade := 1.0 - absf(2.0 * position_in_fade - 1.0)
+		draw_rect(view_rect, Color(INK, smoothstep(0.0, 1.0, shade)))
+	elif not transition_frame:
 		SceneWipe.paint(self, view_rect, alpha)
 
 func _draw_bg() -> void:

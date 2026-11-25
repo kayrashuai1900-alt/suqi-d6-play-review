@@ -44,6 +44,9 @@ var drive_arrival := 0.0
 var chat_fast := false
 var paused := false
 var page_hidden_callback: Variant
+var share_closed_callback: Variant
+var share_open := false
+var share_button: Button
 var wechat_hide_callback: Variant
 var wechat_show_callback: Variant
 var chime := AudioStreamPlayer.new()
@@ -139,6 +142,7 @@ func _ready() -> void:
 	fade_screen.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(fade_screen)
 	_make_music_button()
+	_make_share_button()
 	prefetch_notice.position = Vector2(12, 52)
 	prefetch_notice.z_index = 30
 	stage.add_child(prefetch_notice)
@@ -231,6 +235,7 @@ func _fit_canvas() -> void:
 		stage.view_rect.size.x = Stage.CANVAS.x
 	StoryCaption.safe_top = (safe.position.y - stage.position.y) / fit
 	StoryCaption.narration_top = maxf(StoryCaption.safe_top + 42.0, stage.view_rect.position.y + 54.0)
+	_layout_share_button()
 	if is_instance_valid(runner):
 		runner.view_rect = stage.view_rect
 	if is_instance_valid(recovery):
@@ -1028,7 +1033,7 @@ func _notification(what: int) -> void:
 
 func _on_browser_visibility(args: Array) -> void:
 	var pagehide: bool = not args.is_empty() and str(args[0].type) == "pagehide"
-	_set_paused(pagehide or bool(JavaScriptBridge.get_interface("document").hidden))
+	_set_paused(share_open or pagehide or bool(JavaScriptBridge.get_interface("document").hidden))
 
 func _set_paused(value: bool) -> void:
 	if shot.is_empty() or paused == value:
@@ -1302,6 +1307,7 @@ func _start_scene(resume := false) -> void:
 	runner.setup(shot.scene, copy, applied)
 	runner.beat_reached.connect(func(i: int) -> void:
 		state.sceneBeat = i
+		_layout_share_button(i)
 		_scene_music_at(i)
 		_save())
 	runner.music_requested.connect(_play_bgm)
@@ -1341,6 +1347,9 @@ func _start_scene(resume := false) -> void:
 		_advance.call_deferred())
 	stage.add_child(runner)
 	stage.move_child(prefetch_notice, -1)
+	if is_instance_valid(share_button):
+		stage.move_child(share_button, -1)
+		share_button.show()
 	runner.begin(int(state.get("sceneBeat", 0)))
 	if resume:
 		runner.restore(saved)
@@ -1516,6 +1525,66 @@ func _refresh_music_button() -> void:
 	bgm.stream_paused = _music_off()
 	bgm_tail.stream_paused = _music_off()
 
+func _make_share_button() -> void:
+	if not OS.has_feature("web") or OS.has_feature("hongyuan_wechat"):
+		return
+	if JavaScriptBridge.get_interface("suqiCompletionShare") == null:
+		return
+	share_button = Button.new()
+	share_button.name = "StoryShare"
+	share_button.text = "分享"
+	share_button.accessibility_name = "分享并邀请朋友玩"
+	share_button.size = Vector2(54, 44)
+	share_button.z_index = 20
+	share_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	share_button.add_theme_font_override("font", FONT)
+	share_button.add_theme_font_size_override("font_size", 13)
+	for state_name in ["normal", "hover", "pressed", "focus"]:
+		var box := StyleBoxFlat.new()
+		box.bg_color = Color("#38242de0")
+		box.border_color = Color("#b38b68")
+		box.set_border_width_all(1)
+		box.set_corner_radius_all(4)
+		box.expand_margin_top = -10.0
+		box.expand_margin_bottom = -10.0
+		if state_name == "hover" or state_name == "pressed":
+			box.bg_color = box.bg_color.lightened(0.12)
+		elif state_name == "focus":
+			box.draw_center = false
+			box.border_color = Stage.CREAM
+		share_button.add_theme_stylebox_override(state_name, box)
+	for key in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color"]:
+		share_button.add_theme_color_override(key, Stage.CREAM)
+	share_closed_callback = JavaScriptBridge.create_callback(func(_args: Array) -> void:
+		share_open = false
+		_on_browser_visibility([])
+	)
+	share_button.pressed.connect(_open_story_share)
+	stage.add_child(share_button)
+	_layout_share_button()
+
+func _layout_share_button(beat_index := -1) -> void:
+	if not is_instance_valid(share_button):
+		return
+	var beat: Dictionary = {}
+	if is_instance_valid(runner):
+		var index: int = runner.bi if beat_index < 0 else beat_index
+		if index >= 0 and index < runner.beats.size():
+			beat = runner.beats[index]
+	var toretto_perspective: bool = beat.get("narrate", "") == "A3-2i"
+	var x := 160.0 if toretto_perspective else 190.0
+	var badge_center := StoryCaption.safe_top + 20.0 if toretto_perspective else StoryCaption.perspective_badge_top() + 11.0
+	var y := maxf(StoryCaption.safe_top, badge_center - share_button.size.y * 0.5)
+	share_button.position = Vector2(x, y)
+
+func _open_story_share() -> void:
+	if paused or fading or loading_content or is_instance_valid(recovery):
+		return
+	var bridge := JavaScriptBridge.get_interface("suqiCompletionShare")
+	if bridge != null and bridge.open("playing", share_closed_callback):
+		share_open = true
+		_set_paused(true)
+
 func _music_off() -> bool:
 	if OS.has_feature("web") and OS.has_feature("hongyuan_wechat"):
 		return str(JavaScriptBridge.eval("(()=>{try{return String(wx.getStorageSync('%s')||'')}catch(_){return ''}})()" % MUSIC_KEY, true)) == "1"
@@ -1568,5 +1637,7 @@ func _show_recovery() -> void:
 	recovery.view_rect = stage.view_rect
 	recovery.setup({"hideAyu": true, "beats": [{"game": "desk_intro", "copyId": "G-DESK-RECOVERY"}]}, copy, applied)
 	stage.add_child(recovery)
+	if is_instance_valid(share_button):
+		share_button.hide()
 	recovery.finished.connect(_retry_content)
 	recovery.begin()

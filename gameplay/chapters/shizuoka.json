@@ -13,6 +13,7 @@
       "visibleActors": [],
       "scene": {
         "goalRewardId": "stamp",
+        "fadeThroughDarkBefore": ["w2/shizuoka/bg_onsen_sunset_r3.png"],
         "personHeight": 128,
         "badge": "G-02",
         "bg": "round1/rework1107/shizuoka_pier_v2.png",

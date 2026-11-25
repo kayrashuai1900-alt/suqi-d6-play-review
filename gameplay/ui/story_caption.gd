@@ -12,6 +12,9 @@ var text := ""
 var speaker := "narrator"
 var speaker_anchor := Vector2(-1, -1)
 
+static func perspective_badge_top() -> float:
+	return maxf(safe_top + 8.0, minf(12.0, narration_top - 30.0))
+
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	size = Vector2(360, 640)

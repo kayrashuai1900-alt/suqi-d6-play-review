@@ -1,6 +1,7 @@
 (() => {
     "use strict";
     const invitation = "我玩完了阿鱼一个人做的《苏七镇奇缘》爱情篇。她把自己和 Toretto 的故事做进了游戏，玩到最后，我被打动了。也想邀你来玩。";
+    const playingInvitation = "我在玩阿鱼一个人做的《苏七镇奇缘》。她把自己和 Toretto 的故事做成了六关，玩完还能赴宴、去村里种田。也想邀你来玩。";
     const script = document.currentScript.dataset;
     const posters = script.posters ? JSON.parse(script.posters) : [{url: script.poster}];
     const friendsUrl = script.friends || new URL("friends.html", location.href).href;
@@ -24,8 +25,8 @@
         return files.get(url);
     }
 
-    function open() {
-        if (document.querySelector(".hy-share-dialog")) return;
+    function open(origin, onClose) {
+        if (document.querySelector(".hy-share-dialog")) return false;
         const dialog = document.createElement("dialog");
         dialog.className = "hy-share-dialog";
         dialog.setAttribute("aria-labelledby", "hy-share-title");
@@ -77,7 +78,8 @@
                 await loaded.decode();
                 if (!dialog.open) return;
 
-                const selection = {files: [file], title: "苏七镇奇缘", text: invitation, url: friendsUrl};
+                const text = origin === "playing" ? playingInvitation : invitation;
+                const selection = {files: [file], title: "苏七镇奇缘", text, url: friendsUrl};
                 const canShare = typeof navigator.share === "function" && navigator.canShare?.(selection);
                 image.src = imageUrl;
                 image.alt = `爱情篇分享海报，第 ${target + 1} 张，共 ${posters.length} 张`;
@@ -132,10 +134,12 @@
             dialog.remove();
             if (activeUrl) URL.revokeObjectURL(activeUrl);
             document.getElementById("canvas")?.focus();
+            if (typeof onClose === "function") onClose();
         }, {once: true});
         document.body.appendChild(dialog);
         dialog.showModal();
         showPoster(0);
+        return true;
     }
 
     window.suqiCompletionShare = {open};
