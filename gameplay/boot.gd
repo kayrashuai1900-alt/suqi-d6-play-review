@@ -270,7 +270,7 @@ func _layout_menu() -> void:
 	if chapter_cover:
 		var upper_y := opening_credit.position.y
 		opening_credit.position.y = cover_buttons_y + 50.0 - opening_credit.size.y
-		cover_buttons_y = upper_y
+		cover_buttons_y = upper_y - 10.0
 	var action_left := (CANVAS.x - OPENING_ACTION_SIZE.x) * 0.5
 	var actions := Rect2(Vector2(action_left, (height - 152.0) * 0.5), OPENING_ACTION_SIZE)
 	var lower := Rect2(Vector2(action_left, actions.end.y + 2.0), OPENING_ACTION_SIZE)
